@@ -5,22 +5,55 @@ import java.util.Date;
 /**
  * User Entity
  */
+
 public class User {
     private int id;
 
     private String name;
 
-    private String passwordMD5;
+    private String username;
+
+    private String password;
+
+    private String avatar;
 
     private String email;
 
     private String phone;
+
+    private int status;
 
     private int type;
 
     private Date createTime;
 
     private Date updateTime;
+
+    private String token;
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public int getId() {
         return id;
@@ -38,13 +71,6 @@ public class User {
         this.name = name;
     }
 
-    public String getPasswordMD5() {
-        return passwordMD5;
-    }
-
-    public void setPasswordMD5(String passwordMD5) {
-        this.passwordMD5 = passwordMD5;
-    }
 
     public String getEmail() {
         return email;
@@ -86,12 +112,29 @@ public class User {
         this.updateTime = updateTime;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", passwordMD5='" + passwordMD5 + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", type=" + type +

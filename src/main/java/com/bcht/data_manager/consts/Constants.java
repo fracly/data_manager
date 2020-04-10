@@ -4,6 +4,52 @@ package com.bcht.data_manager.consts;
  * Constants class
  */
 public final class Constants {
+    /**
+     * status
+     */
+    public static final String STATUS = "status";
+
+    /**
+     * message
+     */
+    public static final String MSG = "msg";
+
+    /**
+     * data total
+     * 数据总数
+     */
+    public  static final String COUNT = "count";
+
+    /**
+     * page size
+     * 每页数据条数
+     */
+    public  static final String PAGE_SIZE = "pageSize";
+
+    /**
+     * current page no
+     * 当前页码
+     */
+    public  static final String PAGE_NUMBER = "pageNo";
+
+    /**
+     * result
+     */
+    public static final String RESULT = "result";
+
+    /**
+     *
+     */
+    public static final String DATA_LIST = "data";
+
+    public static final String TOTAL_LIST = "totalList";
+
+    public static final String CURRENT_PAGE = "currentPage";
+
+    public static final String TOTAL_PAGE = "totalPage";
+
+    public static final String TOTAL = "total";
+
     public static final String SPRING_DATASOURCE_FILE = "data_source.properties";
 
     public static final String HADOOP_PROPERTIES_PATH = "";
@@ -59,5 +105,26 @@ public final class Constants {
     public static final String SPRING_DATASOURCE_DEFAULT_AUTO_COMMIT = "";
 
     public static final String DEVELOPMENT = "";
+
+    /**
+     * session user
+     */
+    public static final String SESSION_USER = "session.user";
+
+    public static final String SESSION_ID = "sessionId";
+
+    public static final String PASSWORD_DEFAULT = "******";
+
+
+    /**
+     * session timeout
+     */
+    public static final int SESSION_TIME_OUT = 7200;
+    public static final int maxFileSize = 1024 * 1024 * 1024;
+    public static final String UDF = "UDF";
+    public static final String CLASS = "class";
+    public static final String RECEIVERS = "receivers";
+    public static final String RECEIVERS_CC = "receiversCc";
+
 
 }

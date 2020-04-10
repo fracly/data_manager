@@ -1,13 +1,19 @@
 package com.bcht.data_manager.mapper;
 
+import com.bcht.data_manager.entity.Role;
+import com.bcht.data_manager.entity.Session;
 import com.bcht.data_manager.entity.User;
 import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.type.JdbcType;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
- * User Mapper Interface
+ * User Role Mapper Interface
  */
 @Mapper
-public interface UserMapper {
+public interface UserRoleMapper {
 
     @Select("SELECT * from t_data_manager_user WHERE id = #{id}")
     @Results({
@@ -30,17 +36,12 @@ public interface UserMapper {
             "#{user.createTime}, #{user.updateTime})")
     Integer insert(@Param("user") User user);
 
-    @Select("SELECT * from t_data_manager_user WHERE username = #{username}")
-    @Results({
-            @Result(id = true, property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "username", column = "username"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "type", column = "type"),
-            @Result(property = "email", column = "email"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "createTime", column = "create_time"),
-            @Result(property = "updateTime", column = "update_time")
+    @Results(value = {@Result(property = "id", column = "id", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "cn_name", column = "cn_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "desc", column = "desc", javaType = String.class, jdbcType = JdbcType.VARCHAR)
     })
-    User findByName(@Param("username") String username);
+    @SelectProvider(type = UserRoleMapperProvider.class, method = "findRolesByUser")
+    List<Role> findRolesByUser(@Param("user") User user);
+
 }
