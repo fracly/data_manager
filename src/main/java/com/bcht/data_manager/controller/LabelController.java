@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/label")
@@ -26,7 +29,18 @@ public class LabelController extends BaseController {
     public Result list(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         Result result = new Result();
         List<Label> labelList = labelService.list(loginUser.getId());
-        result.setData(labelList);
+        Map<String, List> resultMap = new HashMap();
+        for(Label label : labelList) {
+            String firstChar = label.getName().substring(0, 1);
+            if(resultMap.containsKey(firstChar)){
+                resultMap.get(firstChar).add(label);
+            } else {
+                List<Label> subList = new ArrayList<>();
+                subList.add(label);
+                resultMap.put(firstChar, subList);
+            }
+        }
+        result.setData(resultMap);
         putMsg(result, Status.SUCCESS);
         return result;
     }
@@ -79,6 +93,16 @@ public class LabelController extends BaseController {
         Result result = new Result();
         Label label = labelService.queryById(labelId);
         result.setData(label);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/queryByName")
+    @ResponseBody
+    public Result queryByName(String labelName) {
+        Result result = new Result();
+        List<Label> labelList = labelService.queryByName(labelName);
+        result.setData(labelList);
         putMsg(result, Status.SUCCESS);
         return result;
     }

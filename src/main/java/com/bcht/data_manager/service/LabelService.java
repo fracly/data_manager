@@ -52,4 +52,8 @@ public class LabelService extends BaseService {
         return labelMapper.queryById(labelId);
     }
 
+    public List<Label> queryByName(String labelName) {
+        return labelMapper.queryByName(labelName);
+    }
+
 }

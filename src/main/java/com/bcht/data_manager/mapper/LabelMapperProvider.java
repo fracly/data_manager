@@ -76,4 +76,14 @@ public class LabelMapperProvider {
         }.toString();
     }
 
+    public String queryByName(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM(LABEL_TABLE_NAME);
+                WHERE("name like concat('%', #{labelName}, '%')");
+            }
+        }.toString();
+    }
+
 }

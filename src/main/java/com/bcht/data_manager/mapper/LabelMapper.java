@@ -16,6 +16,9 @@ public interface LabelMapper {
     @SelectProvider(type = LabelMapperProvider.class, method = "queryById")
     Label queryById(@Param("labelId") int labelId);
 
+    @SelectProvider(type = LabelMapperProvider.class, method = "queryByName")
+    List<Label> queryByName(@Param("labelName") String labelName);
+
     @InsertProvider(type = LabelMapperProvider.class, method = "insert")
     int insert(@Param("label") Label label);
 
