@@ -1,6 +1,7 @@
 package com.bcht.data_manager.utils;
 
 import com.bcht.data_manager.consts.Constants;
+import com.bcht.data_manager.entity.DataSource;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,6 +19,10 @@ public class HiveUtils {
             e.printStackTrace();
         }
         return connection;
+    }
+
+    public static Connection getHiveConnection(DataSource dataSource) {
+       return getHiveConnection(dataSource.getIp(), dataSource.getPort(), dataSource.getCategory1());
     }
 
     public static List<String> getDbTables(Connection conn) {
@@ -78,4 +83,33 @@ public class HiveUtils {
         return columnList;
     }
 
+
+    public static boolean createTable(DataSource dataSource, String database, String createSql) {
+        Connection connection = getHiveConnection(dataSource);
+        Statement stmt = null;
+        ResultSet rs = null;
+        try{
+            stmt = connection.createStatement();
+            stmt.execute("use " + database);
+            stmt.execute(createSql);
+//            rs = stmt.executeQuery("show tables");
+//            while(rs.next()){
+//                if(rs.getString(1).equals())
+//            }
+//            return stmt.execute(createSql);
+
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            try {
+                stmt.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
 }

@@ -1,33 +1,55 @@
 package com.bcht.data_manager.service;
 
 import com.bcht.data_manager.entity.Label;
-import com.bcht.data_manager.entity.Permission;
-import com.bcht.data_manager.entity.Role;
-import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.mapper.LabelMapper;
-import com.bcht.data_manager.mapper.UserMapper;
-import com.bcht.data_manager.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-/**
- * @description:
- * @author: jgn
- * @Date: 2020/4/16
- * @version:
- */
 @Service
 public class LabelService extends BaseService {
     @Autowired
     private LabelMapper labelMapper;
 
-    public Result queryList() {
-        Result result = new Result<>();
-        return result;
+    public List<Label> list(int loginUserId) {
+        List<Label>  list = labelMapper.list(loginUserId);
+        return list;
     }
+
+    public boolean create(int loginUserId, String name) {
+        Label label = new Label();
+        label.setName(name);
+        label.setCreatorId(loginUserId);
+        label.setCreateTime(new Date());
+        int count = labelMapper.insert(label);
+        if( count > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean delete(int labelId) {
+        int count = labelMapper.delete(labelId);
+        if (count > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean update(int labelId, String name) {
+        Label label = labelMapper.queryById(labelId);
+        label.setName(name);
+        int count  = labelMapper.update(label);
+        if(count > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public Label queryById(int labelId) {
+        return labelMapper.queryById(labelId);
+    }
+
 }
