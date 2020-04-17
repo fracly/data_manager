@@ -84,20 +84,13 @@ public class HiveUtils {
     }
 
 
-    public static boolean createTable(DataSource dataSource, String database, String createSql) {
+    public static boolean createTable(DataSource dataSource, String createSql) {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = null;
-        ResultSet rs = null;
         try{
             stmt = connection.createStatement();
-            stmt.execute("use " + database);
+            stmt.execute("use " + dataSource.getCategory1());
             stmt.execute(createSql);
-//            rs = stmt.executeQuery("show tables");
-//            while(rs.next()){
-//                if(rs.getString(1).equals())
-//            }
-//            return stmt.execute(createSql);
-
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -109,7 +102,6 @@ public class HiveUtils {
                 e.printStackTrace();
             }
         }
-
         return false;
     }
 }

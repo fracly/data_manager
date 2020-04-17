@@ -27,6 +27,7 @@ public class LabelController extends BaseController {
     @GetMapping("/list-tree")
     @ResponseBody
     public Result listTree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String searchVal) {
+        logger.info("user {}, query label tree list using name {}", loginUser.getUsername(), searchVal);
         Result result = new Result();
         List<Label> labelList = labelService.list(loginUser.getId(), searchVal);
         Map<String, List> resultMap = new HashMap();
@@ -48,6 +49,7 @@ public class LabelController extends BaseController {
     @GetMapping("/list-flat")
     @ResponseBody
     public Result listFlat(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        logger.info("user {}, query flat label list ", loginUser.getUsername());
         Result result = new Result();
         List<Label> labelList = labelService.list(loginUser.getId(), null);
         result.setData(labelList);
@@ -58,6 +60,7 @@ public class LabelController extends BaseController {
     @PostMapping("/create")
     @ResponseBody
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name) {
+        logger.info("user {} is creating label using name {}", loginUser.getUsername(), name);
         Result result = new Result();
         boolean isSuccess = labelService.create(loginUser.getId(), name);
         if(isSuccess) {
@@ -68,12 +71,10 @@ public class LabelController extends BaseController {
         return result;
     }
 
-    /**
-     * 删除标签
-     */
     @GetMapping("/delete")
     @ResponseBody
     public Result delete(int labelId) {
+        logger.info("deleting label using id {}", labelId);
         Result result = new Result();
         boolean isSuccess = labelService.delete(labelId);
         if(isSuccess) {
@@ -87,6 +88,7 @@ public class LabelController extends BaseController {
     @PostMapping("/update")
     @ResponseBody
     public Result update(int labelId, String name) {
+        logger.info("updating label using name {} and id {}", name, labelId);
         Result result = new Result();
         boolean isSuccess = labelService.update(labelId, name);
         if(isSuccess) {
@@ -100,6 +102,7 @@ public class LabelController extends BaseController {
     @GetMapping("/queryById")
     @ResponseBody
     public Result queryById(int labelId) {
+        logger.info("query label using id {} ", labelId);
         Result result = new Result();
         Label label = labelService.queryById(labelId);
         result.setData(label);
