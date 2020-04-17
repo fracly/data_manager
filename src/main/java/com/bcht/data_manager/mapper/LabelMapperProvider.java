@@ -16,6 +16,7 @@
  */
 package com.bcht.data_manager.mapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
 import java.util.Map;
@@ -27,6 +28,7 @@ public class LabelMapperProvider {
 
     private static final String LABEL_TABLE_NAME = "t_data_manager_label";
 
+    private static final String RELATION_LABEL_DATA_TABLE_NAME = "t_data_manager_relation_label_data";
 
     public String list(Map<String, Object> parameter) {
         return new SQL() {
@@ -34,6 +36,10 @@ public class LabelMapperProvider {
                 SELECT("*");
                 FROM(LABEL_TABLE_NAME );
                 WHERE("creatorId=#{creatorId}");
+                Object searchVal = parameter.get("searchVal");
+                if(searchVal != null && StringUtils.isNotEmpty(searchVal.toString())){
+                    WHERE( " name like concat('%', #{searchVal}, '%') ");
+                }
             }
         }.toString();
     }
@@ -85,5 +91,16 @@ public class LabelMapperProvider {
             }
         }.toString();
     }
+
+    public String countData(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("count(1)");
+                FROM(RELATION_LABEL_DATA_TABLE_NAME);
+                WHERE("label_id = #{labelId}");
+            }
+        }.toString();
+    }
+
 
 }

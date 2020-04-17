@@ -13,9 +13,12 @@ public class LabelService extends BaseService {
     @Autowired
     private LabelMapper labelMapper;
 
-    public List<Label> list(int loginUserId) {
-        List<Label>  list = labelMapper.list(loginUserId);
-        return list;
+    public List<Label> list(int loginUserId, String searchVal) {
+        List<Label>  labelList = labelMapper.list(loginUserId, searchVal);
+        for(Label label : labelList) {
+            label.setTotal(labelMapper.countData(label.getId()));
+        }
+        return labelList;
     }
 
     public boolean create(int loginUserId, String name) {
@@ -50,10 +53,6 @@ public class LabelService extends BaseService {
 
     public Label queryById(int labelId) {
         return labelMapper.queryById(labelId);
-    }
-
-    public List<Label> queryByName(String labelName) {
-        return labelMapper.queryByName(labelName);
     }
 
 }

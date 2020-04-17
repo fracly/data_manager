@@ -24,11 +24,11 @@ public class LabelController extends BaseController {
     @Autowired
     public LabelService labelService;
 
-    @GetMapping("/list")
+    @GetMapping("/list-tree")
     @ResponseBody
-    public Result list(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+    public Result listTree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String searchVal) {
         Result result = new Result();
-        List<Label> labelList = labelService.list(loginUser.getId());
+        List<Label> labelList = labelService.list(loginUser.getId(), searchVal);
         Map<String, List> resultMap = new HashMap();
         for(Label label : labelList) {
             String firstChar = label.getName().substring(0, 1);
@@ -41,6 +41,16 @@ public class LabelController extends BaseController {
             }
         }
         result.setData(resultMap);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/list-flat")
+    @ResponseBody
+    public Result listFlat(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        Result result = new Result();
+        List<Label> labelList = labelService.list(loginUser.getId(), null);
+        result.setData(labelList);
         putMsg(result, Status.SUCCESS);
         return result;
     }
@@ -96,15 +106,4 @@ public class LabelController extends BaseController {
         putMsg(result, Status.SUCCESS);
         return result;
     }
-
-    @GetMapping("/queryByName")
-    @ResponseBody
-    public Result queryByName(String labelName) {
-        Result result = new Result();
-        List<Label> labelList = labelService.queryByName(labelName);
-        result.setData(labelList);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
 }

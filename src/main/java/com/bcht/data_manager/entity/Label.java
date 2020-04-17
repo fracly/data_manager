@@ -11,6 +11,8 @@ public class Label {
 
     private int creatorId;
 
+    private int total;
+
     public int getId() {
         return id;
     }
@@ -43,6 +45,14 @@ public class Label {
         this.creatorId = creatorId;
     }
 
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
     @Override
     public String toString() {
         return "Label{" +
@@ -50,6 +60,7 @@ public class Label {
                 ", name='" + name + '\'' +
                 ", createTime=" + createTime +
                 ", creatorId=" + creatorId +
+                ", total=" + total +
                 '}';
     }
 }
