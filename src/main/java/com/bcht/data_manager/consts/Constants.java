@@ -127,4 +127,15 @@ public final class Constants {
     public static final String RECEIVERS_CC = "receiversCc";
 
 
+    /**
+     * driver
+     */
+    public static final String ORG_APACHE_HIVE_JDBC_HIVE_DRIVER = "org.apache.hive.jdbc.HiveDriver";
+
+    /**
+     * create hive table method
+     */
+    public static final Integer CREATE_TABLE_METHOD_OF_CREATE_SQL = 1;
+
+    public static final Integer CREATE_TABLE_METHOD_OF_COLUMN_COMPOSE = 2;
 }

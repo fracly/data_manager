@@ -99,7 +99,6 @@ public class DataSourceMapperProvider {
                 SELECT("id, name, type, ip, port, category1, description, creatorId");
                 FROM(DATASOURCE_TABLE_NAME);
                 WHERE("`creatorId` = #{userId}");
-
             }
         }.toString();
     }
