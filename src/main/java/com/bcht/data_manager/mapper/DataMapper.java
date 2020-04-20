@@ -72,6 +72,25 @@ public interface DataMapper {
     @SelectProvider(type = DataMapperProvider.class, method = "queryByUserId")
     List<Data> queryByUserId(@Param("userId") int userId);
 
+    @SelectProvider(type = DataMapperProvider.class, method = "queryDataIdsByLabel")
+    List<Integer> queryDataIdsByLabel(@Param("labelId") int labelId);
+
+    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+    })
+    @SelectProvider(type = DataMapperProvider.class, method = "search")
+    List<Data> search(@Param("creatorId") int creatorId, @Param("name") String name, @Param("type") int type, @Param("dataIds") String dataIds,
+                      @Param("offset") int offset, @Param("pageSize") int pageSize);
+
+
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),

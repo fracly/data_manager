@@ -3,7 +3,9 @@ package com.bcht.data_manager.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MapUtils {
     public static final Logger logger = LoggerFactory.getLogger(MapUtils.class);
@@ -28,5 +30,14 @@ public class MapUtils {
         } else {
             return "";
         }
+    }
+
+    public static final String join(Set<Integer> set, String joinChar) {
+        StringBuilder sb = new StringBuilder();
+        for(Integer integer : set) {
+            sb.append(integer +  joinChar);
+        }
+        String resultStr = sb.toString();
+        return resultStr.substring(0, resultStr.length() - joinChar.length());
     }
 }

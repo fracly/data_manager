@@ -1,5 +1,6 @@
 package com.bcht.data_manager.mapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
 import java.util.Map;
@@ -12,6 +13,8 @@ public class DataMapperProvider {
     private static final String DATA_TABLE_NAME = "t_data_manager_data";
 
     private static final String DATASOURCE_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_datasource_data";
+
+    public static final String LABEL_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_label_data";
 
     /**
      * insert data
@@ -97,7 +100,38 @@ public class DataMapperProvider {
             {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
+                WHERE("creatorId = #{creatorId}");
                 WHERE("name like concat('%', #{name}, '%')");
+            }
+        }.toString();
+    }
+
+    public String queryDataIdsByLabel(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("data_id");
+                FROM(LABEL_DATA_RELATION_TABLE_NAME);
+                WHERE("label_id = #{labelId}");
+            }
+        }.toString();
+    }
+
+    public String search(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM(DATA_TABLE_NAME);
+                WHERE("creatorId = #{creatorId}");
+                WHERE("name like concat('%', #{name}, '%')");
+                int type = Integer.parseInt(parameter.get("type").toString());
+                if (type != 0) {
+                    WHERE(" type = #{type}" );
+                }
+                Object dataIds = parameter.get("dataIds");
+                if (dataIds != null && !StringUtils.isEmpty(dataIds.toString())) {
+                    WHERE(" id in (#{dataIds})");
+                }
+                ORDER_BY("update_time limit #{offset}, #{pageSize}");
             }
         }.toString();
     }

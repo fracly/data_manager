@@ -127,6 +127,15 @@ public class DataController extends BaseController {
         return result;
     }
 
+    @GetMapping("/search")
+    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize) {
+        Result result = new Result();
+        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize);
+        result.setData(targetDataList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
     @GetMapping("/queryByUser")
     public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         Result result = new Result();
