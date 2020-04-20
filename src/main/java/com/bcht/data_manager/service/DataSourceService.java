@@ -33,12 +33,8 @@ public class DataSourceService extends BaseService {
         return dataSourceMapper.queryById(dataSourceId);
     }
 
-    public DataSource queryByName(String dataSourceName) {
-        return dataSourceMapper.queryByName(dataSourceName);
-    }
-
-    public List<DataSource> queryByUserId(int userId) {
-        return dataSourceMapper.queryByUserId(userId);
+    public List<DataSource> query(int userId, int type, String name) {
+        return dataSourceMapper.query(userId, type, name);
     }
 
     public List<Map<String, Integer>> statistic(int creatorId) {

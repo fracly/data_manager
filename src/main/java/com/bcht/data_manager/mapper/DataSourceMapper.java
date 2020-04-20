@@ -53,19 +53,6 @@ public interface DataSourceMapper {
     DataSource queryById(@Param("dataSourceId") int dataSourceId);
 
     /**
-     * query by datasource name
-     */
-    @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "ip", column = "ip", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "port", column = "port", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "category1", column = "category1", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "description", column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR)
-    })
-    @SelectProvider(type = DataSourceMapperProvider.class, method = "queryByName")
-    DataSource queryByName(@Param("dataSourceName") String dataSourceName);
-    /**
      * query datasource list by user id
      */
     @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
@@ -77,8 +64,9 @@ public interface DataSourceMapper {
             @Result(property = "description", column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER)
     })
-    @SelectProvider(type = DataSourceMapperProvider.class, method = "queryByUserId")
-    List<DataSource> queryByUserId(@Param("userId") int userId);
+    @SelectProvider(type = DataSourceMapperProvider.class, method = "query")
+    List<DataSource> query(@Param("userId") int userId, int type, String name);
+
 
     @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
     List<Map<String, Integer>> statistic(@Param("creatorId") int creatorId);

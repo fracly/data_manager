@@ -78,23 +78,11 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
-    /**
-     * query datasource by name
-     */
-    @GetMapping("/queryByName")
-    public Result queryByName(String name){
-        Result result = new Result();
-        DataSource dataSource = dataSourceService.queryByName(name);
-        result.setData(dataSource);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-    @GetMapping("/queryByUser")
-    public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+    @GetMapping("/query")
+    public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int type, String name) {
         Result result = new Result();
         int userId = loginUser.getId();
-        List<DataSource> dataSourceList = dataSourceService.queryByUserId(userId);
+        List<DataSource> dataSourceList = dataSourceService.query(userId, type, name);
         for(DataSource dataSource: dataSourceList) {
                 dataSource.setKey(dataSource.getId());
         }
@@ -102,6 +90,7 @@ public class DataSourceController extends BaseController {
         putMsg(result, Status.SUCCESS);
         return result;
     }
+
 
     @PostMapping("/testConnection")
     public Result testConnection(String name, int type, String ip, int port, String category1, String description) {

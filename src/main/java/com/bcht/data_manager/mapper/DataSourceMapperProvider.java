@@ -1,5 +1,6 @@
 package com.bcht.data_manager.mapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
 import java.util.Map;
@@ -74,29 +75,22 @@ public class DataSourceMapperProvider {
     }
 
     /**
-     * query by datasource name
-     */
-    public String queryByName(Map<String, Object> parameter) {
-        return new SQL() {
-            {
-                SELECT("*");
-
-                FROM(DATASOURCE_TABLE_NAME);
-
-                WHERE("name like concat('%',#{dataSourceName},'%')");
-            }
-        }.toString();
-    }
-
-    /**
      * query datasource list by user id
      */
-    public String queryByUserId(Map<String, Object> parameter) {
+    public String query(Map<String, Object> parameter) {
         return new SQL() {
             {
                 SELECT("id, name, type, ip, port, category1, description, creatorId");
                 FROM(DATASOURCE_TABLE_NAME);
                 WHERE("`creatorId` = #{userId}");
+                int type = Integer.parseInt(parameter.get("type").toString());
+                if(type != 0) {
+                    WHERE("`type` = #{type}");
+                }
+                String name = parameter.get("name").toString();
+                if(StringUtils.isNotEmpty(name)) {
+                    WHERE("name like concat('%',#{name},'%')");
+                }
             }
         }.toString();
     }
