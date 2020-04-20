@@ -65,7 +65,7 @@ public interface DataSourceMapper {
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER)
     })
     @SelectProvider(type = DataSourceMapperProvider.class, method = "query")
-    List<DataSource> query(@Param("userId") int userId, int type, String name);
+    List<DataSource> query(@Param("userId") int userId, @Param("type") int type, @Param("name") String name);
 
 
     @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
