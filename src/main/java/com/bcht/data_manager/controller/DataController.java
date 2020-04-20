@@ -34,7 +34,7 @@ public class DataController extends BaseController {
     public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         Result result = new Result();
         List<Map<String, Object>> resultList = new ArrayList();
-        List<DataSource> datasourceList = dataSourceService.queryByUserId(loginUser.getId());
+        List<DataSource> datasourceList = dataSourceService.query(loginUser.getId(), 0, "");
         for(DataSource dataSource : datasourceList) {
             Map<String, Object> map = new HashMap();
             map.put("key", "key-" + dataSource.getId());
