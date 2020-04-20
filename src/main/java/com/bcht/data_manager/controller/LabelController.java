@@ -57,6 +57,7 @@ public class LabelController extends BaseController {
         return result;
     }
 
+
     @PostMapping("/create")
     @ResponseBody
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name) {
@@ -109,4 +110,17 @@ public class LabelController extends BaseController {
         putMsg(result, Status.SUCCESS);
         return result;
     }
+
+
+    @GetMapping("/top10")
+    @ResponseBody
+    public Result top10(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        logger.info("query top 10 label using creatorId {} ", loginUser.getId());
+        Result result = new Result();
+        List<Label> labelList = labelService.top10(loginUser.getId());
+        result.setData(labelList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
 }
