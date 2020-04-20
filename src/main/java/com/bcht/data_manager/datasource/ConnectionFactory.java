@@ -44,9 +44,9 @@ public class ConnectionFactory {
   public static DruidDataSource getDataSource() {
     DruidDataSource druidDataSource = new DruidDataSource();
 
-    druidDataSource.setDriverClassName(getString(Constants.SPRING_DATASOURCE_DRIVER_CLASS_NAME));
-    druidDataSource.setUrl(getString(Constants.SPRING_DATASOURCE_URL));
-    druidDataSource.setUsername(getString(Constants.SPRING_DATASOURCE_USERNAME));
+    druidDataSource.setDriverClassName(getString(Constants.SPRING_DATASOURCE_DRIVER_CLASS_NAME));//数据库类型mysql
+    druidDataSource.setUrl(getString(Constants.SPRING_DATASOURCE_URL));//连接数据库的url
+    druidDataSource.setUsername(getString(Constants.SPRING_DATASOURCE_USERNAME));//连接数据库的用户名
     druidDataSource.setPassword(getString(Constants.SPRING_DATASOURCE_PASSWORD));
     druidDataSource.setValidationQuery(getString(Constants.SPRING_DATASOURCE_VALIDATION_QUERY));
 

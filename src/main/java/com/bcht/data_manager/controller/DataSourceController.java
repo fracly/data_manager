@@ -74,6 +74,18 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
+    /**
+     * query datasource by name
+     */
+    @GetMapping("/queryByName")
+    public Result queryByName(String name){
+        Result result = new Result();
+        DataSource dataSource = dataSourceService.queryByName(name);
+        result.setData(dataSource);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
     @GetMapping("/queryByUser")
     public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         Result result = new Result();
