@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DataSourceService extends BaseService {
@@ -34,5 +35,9 @@ public class DataSourceService extends BaseService {
 
     public List<DataSource> queryByUserId(int userId) {
         return dataSourceMapper.queryByUserId(userId);
+    }
+
+    public List<Map<String, Integer>> statistic(int creatorId) {
+        return dataSourceMapper.statistic(creatorId);
     }
 }

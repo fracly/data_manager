@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -28,8 +30,9 @@ public class DataSourceController extends BaseController {
      */
     @PostMapping("/create")
     public Result insert(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String ip, int port, String category1, String description) {
-
+        logger.info("user {} is creating datasource using name {}", loginUser.getUsername(), name);
         Result result = new Result();
+
         DataSource dataSource = new DataSource();
         dataSource.setIp(ip);
         dataSource.setCategory1(category1);
@@ -38,9 +41,9 @@ public class DataSourceController extends BaseController {
         dataSource.setType(type);
         dataSource.setDescription(description);
         dataSource.setCreatorId(loginUser.getId());
+
         dataSourceService.insert(dataSource);
-        result.setMsg("新增数据源成功");
-        result.setCode(0);
+        putMsg(result, Status.CUSTOM_SUCESSS, "新增数据源成功");
         return result;
     }
 
@@ -49,6 +52,7 @@ public class DataSourceController extends BaseController {
      */
     @PostMapping("/update")
     public Result update(int id, String name, int type, String ip, int port, String category1, String description) {
+        logger.info("user {} is updating datasource using name {}",  name);
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(id);
         dataSource.setName(name);
@@ -58,7 +62,7 @@ public class DataSourceController extends BaseController {
         dataSource.setCategory1(category1);
         dataSource.setDescription(description);
         dataSourceService.update(dataSource);
-        putMsg(result, Status.SUCCESS);
+        putMsg(result, Status.CUSTOM_SUCESSS, "更新数据源成功");
         return result;
     }
 
@@ -87,24 +91,9 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
-    /**
-     * insert datasource
-     */
     @PostMapping("/testConnection")
     public Result testConnection(String name, int type, String ip, int port, String category1, String description) {
-
-        Result result = new Result();
-        DataSource dataSource = new DataSource();
-        dataSource.setIp(ip);
-        dataSource.setCategory1(category1);
-        dataSource.setName(name);
-        dataSource.setPort(port);
-        dataSource.setType(type);
-        dataSource.setDescription(description);
-        dataSourceService.insert(dataSource);
-        result.setMsg("新增数据源成功");
-        result.setCode(0);
-        return result;
+        return null;
     }
 
     /**
@@ -114,11 +103,23 @@ public class DataSourceController extends BaseController {
     public Result delete(int id){
         Result result = new Result();
         dataSourceService.deleteById(id);
-        result.setMsg("删除数据源成功");
-        result.setCode(0);
+        putMsg(result, Status.CUSTOM_SUCESSS, "删除数据源成功");
         return result;
     }
 
-
-
+    /**
+     * statistic all type datasource
+     */
+    @GetMapping("/statistic")
+    public Result statistic(@RequestAttribute(value = Constants.SESSION_USER) User loginUser){
+        Result result = new Result();
+        List<Map<String, Integer>> mapList = dataSourceService.statistic(loginUser.getId());
+        Map<String, Integer> resultMap = new HashMap();
+        for(Map<String, Integer> map : mapList) {
+            resultMap.put("type" + map.get("type"), map.get("total"));
+        }
+        result.setData(resultMap);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
 }

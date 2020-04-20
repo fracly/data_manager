@@ -67,9 +67,7 @@ public class DataSourceMapperProvider {
         return new SQL() {
             {
                 SELECT("*");
-
                 FROM(DATASOURCE_TABLE_NAME);
-
                 WHERE("`id` = #{dataSourceId}");
             }
         }.toString();
@@ -86,5 +84,17 @@ public class DataSourceMapperProvider {
                 WHERE("`creatorId` = #{userId}");
             }
         }.toString();
+    }
+
+    /**
+     * statistic
+     */
+    public String statistic(Map<String, Object> parameter) {
+        return new SQL() {{
+            SELECT("type, count(1) as total");
+            FROM(DATASOURCE_TABLE_NAME);
+            GROUP_BY("type");
+            WHERE("creatorId = ${creatorId}");
+        }}.toString();
     }
 }

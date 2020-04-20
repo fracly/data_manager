@@ -9,6 +9,7 @@ import org.apache.ibatis.type.JdbcType;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User Role Mapper Interface
@@ -66,4 +67,6 @@ public interface DataSourceMapper {
     @SelectProvider(type = DataSourceMapperProvider.class, method = "queryByUserId")
     List<DataSource> queryByUserId(@Param("userId") int userId);
 
+    @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
+    List<Map<String, Integer>> statistic(@Param("creatorId") int creatorId);
 }
