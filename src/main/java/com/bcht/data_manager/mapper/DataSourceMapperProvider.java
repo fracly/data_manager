@@ -74,6 +74,21 @@ public class DataSourceMapperProvider {
     }
 
     /**
+     * query by datasource name
+     */
+    public String queryByName(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+
+                FROM(DATASOURCE_TABLE_NAME);
+
+                WHERE("name like concat('%',#{dataSourceName},'%')");
+            }
+        }.toString();
+    }
+
+    /**
      * query datasource list by user id
      */
     public String queryByUserId(Map<String, Object> parameter) {
