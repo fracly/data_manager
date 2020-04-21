@@ -155,7 +155,7 @@ public class DataMapperProvider {
     public String searchTotal(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("*");
+                SELECT("count(1)");
                 FROM(DATA_TABLE_NAME);
                 WHERE("creatorId = #{creatorId}");
                 WHERE("name like concat('%', #{name}, '%')");
