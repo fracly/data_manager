@@ -43,7 +43,7 @@ public class DataService extends BaseService {
         return dataMapper.queryById(dataId);
     }
 
-    public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize) {
+    public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         String dataIds = null;
         if(!StringUtils.isEmpty(labels)) {
             Set<Integer> targetDataIdSet = new HashSet<>();
@@ -63,7 +63,7 @@ public class DataService extends BaseService {
         if (pageNo > 1) {
             offset = (pageNo - 1) * 10;
         }
-        return dataMapper.search(creatorId, name, type, dataIds, offset, pageSize);
+        return dataMapper.search(creatorId, name, type, dataIds, offset, pageSize, startDate, endDate);
     }
 
     public List<Data> queryByName(String name) {

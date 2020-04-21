@@ -111,9 +111,9 @@ public class DataController extends BaseController {
     }
 
     @GetMapping("/search")
-    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize) {
+    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         Result result = new Result();
-        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize);
+        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startDate, endDate);
         result.setData(targetDataList);
         putMsg(result, Status.SUCCESS);
         return result;

@@ -131,6 +131,12 @@ public class DataMapperProvider {
                 if (dataIds != null && !StringUtils.isEmpty(dataIds.toString())) {
                     WHERE(" id in (#{dataIds})");
                 }
+                Object startDate = parameter.get("startDate");
+                Object endDate = parameter.get("endDate");
+                if(startDate != null && endDate != null &&
+                        StringUtils.isNotEmpty(startDate.toString()) && StringUtils.isNotEmpty(endDate.toString())) {
+                    WHERE(" create_time >= '" + startDate.toString() + "' and create_time <= '" + endDate.toString() + "'");
+                }
                 ORDER_BY("update_time limit #{offset}, #{pageSize}");
             }
         }.toString();
