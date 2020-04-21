@@ -87,8 +87,8 @@ public class DataSourceMapperProvider {
                 if(type != 0) {
                     WHERE("`type` = #{type}");
                 }
-                String name = parameter.get("name").toString();
-                if(StringUtils.isNotEmpty(name)) {
+                Object name = parameter.get("name");
+                if(name != null && StringUtils.isNotEmpty(name.toString())) {
                     WHERE("name like concat('%',#{name},'%')");
                 }
             }

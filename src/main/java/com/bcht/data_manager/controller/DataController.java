@@ -30,23 +30,6 @@ public class DataController extends BaseController {
     @Autowired
     private DataSourceService dataSourceService;
 
-    @GetMapping("/tree")
-    public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Result result = new Result();
-        List<Map<String, Object>> resultList = new ArrayList();
-        List<DataSource> datasourceList = dataSourceService.query(loginUser.getId(), 0, "");
-        for(DataSource dataSource : datasourceList) {
-            Map<String, Object> map = new HashMap();
-            map.put("key", "key-" + dataSource.getId());
-            map.put("title", dataSource.getName());
-            map.put("value", dataSource.getId());
-            resultList.add(map);
-        }
-        result.setData(resultList);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         Result result = new Result();

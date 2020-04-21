@@ -3,6 +3,7 @@ package com.bcht.data_manager.controller;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.User;
+import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.Result;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +122,33 @@ public class DataSourceController extends BaseController {
             resultMap.put("type" + map.get("type"), map.get("total"));
         }
         result.setData(resultMap);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/tree")
+    public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        Result result = new Result();
+        List<Map<String, Object>> resultList = new ArrayList();
+
+        for(DbType dbType : DbType.values()) {
+            Map map = new HashMap();
+            map.put("key", "key-0" + dbType.getIndex());
+            map.put("title", dbType.getName());
+            map.put("value", 1);
+            List<DataSource> hiveList = dataSourceService.query(loginUser.getId(), dbType.getIndex(), null);
+            List<Map> hiveChildren = new ArrayList<>();
+            for (DataSource dataSource : hiveList) {
+                Map<String, Object> tmp = new HashMap();
+                tmp.put("key", "key-0" + dbType.getIndex() + "-" + dataSource.getId());
+                tmp.put("title", dataSource.getName());
+                tmp.put("value", dataSource.getId());
+                hiveChildren.add(tmp);
+            }
+            map.put("children", hiveChildren);
+            resultList.add(map);
+        }
+        result.setData(resultList);
         putMsg(result, Status.SUCCESS);
         return result;
     }
