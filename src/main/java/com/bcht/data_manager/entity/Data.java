@@ -1,6 +1,7 @@
 package com.bcht.data_manager.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class Data {
     private long id;
@@ -32,6 +33,8 @@ public class Data {
     private int destroyMethod;
 
     private String destroyTime;
+
+    private List<Label> labelList;
 
     public long getId() {
         return id;
@@ -129,6 +132,14 @@ public class Data {
         this.destroyTime = destroyTime;
     }
 
+    public List<Label> getLabelList() {
+        return labelList;
+    }
+
+    public void setLabelList(List<Label> labelList) {
+        this.labelList = labelList;
+    }
+
     @Override
     public String toString() {
         return "Data{" +
@@ -144,6 +155,7 @@ public class Data {
                 ", status=" + status +
                 ", destroyMethod=" + destroyMethod +
                 ", destroyTime='" + destroyTime + '\'' +
+                ", labelList=" + labelList +
                 '}';
     }
 }

@@ -66,6 +66,25 @@ public class DataService extends BaseService {
         return dataMapper.search(creatorId, name, type, dataIds, offset, pageSize, startDate, endDate);
     }
 
+    public Integer searchTotal(int creatorId, String name, int type, String labels, String startDate, String endDate) {
+        String dataIds = null;
+        if(!StringUtils.isEmpty(labels)) {
+            Set<Integer> targetDataIdSet = new HashSet<>();
+            String[] labelArray = labels.split(",");
+            for(String label : labelArray) {
+                if(StringUtils.isEmpty(label)){
+                    continue;
+                } else {
+                    int labelId = Integer.parseInt(label);
+                    List<Integer> ids = dataMapper.queryDataIdsByLabel(labelId);
+                    targetDataIdSet.addAll(ids);
+                }
+            }
+            dataIds = MapUtils.join(targetDataIdSet, ",");
+        }
+        return dataMapper.searchTotal(creatorId, name, type, dataIds, startDate, endDate);
+    }
+
     public List<Data> queryByName(String name) {
         return dataMapper.queryByName(name);
     }

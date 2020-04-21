@@ -82,6 +82,17 @@ public class LabelMapperProvider {
         }.toString();
     }
 
+    public String queryByDataId(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("a.*");
+                FROM(LABEL_TABLE_NAME + " a");
+                INNER_JOIN(RELATION_LABEL_DATA_TABLE_NAME + " b on a.id = b.label_id ");
+                WHERE("b.data_id = #{dataId}");
+            }
+        }.toString();
+    }
+
     public String queryByName(Map<String, Object> parameter) {
         return new SQL() {
             {

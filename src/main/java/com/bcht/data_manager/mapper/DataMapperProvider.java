@@ -142,6 +142,31 @@ public class DataMapperProvider {
         }.toString();
     }
 
+    public String searchTotal(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM(DATA_TABLE_NAME);
+                WHERE("creatorId = #{creatorId}");
+                WHERE("name like concat('%', #{name}, '%')");
+                int type = Integer.parseInt(parameter.get("type").toString());
+                if (type != 0) {
+                    WHERE(" type = #{type}" );
+                }
+                Object dataIds = parameter.get("dataIds");
+                if (dataIds != null && !StringUtils.isEmpty(dataIds.toString())) {
+                    WHERE(" id in (#{dataIds})");
+                }
+                Object startDate = parameter.get("startDate");
+                Object endDate = parameter.get("endDate");
+                if(startDate != null && endDate != null &&
+                        StringUtils.isNotEmpty(startDate.toString()) && StringUtils.isNotEmpty(endDate.toString())) {
+                    WHERE(" create_time >= '" + startDate.toString() + "' and create_time <= '" + endDate.toString() + "'");
+                }
+            }
+        }.toString();
+    }
+
     /**
      * query data list by user id
      */

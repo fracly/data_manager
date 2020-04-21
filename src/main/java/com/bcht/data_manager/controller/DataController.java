@@ -3,10 +3,12 @@ package com.bcht.data_manager.controller;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
+import com.bcht.data_manager.entity.Label;
 import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
+import com.bcht.data_manager.service.LabelService;
 import com.bcht.data_manager.utils.HiveUtils;
 import com.bcht.data_manager.utils.MapUtils;
 import com.bcht.data_manager.utils.Result;
@@ -29,6 +31,9 @@ public class DataController extends BaseController {
 
     @Autowired
     private DataSourceService dataSourceService;
+
+    @Autowired
+    private LabelService labelService;
 
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
@@ -114,7 +119,16 @@ public class DataController extends BaseController {
     public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         Result result = new Result();
         List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startDate, endDate);
+        for(Data data : targetDataList) {
+            List<Label> labelList = labelService.queryByDataId(data.getId());
+            data.setLabelList(labelList);
+        }
+        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startDate, endDate);
         result.setData(targetDataList);
+        Map resultMap = new HashMap();
+        resultMap.put("total", total);
+        resultMap.put("pageSize", pageSize);
+        result.setDataMap(resultMap);
         putMsg(result, Status.SUCCESS);
         return result;
     }

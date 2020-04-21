@@ -30,6 +30,14 @@ public interface LabelMapper {
     @SelectProvider(type = LabelMapperProvider.class, method = "queryById")
     Label queryById(@Param("labelId") int labelId);
 
+    @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP)
+    })
+    @SelectProvider(type = LabelMapperProvider.class, method = "queryByDataId")
+    List<Label> queryByDataId(@Param("dataId") long dataId);
+
+
     @SelectProvider(type = LabelMapperProvider.class, method = "countData")
     int countData(@Param("labelId") int labelId);
 

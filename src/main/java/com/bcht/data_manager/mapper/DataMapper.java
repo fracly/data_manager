@@ -90,6 +90,10 @@ public interface DataMapper {
     List<Data> search(@Param("creatorId") int creatorId, @Param("name") String name, @Param("type") int type, @Param("dataIds") String dataIds,
                       @Param("offset") int offset, @Param("pageSize") int pageSize, @Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    @SelectProvider(type = DataMapperProvider.class, method = "searchTotal")
+    Integer searchTotal(@Param("creatorId") int creatorId, @Param("name") String name, @Param("type") int type, @Param("dataIds") String dataIds,
+                        @Param("startDate") String startDate, @Param("endDate") String endDate);
+
 
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
