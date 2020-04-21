@@ -39,12 +39,22 @@ public class DataMapperProvider {
         }.toString();
     }
 
-    public String insertRelation(Map<String, Object> parameter) {
+    public String insertDataSourceDataRelation(Map<String, Object> parameter) {
         return new SQL() {
             {
                 INSERT_INTO(DATASOURCE_DATA_RELATION_TABLE_NAME);
                 VALUES("`data_id`", "#{dataId}");
                 VALUES("`datasource_id`", "#{dataSourceId}");
+            }
+        }.toString();
+    }
+
+    public String insertLabelDataRelation(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                INSERT_INTO(LABEL_DATA_RELATION_TABLE_NAME);
+                VALUES("`data_id`", "#{dataId}");
+                VALUES("`label_id`", "#{labelId}");
             }
         }.toString();
     }

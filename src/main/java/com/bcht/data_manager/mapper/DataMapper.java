@@ -20,9 +20,11 @@ public interface DataMapper {
     @InsertProvider(type = DataMapperProvider.class, method = "insert")
     int insert(@Param("data") Data data);
 
-    @InsertProvider(type = DataMapperProvider.class, method = "insertRelation")
-    int insertRelation(@Param("dataId") int dataId, @Param("dataSourceId") int dataSourceId);
+    @InsertProvider(type = DataMapperProvider.class, method = "insertDataSourceDataRelation")
+    int insertDataSourceDataRelation(@Param("dataId") int dataId, @Param("dataSourceId") int dataSourceId);
 
+    @InsertProvider(type = DataMapperProvider.class, method = "insertLabelDataRelation")
+    int insertLabelDataRelation(@Param("dataId") int dataId, @Param("labelId") int labelId);
     /**
      * delete data
      */

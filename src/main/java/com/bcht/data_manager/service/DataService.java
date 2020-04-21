@@ -27,8 +27,12 @@ public class DataService extends BaseService {
         return dataMapper.insert(data);
     }
 
-    public int insertRelation(int dataId, int dataSourceId) {
-        return dataMapper.insertRelation(dataId, dataSourceId);
+    public int insertDataSourceDataRelation(int dataId, int dataSourceId) {
+        return dataMapper.insertDataSourceDataRelation(dataId, dataSourceId);
+    }
+
+    public int insertLabelDataRelation(int dataId, int labelId) {
+        return dataMapper.insertLabelDataRelation(dataId, labelId);
     }
 
     public int update(Data data) {

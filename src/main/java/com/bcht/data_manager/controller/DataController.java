@@ -48,6 +48,7 @@ public class DataController extends BaseController {
         String dataName = MapUtils.getString(parameter, "dataName");
         String createSql = MapUtils.getString(parameter, "createSql");
         String description = MapUtils.getString(parameter, "description");
+        String labels = MapUtils.getString(parameter, "labels");
 
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
@@ -71,7 +72,12 @@ public class DataController extends BaseController {
             data.setDescription(description);
             try{
                 dataService.insert(data);
-                dataService.insertRelation(currentMaxId + 1, dataSourceId);
+                dataService.insertDataSourceDataRelation(currentMaxId + 1, dataSourceId);
+                String[] ids = labels.split(",");
+                for(String id : ids){
+                    Integer idInt = Integer.parseInt(id);
+                    dataService.insertLabelDataRelation(currentMaxId + 1, idInt);
+                }
                 putMsg(result, Status.SUCCESS);
             } catch(Exception e) {
                 logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
