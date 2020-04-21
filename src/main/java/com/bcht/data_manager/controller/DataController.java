@@ -59,9 +59,10 @@ public class DataController extends BaseController {
         }
         boolean isSuccess = HiveUtils.createTable(dataSource, createSql);
         if(isSuccess) {
-            int currentMaxId = dataService.queryMaxId();
+            Integer currentMaxId = dataService.queryMaxId();
+            Integer nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
             Data data = new Data();
-            data.setId(currentMaxId + 1);
+            data.setId(nextId);
             data.setCreateTime(new Date());
             data.setUpdateTime(new Date());
             data.setCreatorId(loginUser.getId());
@@ -72,14 +73,15 @@ public class DataController extends BaseController {
             data.setDescription(description);
             try{
                 dataService.insert(data);
-                dataService.insertDataSourceDataRelation(currentMaxId + 1, dataSourceId);
-                String[] ids = labels.split(",");
+                dataService.insertDataSourceDataRelation(nextId, dataSourceId);
+                String[] ids = labels.replace("[", "").replace("]", "").split(",");
                 for(String id : ids){
-                    Integer idInt = Integer.parseInt(id);
-                    dataService.insertLabelDataRelation(currentMaxId + 1, idInt);
+                    Integer idInt = Integer.parseInt(id.trim());
+                    dataService.insertLabelDataRelation(nextId, idInt);
                 }
                 putMsg(result, Status.SUCCESS);
             } catch(Exception e) {
+                e.printStackTrace();
                 logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
                 putMsg(result, Status.FAILED);
             }
@@ -169,14 +171,26 @@ public class DataController extends BaseController {
      * 获取数据源下所有的数据
      */
     @GetMapping("/listByDataSource")
-    public Result listByDataSource(int dataSourceId, int pageNo, int pageSize) {
+    public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int dataSourceId, int pageNo, int pageSize) {
         Result result = new Result();
-        List<Data> dataList = dataService.listByDataSource(dataSourceId, pageNo, pageSize);
+        List<Data> dataList;
+        int total;
+        if(dataSourceId != 0) {
+            dataList = dataService.listByDataSource(loginUser.getId(), dataSourceId, pageNo, pageSize);
+            total = dataService.listByDataSourceTotal(loginUser.getId(), dataSourceId);
+        } else {
+            dataList = dataService.listByUser(loginUser.getId(), pageNo, pageSize);
+            total = dataService.listByUserTotal(loginUser.getId());
+        }
+        for(Data data : dataList) {
+            List<Label> labelList = labelService.queryByDataId(data.getId());
+            data.setLabelList(labelList);
+        }
         result.setData(dataList);
 
         Map<String, Object> map = new HashMap<>();
         map.put("pageNo", pageNo);
-        map.put("totalCount", dataService.countByDataSource(dataSourceId));
+        map.put("total", total);
         result.setDataMap(map);
 
         putMsg(result, Status.SUCCESS);

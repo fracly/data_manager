@@ -23,7 +23,7 @@ public class DataMapperProvider {
         return new SQL() {
             {
                 INSERT_INTO(DATA_TABLE_NAME);
-                VALUES("`id`", "#{data.id");
+                VALUES("`id`", "#{data.id}");
                 VALUES("`name`", "#{data.name}");
                 VALUES("`type`", "#{data.type}");
                 VALUES("`data_name`", "#{data.dataName}");
@@ -198,19 +198,45 @@ public class DataMapperProvider {
                 FROM(DATA_TABLE_NAME + " a ");
                 INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
                 WHERE(" b.datasource_id = #{dataSourceId} ");
+                WHERE(" a.creatorId = #{creatorId}");
                 ORDER_BY(" a.id desc limit #{offset}, #{pageSize}");
             }
         }.toString();
     }
 
-    public String countByDataSource(Map<String, Object> parameter) {
-        return new SQL(){{
-            SELECT("count(1)");
-            FROM(DATA_TABLE_NAME + " a ");
-            INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
-            WHERE(" b.datasource_id = #{dataSourceId} ");
-        }}.toString();
+    public String listByDataSourceTotal(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("count(1)");
+                FROM(DATA_TABLE_NAME + " a ");
+                INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
+                WHERE(" b.datasource_id = #{dataSourceId} ");
+                WHERE(" a.creatorId = #{creatorId}");
+            }
+        }.toString();
     }
+
+    public String listByUser(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM(DATA_TABLE_NAME);
+                WHERE("creatorId = #{creatorId}");
+                ORDER_BY("update_time desc limit #{offset}, #{pageSize}");
+            }
+        }.toString();
+    }
+
+    public String listByUserTotal(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("count(1)");
+                FROM(DATA_TABLE_NAME);
+                WHERE("creatorId = #{creatorId}");
+            }
+        }.toString();
+    }
+
 
     public String queryMaxId(Map<String, Object> parameter) {
         return new SQL() {{

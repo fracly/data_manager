@@ -93,23 +93,31 @@ public class DataService extends BaseService {
         return dataMapper.queryByName(name);
     }
 
-    public List<Data> queryByUserId(int userId) {
-        return dataMapper.queryByUserId(userId);
-    }
-
-    public List<Data> listByDataSource(int dataSourceId, int pageNo, int pageSize) {
+    public List<Data> listByDataSource(int creatorId, int dataSourceId, int pageNo, int pageSize) {
         int offset = 0;
         if(pageNo != 1) {
             offset = (pageNo - 1) * pageSize;
         }
-        return dataMapper.listByDataSource(dataSourceId, offset, pageSize);
+        return dataMapper.listByDataSource(creatorId, dataSourceId, offset, pageSize);
     }
 
-    public int countByDataSource(int dataSourceId) {
-        return dataMapper.countByDataSource(dataSourceId);
+    public Integer listByDataSourceTotal(int creatorId, int dataSourceId) {
+        return dataMapper.listByDataSourceTotal(creatorId, dataSourceId);
     }
 
-    public int queryMaxId(){
+    public List<Data> listByUser(int creatorId, int pageNo, int pageSize) {
+        int offset = 0;
+        if(pageNo != 1) {
+            offset = (pageNo - 1) * pageSize;
+        }
+        return dataMapper.listByUser(creatorId, offset, pageSize);
+    }
+
+    public Integer listByUserTotal(int creatorId) {
+        return dataMapper.listByUserTotal(creatorId);
+    }
+
+    public Integer queryMaxId(){
         return dataMapper.queryMaxId();
     }
 }

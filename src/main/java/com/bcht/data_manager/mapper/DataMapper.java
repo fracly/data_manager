@@ -109,11 +109,30 @@ public interface DataMapper {
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
     })
     @SelectProvider(type = DataMapperProvider.class, method = "listByDataSource")
-    List<Data> listByDataSource(@Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize);
+    List<Data> listByDataSource(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize);
 
-    @SelectProvider(type = DataMapperProvider.class, method = "countByDataSource")
-    int countByDataSource(@Param("dataSourceId") int dataSourceId);
+    @SelectProvider(type = DataMapperProvider.class, method = "listByDataSourceTotal")
+    Integer listByDataSourceTotal(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId);
+
+
+    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+    })
+    @SelectProvider(type = DataMapperProvider.class, method = "listByUser")
+    List<Data> listByUser(@Param("creatorId") int creatorId, @Param("offset") int offset, @Param("pageSize") int pageSize);
+
+    @SelectProvider(type = DataMapperProvider.class, method = "listByUserTotal")
+    Integer listByUserTotal(@Param("creatorId") int creatorId);
+
 
     @SelectProvider(type = DataMapperProvider.class, method = "queryMaxId")
-    int queryMaxId();
+    Integer queryMaxId();
 }
