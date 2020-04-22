@@ -167,9 +167,14 @@ public class DataController extends BaseController {
         return result;
     }
 
-    /**
-     * 获取数据源下所有的数据
-     */
+    @GetMapping("/detail")
+    public Result detail(int dataId) {
+        Result result = new Result();
+        List<Map<String, Object>> map = dataService.columnList(dataId);
+        result.setData(map);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
     @GetMapping("/listByDataSource")
     public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int dataSourceId, int pageNo, int pageSize) {
         Result result = new Result();

@@ -79,6 +79,7 @@ public interface DataMapper {
 
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "dataName", column = "data_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),

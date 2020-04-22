@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class DataService extends BaseService {
@@ -45,6 +42,10 @@ public class DataService extends BaseService {
 
     public Data queryById(int dataId) {
         return dataMapper.queryById(dataId);
+    }
+
+    public List<Map<String, Object>> columnList(int dataId) {
+        return null;
     }
 
     public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {

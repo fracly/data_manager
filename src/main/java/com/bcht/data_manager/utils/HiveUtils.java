@@ -104,4 +104,22 @@ public class HiveUtils {
         }
         return false;
     }
+
+    public static void createDatabase(DataSource dataSource) {
+        Connection connection = getHiveConnection(dataSource);
+        Statement stmt = null;
+        try{
+            stmt = connection.createStatement();
+            stmt.execute("create database if not exists " + dataSource.getCategory1());
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            try {
+                stmt.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

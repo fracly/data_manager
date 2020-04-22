@@ -94,9 +94,9 @@ public class DataSourceController extends BaseController {
     }
 
 
-    @PostMapping("/testConnection")
-    public Result testConnection(String name, int type, String ip, int port, String category1, String description) {
-        return null;
+    @PostMapping("/test")
+    public Result test(int type, String ip, int port, String category1) {
+        return dataSourceService.testConnection(type, ip, port, category1);
     }
 
     /**
