@@ -3,8 +3,12 @@ package com.bcht.data_manager.service;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.mapper.DataSourceMapper;
+import com.bcht.data_manager.utils.HDFSUtils;
 import com.bcht.data_manager.utils.HiveUtils;
 import com.bcht.data_manager.utils.Result;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +58,27 @@ public class DataSourceService extends BaseService {
                 result.setCode(-1);
             }
         } else if (type == DbType.HBASE.getIndex()) {
-
+            Configuration configuration = HBaseConfiguration.create();
+            configuration.set("hbase.zookeeper.quorum", ip);
+            configuration.set("hbase.zookeeper.property.clientPort", port + "");
+            try{
+                HBaseAdmin.available(configuration);
+                result.setMsg("HBase连接成功");
+                result.setCode(0);
+            }catch (Exception e) {
+                result.setMsg("HBase连接失败");
+                result.setCode(-1);
+                e.printStackTrace();
+            }
         } else if (type == DbType.HDFS.getIndex()) {
-
+            boolean success = HDFSUtils.checkConnection(ip, port);
+            if(success) {
+                result.setCode(0);
+                result.setMsg("HDFS连接成功");
+            } else {
+                result.setCode(-1);
+                result.setMsg("HDFS连接失败");
+            }
         } else {
             result.setCode(-1);
             result.setMsg("未知的数据源类型");
