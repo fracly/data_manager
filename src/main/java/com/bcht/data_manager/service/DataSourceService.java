@@ -2,6 +2,7 @@ package com.bcht.data_manager.service;
 
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
+import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataSourceMapper;
 import com.bcht.data_manager.utils.HDFSUtils;
 import com.bcht.data_manager.utils.HiveUtils;
@@ -25,9 +26,28 @@ public class DataSourceService extends BaseService {
     @Autowired
     private DataSourceMapper dataSourceMapper;
 
-    public int insert(DataSource dataSource) {
-        HiveUtils.createDatabase(dataSource);
-        return dataSourceMapper.insert(dataSource);
+    public Result insert(DataSource dataSource) {
+        Result result = new Result();
+        if(dataSource.getType() == DbType.HIVE.getIndex()) {
+            HiveUtils.createDatabase(dataSource); // create table if no exits
+            putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
+        } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
+            // do nothing, just need create table
+        } else if(dataSource.getType() == DbType.HDFS.getIndex()) {
+            boolean success = HDFSUtils.mkdir(dataSource, dataSource.getCategory1());
+            if(success) {
+                int count = dataSourceMapper.insert(dataSource);
+                if(count > 0) {
+                    putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
+                } else {
+                    putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
+                }
+            } else {
+                putMsg(result, Status.CUSTOM_FAILED, "HDFS目录存在且不为空");
+            }
+        }
+        return result;
     }
 
     public int update(DataSource dataSource) {

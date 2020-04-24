@@ -44,9 +44,7 @@ public class DataSourceController extends BaseController {
         dataSource.setDescription(description);
         dataSource.setCreatorId(loginUser.getId());
 
-        dataSourceService.insert(dataSource);
-        putMsg(result, Status.CUSTOM_SUCESSS, "新增数据源成功");
-        return result;
+        return dataSourceService.insert(dataSource);
     }
 
     /**
