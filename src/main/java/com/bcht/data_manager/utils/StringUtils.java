@@ -1,9 +1,9 @@
 package com.bcht.data_manager.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -36,5 +36,21 @@ public class StringUtils {
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    /**
+     * 对空间大小进行格式化
+     */
+    public static String byteFormat(long bytes) {
+        String[] units = new String[]{" B", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB"};
+        int unit = 1024;
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        double pre = 0;
+        if (bytes > 1024) {
+            pre = bytes / Math.pow(unit, exp);
+        } else {
+            pre = (double) bytes / (double) unit;
+        }
+        return String.format(Locale.ENGLISH, "%.2f%s", pre, units[(int) exp]);
     }
 }
