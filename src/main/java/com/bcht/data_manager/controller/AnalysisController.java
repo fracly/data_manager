@@ -126,7 +126,7 @@ public class AnalysisController extends BaseController {
         } else if (type == 180) {
             startDateTime = DateUtils.formatDate(DateUtils.nextDay(-180), DateUtils.DATETIME_FORMAT);
         }
-        List<Map<String, Object>> list = analysisService.dateTypePercentage(startDateTime, endDateTime);
+        List<Map<String, Object>> list = dataService.dateTypePercentage(startDateTime, endDateTime);
         result.setData(list);
         putMsg(result, Status.SUCCESS);
         return result;

@@ -7,6 +7,7 @@ import org.apache.ibatis.type.JdbcType;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data Mapper Interface
@@ -21,10 +22,10 @@ public interface DataMapper {
     int insert(@Param("data") Data data);
 
     @InsertProvider(type = DataMapperProvider.class, method = "insertDataSourceDataRelation")
-    int insertDataSourceDataRelation(@Param("dataId") int dataId, @Param("dataSourceId") int dataSourceId);
+    int insertDataSourceDataRelation(@Param("dataId") long dataId, @Param("dataSourceId") int dataSourceId);
 
     @InsertProvider(type = DataMapperProvider.class, method = "insertLabelDataRelation")
-    int insertLabelDataRelation(@Param("dataId") int dataId, @Param("labelId") int labelId);
+    int insertLabelDataRelation(@Param("dataId") long dataId, @Param("labelId") int labelId);
     /**
      * delete data
      */
@@ -54,25 +55,8 @@ public interface DataMapper {
     @SelectProvider(type = DataMapperProvider.class, method = "queryById")
     Data queryById(@Param("dataId") int dataId);
 
-    /**
-     * query by searchVal within name column
-     */
-    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-    })
-    @SelectProvider(type = DataMapperProvider.class, method = "queryByName")
-    List<Data> queryByName(@Param("name") String name);
-
-    @SelectProvider(type = DataMapperProvider.class, method = "queryByUserId")
-    List<Data> queryByUserId(@Param("userId") int userId);
+    @SelectProvider(type = DataMapperProvider.class, method = "groupByStatus")
+    List<Map<String, Object>> groupByStatus();
 
     @SelectProvider(type = DataMapperProvider.class, method = "queryDataIdsByLabel")
     List<Integer> queryDataIdsByLabel(@Param("labelId") int labelId);
@@ -109,31 +93,32 @@ public interface DataMapper {
             @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
     })
-    @SelectProvider(type = DataMapperProvider.class, method = "listByDataSource")
-    List<Data> listByDataSource(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize);
+    @SelectProvider(type = DataMapperProvider.class, method = "list")
+    List<Data> list(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize);
 
-    @SelectProvider(type = DataMapperProvider.class, method = "listByDataSourceTotal")
-    Integer listByDataSourceTotal(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId);
-
-
-    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-    })
-    @SelectProvider(type = DataMapperProvider.class, method = "listByUser")
-    List<Data> listByUser(@Param("creatorId") int creatorId, @Param("offset") int offset, @Param("pageSize") int pageSize);
-
-    @SelectProvider(type = DataMapperProvider.class, method = "listByUserTotal")
-    Integer listByUserTotal(@Param("creatorId") int creatorId);
-
+    @SelectProvider(type = DataMapperProvider.class, method = "listTotal")
+    Integer listTotal(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId);
 
     @SelectProvider(type = DataMapperProvider.class, method = "queryMaxId")
-    Integer queryMaxId();
+    Long queryMaxId();
+
+    /**
+     * for analysis dashboard
+     */
+    @Select("select DATE_FORMAT(start_time,'%Y-%m-%d') as dayStr, count(1) as total from t_data_manager_download_detail " +
+            "where start_time>=#{startDate} and start_time <=#{endDate} group by dayStr")
+    List<Map<String, Object>> countDownloadByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @Select("select DATE_FORMAT(create_time,'%Y-%m-%d') as dayStr, count(1) as total from t_data_manager_data " +
+            "where create_time>=#{startDate} and create_time <=#{endDate} group by dayStr")
+    List<Map<String, Object>> countIncreaseByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @Select("select a.name, count(b.data_id) as total from t_data_manager_label a inner join t_data_manager_relation_label_data b on a.id =b.label_id  " +
+            "inner join t_data_manager_data c on b.data_id =c.id where c.create_time>= #{startDate} and c.create_time <= #{endDate} group by a.name order by count(b.data_id) desc limit 7")
+    List<Map<String, Object>> countByLabel(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @SelectProvider(type = DataMapperProvider.class, method = "groupByType")
+    List<Map<String, Object>> dateTypePercentage(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+
 }

@@ -34,33 +34,34 @@ public class DataController extends BaseController {
 
     @Autowired
     private LabelService labelService;
-
+// User loginUser,
     @PostMapping("/create")
-    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser,Integer createMethod, Integer type, Integer dataSourceId,  String name, String createSql, String description, String labels) {
+//    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         Result result = new Result();
 
-        int method = MapUtils.getInt(parameter, "createMethod");
-        int type = MapUtils.getInt(parameter, "type");
-        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
-
-        String name = MapUtils.getString(parameter, "name");
-        String columns = MapUtils.getString(parameter, "columns");
-        String dataName = MapUtils.getString(parameter, "dataName");
-        String createSql = MapUtils.getString(parameter, "createSql");
-        String description = MapUtils.getString(parameter, "description");
-        String labels = MapUtils.getString(parameter, "labels");
+//        int method = MapUtils.getInt(parameter, "createMethod");
+//        int type = MapUtils.getInt(parameter, "type");
+//        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
+//
+//        String name = MapUtils.getString(parameter, "name");
+//        String columns = MapUtils.getString(parameter, "columns");
+//        String dataName = MapUtils.getString(parameter, "dataName");
+//        String createSql = MapUtils.getString(parameter, "createSql");
+//        String description = MapUtils.getString(parameter, "description");
+//        String labels = MapUtils.getString(parameter, "labels");
 
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
-
-        if (method == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
+        String dataName = "";
+        if (createMethod == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
             dataName = StringUtils.getTableName(createSql);
         } else {
-            createSql = StringUtils.composeCreateSql(dataSource.getCategory1(), dataName, columns);
+            createSql = StringUtils.composeCreateSql(dataSource.getCategory1(), dataName, null);
         }
         boolean isSuccess = HiveUtils.createTable(dataSource, createSql);
         if(isSuccess) {
-            Integer currentMaxId = dataService.queryMaxId();
-            Integer nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
+            Long currentMaxId = dataService.queryMaxId();
+            Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
             Data data = new Data();
             data.setId(nextId);
             data.setCreateTime(new Date());
@@ -114,15 +115,6 @@ public class DataController extends BaseController {
         return result;
     }
 
-    @GetMapping("/queryByName")
-    public Result queryByName(String name){
-        Result result = new Result();
-        List<Data> dataList = dataService.queryByName(name);
-        result.setData(dataList);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
     @GetMapping("/search")
     public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         Result result = new Result();
@@ -138,21 +130,14 @@ public class DataController extends BaseController {
         resultMap.put("pageSize", pageSize);
         result.setDataMap(resultMap);
         putMsg(result, Status.SUCCESS);
-        return result;
-    }
 
-    @GetMapping("/queryByUser")
-    public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Result result = new Result();
-        return result;
-    }
-
-    /**
-     * insert data
-     */
-    @PostMapping("/testConnection")
-    public Result testConnection(String name, int type, String ip, int port, String category1, String description) {
-        Result result = new Result();
+        // 记录用户的搜索行为
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(name)){
+            int count = dataService.log(loginUser.getId(), name);
+            if( count == 0) {
+                logger.error("记录查询日志失败！");
+            }
+        }
         return result;
     }
 
@@ -168,25 +153,27 @@ public class DataController extends BaseController {
     }
 
     @GetMapping("/detail")
-    public Result detail(int dataId) {
+    public Result detail(int dataSourceId, int dataId) {
         Result result = new Result();
-        List<Map<String, Object>> map = dataService.columnList(dataId);
+        List<Map<String, String>> map = dataService.detail(dataSourceId, dataId);
         result.setData(map);
         putMsg(result, Status.SUCCESS);
         return result;
     }
     @GetMapping("/listByDataSource")
-    public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int dataSourceId, int pageNo, int pageSize) {
+    public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize) {
         Result result = new Result();
-        List<Data> dataList;
-        int total;
-        if(dataSourceId != 0) {
-            dataList = dataService.listByDataSource(loginUser.getId(), dataSourceId, pageNo, pageSize);
-            total = dataService.listByDataSourceTotal(loginUser.getId(), dataSourceId);
-        } else {
-            dataList = dataService.listByUser(loginUser.getId(), pageNo, pageSize);
-            total = dataService.listByUserTotal(loginUser.getId());
+        if(pageNo == null || pageNo == 0) {
+            pageNo = 1;
         }
+        if(pageSize == null || pageSize == 0) {
+            pageSize = 10;
+        }
+        if(dataSourceId == null) {
+            dataSourceId = 0;
+        }
+        List<Data> dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize);
+        int total = dataService.listTotal(loginUser.getId(), dataSourceId);
         for(Data data : dataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);

@@ -102,20 +102,6 @@ public class DataMapperProvider {
         }.toString();
     }
 
-    /**
-     * query by name
-     */
-    public String queryByName(Map<String, Object> parameter) {
-        return new SQL() {
-            {
-                SELECT("*");
-                FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
-                WHERE("name like concat('%', #{name}, '%')");
-            }
-        }.toString();
-    }
-
     public String queryDataIdsByLabel(Map<String, Object> parameter) {
         return new SQL() {
             {
@@ -180,31 +166,48 @@ public class DataMapperProvider {
     /**
      * query data list by user id
      */
-    public String queryByUserId(Map<String, Object> parameter) {
+    public String groupByStatus(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("id, name, type, ip, port, category1, description, creatorId");
+                SELECT("status, count(1) as total");
                 FROM(DATA_TABLE_NAME);
-                WHERE("`creatorId` = #{userId}");
-
+                GROUP_BY("status");
             }
         }.toString();
     }
 
-    public String listByDataSource(Map<String, Object> parameter) {
+    public String groupByType(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("case type when 1 then  'Hive' when 2 then 'HBase' else 'HDFS' end as item,  count(1) as  count");
+                FROM(DATA_TABLE_NAME);
+                Object startDate = parameter.get("startDate");
+                if(startDate != null && StringUtils.isNotEmpty(startDate.toString())) {
+                    WHERE("`create_time` >= #{startDate}", "`create_time` <= #{endDate}");
+                }
+                GROUP_BY("type");
+                ORDER_BY("count(1) desc ");
+            }
+        }.toString();
+    }
+
+    public String list(Map<String, Object> parameter) {
         return new SQL() {
             {
                 SELECT("a.*");
                 FROM(DATA_TABLE_NAME + " a ");
                 INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
-                WHERE(" b.datasource_id = #{dataSourceId} ");
+                Object dataSourceId = parameter.get("dataSourceId");
+                if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
+                    WHERE(" b.datasource_id = #{dataSourceId} ");
+                }
                 WHERE(" a.creatorId = #{creatorId}");
                 ORDER_BY(" a.id desc limit #{offset}, #{pageSize}");
             }
         }.toString();
     }
 
-    public String listByDataSourceTotal(Map<String, Object> parameter) {
+    public String listTotal(Map<String, Object> parameter) {
         return new SQL() {
             {
                 SELECT("count(1)");
@@ -212,27 +215,6 @@ public class DataMapperProvider {
                 INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
                 WHERE(" b.datasource_id = #{dataSourceId} ");
                 WHERE(" a.creatorId = #{creatorId}");
-            }
-        }.toString();
-    }
-
-    public String listByUser(Map<String, Object> parameter) {
-        return new SQL() {
-            {
-                SELECT("*");
-                FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
-                ORDER_BY("update_time desc limit #{offset}, #{pageSize}");
-            }
-        }.toString();
-    }
-
-    public String listByUserTotal(Map<String, Object> parameter) {
-        return new SQL() {
-            {
-                SELECT("count(1)");
-                FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
             }
         }.toString();
     }
