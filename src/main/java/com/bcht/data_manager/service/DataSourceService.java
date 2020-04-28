@@ -4,6 +4,7 @@ import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataSourceMapper;
+import com.bcht.data_manager.utils.HBaseUtils;
 import com.bcht.data_manager.utils.HDFSUtils;
 import com.bcht.data_manager.utils.HiveUtils;
 import com.bcht.data_manager.utils.Result;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,10 +32,12 @@ public class DataSourceService extends BaseService {
         Result result = new Result();
         if(dataSource.getType() == DbType.HIVE.getIndex()) {
             HiveUtils.createDatabase(dataSource); // create table if no exits
+            dataSourceMapper.insert(dataSource);
             putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
         } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
+            // do nothing, just need create datasource
+            dataSourceMapper.insert(dataSource);
             putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
-            // do nothing, just need create table
         } else if(dataSource.getType() == DbType.HDFS.getIndex()) {
             boolean success = HDFSUtils.mkdir(dataSource, dataSource.getCategory1());
             if(success) {
@@ -60,6 +64,24 @@ public class DataSourceService extends BaseService {
 
     public DataSource queryById(int dataSourceId) {
         return dataSourceMapper.queryById(dataSourceId);
+    }
+
+    public Map<String, Long> groupByType() {
+        Map<String, Long>  result = new HashMap<>();
+        List<Map<String, Object>> list = dataSourceMapper.groupByType();
+        long totalCount = 0L;
+        for(Map<String, Object> map : list) {
+            if (map.get("type").toString().equals("1")) {
+                result.put(DbType.HIVE.getName(), Long.parseLong(map.get("total").toString()));
+            } else if (map.get("type").toString().equals("2")) {
+                result.put(DbType.HBASE.getName(), Long.parseLong(map.get("total").toString()));
+            } else {
+                result.put(DbType.HDFS.getName(), Long.parseLong(map.get("total").toString()));
+            }
+            totalCount += Long.parseLong(map.get("total").toString());
+        }
+        result.put("total", totalCount);
+        return result;
     }
 
     public List<DataSource> query(int userId, int type, String name) {

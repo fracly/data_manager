@@ -33,7 +33,6 @@ public class DataSourceController extends BaseController {
     @PostMapping("/create")
     public Result insert(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String ip, int port, String category1, String description) {
         logger.info("user {} is creating datasource using name {}", loginUser.getUsername(), name);
-        Result result = new Result();
 
         DataSource dataSource = new DataSource();
         dataSource.setIp(ip);
@@ -43,7 +42,6 @@ public class DataSourceController extends BaseController {
         dataSource.setType(type);
         dataSource.setDescription(description);
         dataSource.setCreatorId(loginUser.getId());
-
         return dataSourceService.insert(dataSource);
     }
 

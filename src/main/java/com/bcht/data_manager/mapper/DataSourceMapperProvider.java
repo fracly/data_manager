@@ -106,4 +106,17 @@ public class DataSourceMapperProvider {
             WHERE("creatorId = ${creatorId}");
         }}.toString();
     }
+
+    /**
+     * count datasource group by type
+     */
+    public String groupByType(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("type, count(1) as total");
+                FROM(DATASOURCE_TABLE_NAME);
+                GROUP_BY("type");
+            }
+        }.toString();
+    }
 }

@@ -67,6 +67,8 @@ public interface DataSourceMapper {
     @SelectProvider(type = DataSourceMapperProvider.class, method = "query")
     List<DataSource> query(@Param("userId") int userId, @Param("type") int type, @Param("name") String name);
 
+    @SelectProvider(type = DataSourceMapperProvider.class, method = "groupByType")
+    List<Map<String, Object>> groupByType();
 
     @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
     List<Map<String, Integer>> statistic(@Param("creatorId") int creatorId);
