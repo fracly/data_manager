@@ -60,9 +60,4 @@ public class AnalysisService extends BaseService {
         }
         return resultList;
     }
-
-    public List<Map<String, Object>> dateTypePercentage(String startDate, String endDate) {
-        return searchMapper.dateTypePercentage(startDate, endDate);
-    }
-
 }
