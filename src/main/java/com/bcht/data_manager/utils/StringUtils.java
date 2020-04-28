@@ -2,6 +2,7 @@ package com.bcht.data_manager.utils;
 
 import com.alibaba.fastjson.JSON;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class StringUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("create table " + database + "." + tableName + " (");
         List<Map> list = JSON.parseArray(columns, Map.class);
-        for (int i = 0; i < list.size(); i ++) {
+        for (int i = 0; i < list.size(); i++) {
             Map<String, String> map = list.get(i);
             sb.append(map.get("name") + " " + map.get("type") + " " + map.get("comment"));
         }
@@ -52,5 +53,22 @@ public class StringUtils {
             pre = (double) bytes / (double) unit;
         }
         return String.format(Locale.ENGLISH, "%.2f%s", pre, units[(int) exp]);
+    }
+
+    /**
+     * 除数 和 被除数 进行百分比输出
+     */
+    public static String getPercentage(Double divisor, Double dividend) {
+        if (dividend == null || divisor == null)
+            return null;
+        NumberFormat numberFormat = NumberFormat.getInstance();
+        // 设置精确到小数点后2位
+        numberFormat.setMaximumFractionDigits(2);
+        String result = numberFormat.format(divisor / dividend * 100) + "%";
+        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getPercentage((double)1,(double)3));
     }
 }
