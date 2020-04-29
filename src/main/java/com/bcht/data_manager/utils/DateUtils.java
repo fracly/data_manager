@@ -118,6 +118,9 @@ public class DateUtils {
         return DateFormatUtils.format(date, pattern);
     }
 
+    public static String getCurrentTime(String pattern) {
+        return formatDate(new Date(), pattern);
+    }
     /**
      * 获取日期时间字符串，默认格式为（yyyy-MM-dd）.
      * @param date 需要转化的日期时间

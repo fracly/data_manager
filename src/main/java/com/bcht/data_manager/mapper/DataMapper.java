@@ -22,7 +22,7 @@ public interface DataMapper {
     int insert(@Param("data") Data data);
 
     @InsertProvider(type = DataMapperProvider.class, method = "insertDataSourceDataRelation")
-    int insertDataSourceDataRelation(@Param("dataId") long dataId, @Param("dataSourceId") int dataSourceId);
+    int insertDataSourceDataRelation(@Param("dataId") long dataId, @Param("dataSourceId") long dataSourceId);
 
     @InsertProvider(type = DataMapperProvider.class, method = "insertLabelDataRelation")
     int insertLabelDataRelation(@Param("dataId") long dataId, @Param("labelId") int labelId);
@@ -31,6 +31,12 @@ public interface DataMapper {
      */
     @DeleteProvider(type = DataMapperProvider.class, method = "delete")
     int deleteById(@Param("dataId") int dataId);
+
+    @DeleteProvider(type = DataMapperProvider.class, method = "deleteDataSourceDataRelation")
+    int deleteDataSourceDataRelation(@Param("dataId") int dataId);
+
+    @DeleteProvider(type = DataMapperProvider.class, method = "deleteLabelDataRelation")
+    int deleteLabelDataRelation(@Param("dataId") int dataId);
 
     /**
      * update date
@@ -43,6 +49,7 @@ public interface DataMapper {
      */
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "dataName", column = "data_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
@@ -54,6 +61,17 @@ public interface DataMapper {
     })
     @SelectProvider(type = DataMapperProvider.class, method = "queryById")
     Data queryById(@Param("dataId") int dataId);
+
+    @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "ip", column = "ip", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "port", column = "port", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "category1", column = "category1", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "description", column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR)
+    })
+    @SelectProvider(type = DataMapperProvider.class, method = "queryDataSourceByDataId")
+    DataSource queryDataSourceByDataId(@Param("dataId") int dataId);
 
     @SelectProvider(type = DataMapperProvider.class, method = "groupByStatus")
     List<Map<String, Object>> groupByStatus();

@@ -12,6 +12,8 @@ public class DataMapperProvider {
 
     private static final String DATA_TABLE_NAME = "t_data_manager_data";
 
+    private static final String DATASOURCE_TABLE_NAME = "t_data_manager_datasource";
+
     private static final String DATASOURCE_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_datasource_data";
 
     public static final String LABEL_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_label_data";
@@ -71,6 +73,24 @@ public class DataMapperProvider {
         }.toString();
     }
 
+    public String deleteDataSourceDataRelation(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                DELETE_FROM(DATASOURCE_DATA_RELATION_TABLE_NAME);
+                WHERE("`data_id`=#{dataId}");
+            }
+        }.toString();
+    }
+
+    public String deleteLabelDataRelation(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                DELETE_FROM(LABEL_DATA_RELATION_TABLE_NAME);
+                WHERE("`data_id`=#{dataId}");
+            }
+        }.toString();
+    }
+
     /**
      * update data
      */
@@ -98,6 +118,19 @@ public class DataMapperProvider {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
                 WHERE("`id` = #{dataId}");
+            }
+        }.toString();
+    }
+
+    public String queryDataSourceByDataId(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("a.*");
+                FROM(DATASOURCE_TABLE_NAME + " a ");
+                INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.datasource_id ");
+                INNER_JOIN(DATA_TABLE_NAME + " c on b.data_id = c.id ");
+                WHERE("c.id = #{dataId}");
+                LIMIT(1);
             }
         }.toString();
     }

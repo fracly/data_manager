@@ -1,7 +1,9 @@
 package com.bcht.data_manager.service;
 
+import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
+import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataMapper;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static com.bcht.data_manager.utils.StringUtils.*;
+
 @Service
 public class DataService extends BaseService {
     public static final Logger logger = LoggerFactory.getLogger(DataService.class);
@@ -31,9 +35,51 @@ public class DataService extends BaseService {
 
     @Autowired
     private SearchMapper searchMapper;
+
     /**
-     * 数据的新增、同时维护两张关系表
+     * 创建Hive数据，即Hive表
+     *      方式1:直接通过SQL的方式执行
+     *      方式2: 拼接字段的方式，生成SQL再执行
      */
+    public void createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels) {
+        if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
+            tableName = getTableName(createSql);
+        } else if (createWay == Constants.CREATE_TABLE_METHOD_OF_COLUMN_COMPOSE){
+            createSql = composeCreateSql(dataSource.getCategory1(), tableName, columns);
+        }
+        HiveUtils.createTable(dataSource, createSql);
+        Long currentMaxId = queryMaxId();
+        Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
+        Data data = new Data();
+        data.setId(nextId);
+        data.setCreateTime(new Date());
+        data.setUpdateTime(new Date());
+        data.setCreatorId(loginUser.getId());
+        data.setName(name);
+        data.setStatus(0);
+        data.setType(DbType.HIVE.getIndex());
+        data.setDataName(tableName);
+        data.setDescription(description);
+        try{
+            insert(data);
+            insertDataSourceDataRelation(nextId, dataSource.getId());
+            String[] ids = labels.replace("[", "").replace("]", "").split(",");
+            for(String id : ids){
+                Integer idInt = Integer.parseInt(id.trim());
+                insertLabelDataRelation(nextId, idInt);
+            }
+        } catch(Exception e) {
+            logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
+        }
+    }
+
+
+    public void createHBaseData() {}
+    public void createHDFSData() {}
+
+
+
+
     public int insert(Data data) {
         return dataMapper.insert(data);
     }
@@ -42,7 +88,7 @@ public class DataService extends BaseService {
         return dataMapper.insertLabelDataRelation(dataId, labelId);
     }
 
-    public int insertDataSourceDataRelation(long dataId, int dataSourceId) {
+    public int insertDataSourceDataRelation(long dataId, long dataSourceId) {
         return dataMapper.insertDataSourceDataRelation(dataId, dataSourceId);
     }
 
@@ -52,6 +98,16 @@ public class DataService extends BaseService {
     public int deleteById(int dataId) {
         return dataMapper.deleteById(dataId);
     }
+
+    public int deleteDataSourceDataRelation(int dataId) {
+        return dataMapper.deleteDataSourceDataRelation(dataId);
+    }
+
+    public int deleteLabelDataRelation(int dataId) {
+        return dataMapper.deleteLabelDataRelation(dataId);
+    }
+
+
 
     /**
      * 数据的修改
@@ -102,6 +158,10 @@ public class DataService extends BaseService {
         return dataMapper.queryById(dataId);
     }
 
+    public DataSource queryDataSourceByDataId(int dataId) {
+        return dataMapper.queryDataSourceByDataId(dataId);
+    }
+
     public Long queryMaxId() {
         return dataMapper.queryMaxId();
     }
@@ -116,7 +176,7 @@ public class DataService extends BaseService {
         Data data = dataMapper.queryById(dataId);
         DataSource dataSource = dataSourceMapper.queryById(dataSourceId);
         if(data.getType() == DbType.HIVE.getIndex()) {
-            return HiveUtils.getTableColumns(dataSource.getIp(), dataSource.getPort(), dataSource.getCategory1(), data.getDataName());
+            return HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
         } else if(data.getType() == DbType.HBASE.getIndex()) {
 
         }

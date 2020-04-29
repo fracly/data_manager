@@ -4,11 +4,39 @@ import com.bcht.data_manager.entity.DataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 
 public class HDFSUtils {
+    private static Logger logger = LoggerFactory.getLogger(HDFSUtils.class);
+
+    private static FileSystem getDefaultFileSystem() {
+        Configuration configuration = new Configuration();
+        configuration.set("fs.defaultFS", PropertyUtils.getString("fs.defaultFS"));
+        FileSystem fs = null;
+        try{
+            FileSystem.get(configuration);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fs;
+    }
+
+    private static boolean closeFileSystem(FileSystem fs) {
+        try{
+            fs.close();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  false;
+    }
+
     public static boolean checkConnection(String ip, int port) {
         Configuration conf = new Configuration();
         String hdfsUrl = "hdfs://" + ip + ":" + port;
@@ -65,6 +93,33 @@ public class HDFSUtils {
                 fs.close();
             } catch (Exception e){}
         }
+    }
+
+    public static boolean copyHdfsToLocal(String srcHdfsFilePath, String dstFile, boolean deleteSource, boolean overwrite) {
+        Path srcPath = new Path(srcHdfsFilePath);
+        File dstPath = new File(dstFile);
+
+        if (dstPath.exists()) {
+            if (dstPath.isFile()) {
+                if (overwrite) {
+                    dstPath.delete();
+                }
+            } else {
+                logger.error("destination file must be a file");
+            }
+        }
+        if(!dstPath.getParentFile().exists()){
+            dstPath.getParentFile().mkdirs();
+        }
+        FileSystem fs = getDefaultFileSystem();
+        boolean result = false;
+        try{
+            return FileUtil.copy(fs, srcPath, dstPath, deleteSource, fs.getConf());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        closeFileSystem(fs);
+        return result;
     }
 
 

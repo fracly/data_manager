@@ -5,19 +5,26 @@ import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.Label;
 import com.bcht.data_manager.entity.User;
+import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.service.LabelService;
-import com.bcht.data_manager.utils.HiveUtils;
-import com.bcht.data_manager.utils.MapUtils;
-import com.bcht.data_manager.utils.Result;
-import com.bcht.data_manager.utils.StringUtils;
+import com.bcht.data_manager.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.*;
 
 
@@ -34,60 +41,36 @@ public class DataController extends BaseController {
 
     @Autowired
     private LabelService labelService;
-// User loginUser,
-    @PostMapping("/create")
-    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser,Integer createMethod, Integer type, Integer dataSourceId,  String name, String createSql, String description, String labels) {
-//    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
-        Result result = new Result();
 
-//        int method = MapUtils.getInt(parameter, "createMethod");
-//        int type = MapUtils.getInt(parameter, "type");
-//        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
-//
-//        String name = MapUtils.getString(parameter, "name");
-//        String columns = MapUtils.getString(parameter, "columns");
-//        String dataName = MapUtils.getString(parameter, "dataName");
-//        String createSql = MapUtils.getString(parameter, "createSql");
-//        String description = MapUtils.getString(parameter, "description");
-//        String labels = MapUtils.getString(parameter, "labels");
+    @PostMapping("/create")
+    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+        Result result = new Result();
+// , Integer dataSourceId, Integer type, Integer createMethod, String tableName,  String name, String createSql, String description, String labels
+        int method = MapUtils.getInt(parameter, "createMethod");
+        int type = MapUtils.getInt(parameter, "type");
+        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
+
+        String name = MapUtils.getString(parameter, "name");
+        String columns = MapUtils.getString(parameter, "columnList");
+        String tableName = MapUtils.getString(parameter, "tableName");
+        String createSql = MapUtils.getString(parameter, "createSql");
+        String description = MapUtils.getString(parameter, "description");
+        String labels = MapUtils.getString(parameter, "labels");
 
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
-        String dataName = "";
-        if (createMethod == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
-            dataName = StringUtils.getTableName(createSql);
+
+        // 数据的创建根据数据源的不同，创建方式也不同
+        if (type == DbType.HIVE.getIndex()) {
+            dataService.createHiveData(dataSource, loginUser, method, createSql, tableName, columns, name, description, labels);
+            putMsg(result, Status.SUCCESS);
+        } else if (type == DbType.HBASE.getIndex()) {
+            dataService.createHBaseData();
+            putMsg(result, Status.SUCCESS);
+        } else if (type == DbType.HDFS.getIndex()) {
+            String path = "/tmp/a.txt";
+            dataService.createHDFSData();
+            putMsg(result, Status.SUCCESS);
         } else {
-            createSql = StringUtils.composeCreateSql(dataSource.getCategory1(), dataName, null);
-        }
-        boolean isSuccess = HiveUtils.createTable(dataSource, createSql);
-        if(isSuccess) {
-            Long currentMaxId = dataService.queryMaxId();
-            Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
-            Data data = new Data();
-            data.setId(nextId);
-            data.setCreateTime(new Date());
-            data.setUpdateTime(new Date());
-            data.setCreatorId(loginUser.getId());
-            data.setName(name);
-            data.setStatus(0);
-            data.setType(type);
-            data.setDataName(dataName);
-            data.setDescription(description);
-            try{
-                dataService.insert(data);
-                dataService.insertDataSourceDataRelation(nextId, dataSourceId);
-                String[] ids = labels.replace("[", "").replace("]", "").split(",");
-                for(String id : ids){
-                    Integer idInt = Integer.parseInt(id.trim());
-                    dataService.insertLabelDataRelation(nextId, idInt);
-                }
-                putMsg(result, Status.SUCCESS);
-            } catch(Exception e) {
-                e.printStackTrace();
-                logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
-                putMsg(result, Status.FAILED);
-            }
-        } else {
-            logger.error("Hive表创建失败, 建表语句：{}" + createSql);
             putMsg(result, Status.FAILED);
         }
         return result;
@@ -147,8 +130,13 @@ public class DataController extends BaseController {
     @GetMapping("/delete")
     public Result delete(int id){
         Result result = new Result();
+        DataSource dataSource = dataService.queryDataSourceByDataId(id);
+        Data data = dataService.queryById(id);
+        HiveUtils.dropTable(dataSource, data.getDataName());
         dataService.deleteById(id);
-        putMsg(result, Status.SUCCESS);
+        dataService.deleteDataSourceDataRelation(id);
+        dataService.deleteLabelDataRelation(id);
+        putMsg(result, Status.CUSTOM_SUCESSS, "删除数据成功");
         return result;
     }
 
@@ -160,6 +148,7 @@ public class DataController extends BaseController {
         putMsg(result, Status.SUCCESS);
         return result;
     }
+
     @GetMapping("/listByDataSource")
     public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize) {
         Result result = new Result();
@@ -187,5 +176,64 @@ public class DataController extends BaseController {
 
         putMsg(result, Status.SUCCESS);
         return result;
+    }
+
+    @GetMapping("/download")
+    @ResponseBody
+    public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition) {
+        // 根据下载的文件类型来决定下载下来的格式，如果是HBase/Hive数据，下载成cvs文件，如果是HDFS文件，则直接从HDFS上拉取
+        Data data = dataService.queryById(dataId);
+        if(data.getType() == DbType.HDFS.getIndex()) {
+            // 直接从HDFS上下载文件
+            String hdfsFileName = data.getDataName();
+            String localFileName = FileUtils.getDownloadFilename(data.getName());
+            HDFSUtils.copyHdfsToLocal(hdfsFileName, localFileName, false, true);
+            try {
+                org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
+                if(file == null){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据文件不存在");
+                }
+                return ResponseEntity
+                            .ok()
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                            .body(file);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
+            }
+        } else if (data.getType() == DbType.HIVE.getIndex()) {
+            DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+            List<String> lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+            String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".cvs";
+            File localFile =  new File(localFileName);
+            if(!localFile.exists()) {
+                localFile.getParentFile().mkdirs();
+            }
+            try{
+                FileWriter fw = new FileWriter(localFileName);
+                for(int i = 0; i < lineList.size(); i ++) {
+                    fw.write(lineList.get(i));
+                }
+                fw.flush();
+                fw.close();
+            }catch (IOException e) {
+                logger.error("Hive数据写入本地文件失败" + e.getMessage());
+                e.printStackTrace();
+            }
+            try {
+                org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
+                if(file == null){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据文件下载失败");
+                }
+                return ResponseEntity
+                        .ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getFilename(),"UTF-8") + "\"")
+                        .body(file);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
+            }
+        } else {
+            // HBase 待补充
+            return null;
+        }
     }
 }

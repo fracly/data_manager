@@ -33,7 +33,7 @@ public class StringUtils {
         List<Map> list = JSON.parseArray(columns, Map.class);
         for (int i = 0; i < list.size(); i++) {
             Map<String, String> map = list.get(i);
-            sb.append(map.get("name") + " " + map.get("type") + " " + map.get("comment"));
+            sb.append(map.get("name") + " " + map.get("type") + " comment '" + map.get("comment") + "'");
         }
         sb.append(")");
         return sb.toString();

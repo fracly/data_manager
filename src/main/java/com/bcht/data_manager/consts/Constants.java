@@ -41,7 +41,21 @@ public final class Constants {
      * session timeout
      */
     public static final int SESSION_TIME_OUT = 7200;
+
+    /**
+     * uploadFileSize
+     */
     public static final int maxFileSize = 1024 * 1024 * 1024;
+
+    /**
+     * max download hive lines
+     */
+    public static final int maxDownloadHiveLines = 200000;
+
+    /**
+     * max preview hive lines
+     */
+    public static final int maxPreviewHiveLines = 100;
 
     /**
      * driver
@@ -60,4 +74,24 @@ public final class Constants {
      * external api data interface
      */
     public static final String CLOUDEAR_HDFS_NAMENODE_URL = "cloudera.hdfs.namenode.url";
+
+    /**
+     * data.basedir.path
+     */
+    public static final String DATA_BASEDIR_PATH = "data.basedir.path";
+
+    /**
+     * data.download.basedir.path
+     */
+    public static final String DATA_DOWNLOAD_BASEDIR_PATH = "data.download.basedir.path";
+
+    /**
+     * date format of yyyy-MM-dd HH:mm:ss
+     */
+    public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * date format of yyyyMMddHHmmss
+     */
+    public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
 }
