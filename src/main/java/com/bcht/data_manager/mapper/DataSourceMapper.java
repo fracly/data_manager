@@ -72,4 +72,7 @@ public interface DataSourceMapper {
 
     @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
     List<Map<String, Integer>> statistic(@Param("creatorId") int creatorId);
+
+    @Select("select * from t_data_manager_datasource where type = 2")
+    DataSource queryHBaseDataSource();
 }

@@ -51,6 +51,7 @@ public class DataSourceController extends BaseController {
     @PostMapping("/update")
     public Result update(int id, String name, int type, String ip, int port, String category1, String description) {
         logger.info("user {} is updating datasource using name {}",  name);
+
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(id);
         dataSource.setName(name);
