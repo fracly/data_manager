@@ -9,16 +9,15 @@ import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataMapper;
 import com.bcht.data_manager.mapper.DataSourceMapper;
 import com.bcht.data_manager.mapper.SearchMapper;
-import com.bcht.data_manager.utils.DateUtils;
-import com.bcht.data_manager.utils.HiveUtils;
-import com.bcht.data_manager.utils.MapUtils;
-import com.bcht.data_manager.utils.Result;
+import com.bcht.data_manager.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.bcht.data_manager.utils.StringUtils.*;
@@ -48,6 +47,36 @@ public class DataService extends BaseService {
             createSql = composeCreateSql(dataSource.getCategory1(), tableName, columns);
         }
         HiveUtils.createTable(dataSource, createSql);
+        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+    }
+
+    /**
+     * 创建Hbase表
+     */
+    public void createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels) {
+        try {
+            HBaseUtils.createTable(dataSource, tableName, columns);
+        } catch (IOException e) {
+            logger.error("创建Hbase表失败！" + e.getMessage());
+        }
+        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+
+    }
+
+    /**
+     * 创建HDFS文件，并上传
+     */
+    public void createHDFSData(DataSource dataSource, User loginUser, String localFileName, MultipartFile file, String name, String description, String labels) {
+        // 先将文件保存到本地
+        FileUtils.copyFile(file, localFileName);
+
+        // 然后通过本地上传至HDFS
+        String hdfsFilename = dataSource.getCategory1() + file.getOriginalFilename();
+        HDFSUtils.copyLocalToHdfs(localFileName, hdfsFilename, true, true);
+        store2Mysql(dataSource, loginUser, name, file.getOriginalFilename(), description, labels);
+    }
+
+    private void store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels) {
         Long currentMaxId = queryMaxId();
         Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
         Data data = new Data();
@@ -72,13 +101,6 @@ public class DataService extends BaseService {
             logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
         }
     }
-
-
-    public void createHBaseData() {}
-    public void createHDFSData() {}
-
-
-
 
     public int insert(Data data) {
         return dataMapper.insert(data);

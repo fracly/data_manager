@@ -4,6 +4,7 @@ import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataSourceMapper;
+import com.bcht.data_manager.utils.HBaseUtils;
 import com.bcht.data_manager.utils.HDFSUtils;
 import com.bcht.data_manager.utils.HiveUtils;
 import com.bcht.data_manager.utils.Result;
@@ -29,44 +30,28 @@ public class DataSourceService extends BaseService {
 
     /**
      * 创建数据源说明：
-     *      Hive可以对应有很多数据源，按照库进行划分
-     *      HDFS可以对应有很多数据源，按照目录划分
-     *      HBase只有一个数据源，默认为default, Hbase是以表为基础单位进行业务划分
+     *      Hive  => Database  划分业务
+     *      HDFS  => Directory 划分业务
+     *      HBase => NameSpace 划分业务
      */
     public Result insert(DataSource dataSource) {
         Result result = new Result();
         if(dataSource.getType() == DbType.HIVE.getIndex()) {
             HiveUtils.createDatabase(dataSource);
-            int count = dataSourceMapper.insert(dataSource);
-            if(count > 0) {
-                putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
-            } else {
-                putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
-            }
         } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
-            DataSource hbaseDataSource = dataSourceMapper.queryHBaseDataSource();
-            if(hbaseDataSource == null) {
-                int count = dataSourceMapper.insert(dataSource);
-                if(count > 0) {
-                    putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
-                } else {
-                    putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
-                }
-            } else {
-                putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败，已经存在HBase数据源，该类型只能存在一个");
-            }
+            HBaseUtils.createNameSpace(dataSource);
         } else if(dataSource.getType() == DbType.HDFS.getIndex()) {
             boolean success = HDFSUtils.mkdir(dataSource, dataSource.getCategory1());
-            if(success) {
-                int count = dataSourceMapper.insert(dataSource);
-                if(count > 0) {
-                    putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
-                } else {
-                    putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
-                }
-            } else {
+            if(!success) {
                 putMsg(result, Status.CUSTOM_FAILED, "HDFS目录存在且不为空");
+                return result;
             }
+        }
+        int count = dataSourceMapper.insert(dataSource);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
         }
         return result;
     }

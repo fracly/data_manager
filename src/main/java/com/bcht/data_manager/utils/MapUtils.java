@@ -2,6 +2,7 @@ package com.bcht.data_manager.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +31,14 @@ public class MapUtils {
         } else {
             return "";
         }
+    }
+
+    public static final MultipartFile getFile(Map<String, Object> map, String key) {
+        Object obj = map.get(key);
+        if(obj != null) {
+            return (MultipartFile) obj;
+        }
+        return null;
     }
 
     public static final String join(Set<Integer> set, String joinChar) {

@@ -7,11 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,6 +26,22 @@ import static com.bcht.data_manager.utils.PropertyUtils.getString;
 public class FileUtils {
     public static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
+
+    public static void copyFile(MultipartFile file, String destFilename) {
+        try {
+
+            File destFile = new File(destFilename);
+            File destParentDir = new File(destFile.getParent());
+
+            if (!destParentDir.exists()) {
+                org.apache.commons.io.FileUtils.forceMkdir(destParentDir);
+            }
+
+            Files.copy(file.getInputStream(), Paths.get(destFilename));
+        } catch (IOException e) {
+            logger.error(String.format("failed to copy file , {} is empty file", file.getOriginalFilename()), e);
+        }
+    }
 
     /**
      * file to resource

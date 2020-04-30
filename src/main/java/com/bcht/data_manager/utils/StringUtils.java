@@ -31,11 +31,7 @@ public class StringUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("create table " + database + "." + tableName + " (");
         List<Map> list = JSON.parseArray(columns, Map.class);
-        for (int i = 0; i < list.size(); i++) {
-            Map<String, String> map = list.get(i);
-            sb.append(map.get("name") + " " + map.get("type") + " comment '" + map.get("comment") + "'");
-        }
-        sb.append(")");
+        appendColumns(sb, list);
         return sb.toString();
     }
 
@@ -68,7 +64,16 @@ public class StringUtils {
         return result;
     }
 
-    public static void main(String[] args) {
-        System.out.println(getPercentage((double)1,(double)3));
+    /**
+     * 从查询结果拼接字段信息
+     */
+    public static void appendColumns(StringBuilder sb, List<Map> mapList) {
+        for (int i = 0; i < mapList.size(); i++) {
+            Map<String, String> map = mapList.get(i);
+            sb.append(map.get("name") + " " + map.get("type") + " comment '" + map.get("comment") + "'");
+            if(i != mapList.size() - 1) { sb.append(","); }
+        }
+        sb.append(")");
     }
+
 }

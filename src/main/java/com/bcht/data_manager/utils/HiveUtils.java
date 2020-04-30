@@ -54,21 +54,18 @@ public class HiveUtils {
             stmt = connection.createStatement();
             stmt.execute(createSql);
         } catch (Exception e){
+
             logger.error("创建表失败，报错信息" + e.getMessage());
         } finally {
             close(connection, stmt);
         }
     }
 
-    public static void addTableColumn(DataSource dataSource, String tableName, List<Map<String, String>> columns) {
+    public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns) {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = null;
         StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " add column (");
-        for(int i = 0; i < columns.size(); i ++) {
-            Map<String, String> columnInfo = columns.get(i);
-            alterTableSql.append(columnInfo.get("name") + " " + columnInfo.get("type") + " comment '" + columnInfo.get("comment") + "'");
-        }
-        alterTableSql.append(")");
+        StringUtils.appendColumns(alterTableSql, columns);
         try {
             stmt = connection.createStatement();
             stmt.execute(alterTableSql.toString());

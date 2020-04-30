@@ -122,5 +122,17 @@ public class HDFSUtils {
         return result;
     }
 
+    public static boolean copyLocalToHdfs(String srcFile, String dstHdfsPath, boolean deleteSource, boolean overwrite) {
+        Path srcPath = new Path(srcFile);
+        Path dstPath= new Path(dstHdfsPath);
+        FileSystem fs = getDefaultFileSystem();
+        try {
+            fs.copyFromLocalFile(deleteSource, overwrite, srcPath, dstPath);
+        } catch (IOException e) {
+            logger.error("上传文件失败" + e.getMessage());
+        }
+        return true;
+    }
+
 
 }

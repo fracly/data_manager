@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -45,7 +46,6 @@ public class DataController extends BaseController {
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         Result result = new Result();
-// , Integer dataSourceId, Integer type, Integer createMethod, String tableName,  String name, String createSql, String description, String labels
         int method = MapUtils.getInt(parameter, "createMethod");
         int type = MapUtils.getInt(parameter, "type");
         int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
@@ -56,6 +56,9 @@ public class DataController extends BaseController {
         String createSql = MapUtils.getString(parameter, "createSql");
         String description = MapUtils.getString(parameter, "description");
         String labels = MapUtils.getString(parameter, "labels");
+        String localAbsolutePath = MapUtils.getString(parameter, "localFilePath");
+
+        MultipartFile file = MapUtils.getFile(parameter, "file");
 
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
@@ -64,11 +67,10 @@ public class DataController extends BaseController {
             dataService.createHiveData(dataSource, loginUser, method, createSql, tableName, columns, name, description, labels);
             putMsg(result, Status.SUCCESS);
         } else if (type == DbType.HBASE.getIndex()) {
-            dataService.createHBaseData();
+            dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
             putMsg(result, Status.SUCCESS);
         } else if (type == DbType.HDFS.getIndex()) {
-            String path = "/tmp/a.txt";
-            dataService.createHDFSData();
+            dataService.createHDFSData(dataSource, loginUser, localAbsolutePath, file, name, description, labels);
             putMsg(result, Status.SUCCESS);
         } else {
             putMsg(result, Status.FAILED);
@@ -143,6 +145,8 @@ public class DataController extends BaseController {
     @GetMapping("/detail")
     public Result detail(int dataSourceId, int dataId) {
         Result result = new Result();
+        Data data = dataService.queryById(dataId);
+
         List<Map<String, String>> map = dataService.detail(dataSourceId, dataId);
         result.setData(map);
         putMsg(result, Status.SUCCESS);
@@ -200,9 +204,19 @@ public class DataController extends BaseController {
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
             }
-        } else if (data.getType() == DbType.HIVE.getIndex()) {
+        } else {
             DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-            List<String> lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+
+            List<String> lineList = null;
+            if(data.getType() == DbType.HIVE.getIndex()) {
+                lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+            } else {
+                try{
+                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
+                }catch (IOException e) {
+                    logger.error("查询HBase数据失败！" + e.getMessage());
+                }
+            }
             String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".cvs";
             File localFile =  new File(localFileName);
             if(!localFile.exists()) {
@@ -216,7 +230,7 @@ public class DataController extends BaseController {
                 fw.flush();
                 fw.close();
             }catch (IOException e) {
-                logger.error("Hive数据写入本地文件失败" + e.getMessage());
+                logger.error("查询数据写入本地文件失败" + e.getMessage());
                 e.printStackTrace();
             }
             try {
@@ -231,9 +245,6 @@ public class DataController extends BaseController {
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
             }
-        } else {
-            // HBase 待补充
-            return null;
         }
     }
 }
