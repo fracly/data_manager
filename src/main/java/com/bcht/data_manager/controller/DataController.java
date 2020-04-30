@@ -134,7 +134,13 @@ public class DataController extends BaseController {
         Result result = new Result();
         DataSource dataSource = dataService.queryDataSourceByDataId(id);
         Data data = dataService.queryById(id);
-        HiveUtils.dropTable(dataSource, data.getDataName());
+        if(data.getType() == DbType.HIVE.getIndex()) {
+            HiveUtils.dropTable(dataSource, data.getDataName());
+        } else if(data.getType() == DbType.HBASE.getIndex()) {
+            HBaseUtils.dropTable(dataSource, data.getDataName());
+        } else if (data.getType() == DbType.HDFS.getIndex()) {
+            HDFSUtils.deleteHDFSFile(dataSource, data.getDataName());
+        }
         dataService.deleteById(id);
         dataService.deleteDataSourceDataRelation(id);
         dataService.deleteLabelDataRelation(id);
@@ -143,12 +149,16 @@ public class DataController extends BaseController {
     }
 
     @GetMapping("/detail")
-    public Result detail(int dataSourceId, int dataId) {
+    public Result detail(int dataId) {
         Result result = new Result();
         Data data = dataService.queryById(dataId);
-
-        List<Map<String, String>> map = dataService.detail(dataSourceId, dataId);
-        result.setData(map);
+        if (data.getType() == DbType.HIVE.getIndex()) {
+            result.setData(dataService.hbaseDetail(dataId));
+        } else if (data.getType() == DbType.HBASE.getIndex()) {
+            result.setData(dataService.hbaseDetail(dataId));
+        } else if (data.getType() == DbType.HDFS.getIndex()) {
+            result.setData(dataService.hiveDetail(dataId));
+        }
         putMsg(result, Status.SUCCESS);
         return result;
     }
@@ -211,11 +221,7 @@ public class DataController extends BaseController {
             if(data.getType() == DbType.HIVE.getIndex()) {
                 lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
             } else {
-                try{
-                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
-                }catch (IOException e) {
-                    logger.error("查询HBase数据失败！" + e.getMessage());
-                }
+                lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
             }
             String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".cvs";
             File localFile =  new File(localFileName);

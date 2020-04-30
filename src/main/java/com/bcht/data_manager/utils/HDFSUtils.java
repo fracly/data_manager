@@ -2,15 +2,13 @@ package com.bcht.data_manager.utils;
 
 import com.bcht.data_manager.entity.DataSource;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class HDFSUtils {
     private static Logger logger = LoggerFactory.getLogger(HDFSUtils.class);
@@ -27,16 +25,6 @@ public class HDFSUtils {
         return fs;
     }
 
-    private static boolean closeFileSystem(FileSystem fs) {
-        try{
-            fs.close();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return  false;
-    }
-
     public static boolean checkConnection(String ip, int port) {
         Configuration conf = new Configuration();
         String hdfsUrl = "hdfs://" + ip + ":" + port;
@@ -50,9 +38,7 @@ public class HDFSUtils {
             e.printStackTrace();
             return false;
         } finally {
-            try{
-                fs.close();
-            } catch (Exception e){}
+            close(fs);
         }
     }
 
@@ -117,8 +103,9 @@ public class HDFSUtils {
             return FileUtil.copy(fs, srcPath, dstPath, deleteSource, fs.getConf());
         }catch (Exception e){
             e.printStackTrace();
+        }finally {
+            close(fs);
         }
-        closeFileSystem(fs);
         return result;
     }
 
@@ -130,9 +117,45 @@ public class HDFSUtils {
             fs.copyFromLocalFile(deleteSource, overwrite, srcPath, dstPath);
         } catch (IOException e) {
             logger.error("上传文件失败" + e.getMessage());
+        }finally {
+            close(fs);
         }
         return true;
     }
 
+    public static boolean deleteHDFSFile(DataSource dataSource, String fileName) {
+        FileSystem fs = getDefaultFileSystem();
+        try {
+            String absPath = dataSource.getCategory1() + "/" + fileName;
+            if(fs.exists(new Path(absPath))) {
+                return fs.delete(new Path(absPath), true);
+            }
+        } catch (IOException e) {
+            logger.error("删除HDFS文件失败！" + e.getMessage());
+        } finally {
+            close(fs);
+        }
+        return false;
+    }
 
+    public static ContentSummary getFileInfo(DataSource dataSource, String fileName) {
+        FileSystem fs = getDefaultFileSystem();
+        try {
+            return fs.getContentSummary(new Path(fileName));
+        } catch (IOException e) {
+            logger.error("查询文件内容总结失败！" + e.getMessage());
+        }
+        return null;
+    }
+
+    // 关闭资源
+    private static void close(FileSystem fs) {
+        if(fs != null) {
+            try {
+                fs.close();
+            } catch (IOException e) {
+                logger.error("关闭HDFS文件目录失败！" + e.getMessage());
+            }
+        }
+    }
 }

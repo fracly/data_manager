@@ -11,6 +11,7 @@ import com.bcht.data_manager.mapper.DataSourceMapper;
 import com.bcht.data_manager.mapper.SearchMapper;
 import com.bcht.data_manager.utils.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.ContentSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +55,7 @@ public class DataService extends BaseService {
      * 创建Hbase表
      */
     public void createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels) {
-        try {
-            HBaseUtils.createTable(dataSource, tableName, columns);
-        } catch (IOException e) {
-            logger.error("创建Hbase表失败！" + e.getMessage());
-        }
+        HBaseUtils.createTable(dataSource, tableName, columns);
         store2Mysql(dataSource, loginUser, name, tableName, description, labels);
 
     }
@@ -187,6 +184,7 @@ public class DataService extends BaseService {
     public Long queryMaxId() {
         return dataMapper.queryMaxId();
     }
+
     /**
      * 数据详情
      * 针对不同的数据类型，返回的数据格式有所差异
@@ -194,15 +192,22 @@ public class DataService extends BaseService {
      * Hive：    返回Hive表的字段信息，还可以添加字段
      * HBase:    返回HBase的字段族信息
      */
-    public List<Map<String, String>> detail(int dataSourceId, int dataId) {
+    public List<Map<String, String>> hiveDetail(int dataId) {
         Data data = dataMapper.queryById(dataId);
-        DataSource dataSource = dataSourceMapper.queryById(dataSourceId);
-        if(data.getType() == DbType.HIVE.getIndex()) {
-            return HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
-        } else if(data.getType() == DbType.HBASE.getIndex()) {
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+        return HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
+    }
 
-        }
-        return null;
+    public List<String> hbaseDetail(int dataId) {
+        Data data = dataMapper.queryById(dataId);
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+        return HBaseUtils.getTableColumnFamilyList(dataSource, data.getDataName());
+    }
+
+    public ContentSummary hdfsDetail(int dataId) {
+        Data data = dataMapper.queryById(dataId);
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+        return HDFSUtils.getFileInfo(dataSource, data.getDataName());
     }
 
     /**
@@ -284,8 +289,6 @@ public class DataService extends BaseService {
         putMsg(result, Status.SUCCESS);
         return result;
     }
-
-
 
     private String queryDataIdsByLabelId(String labels) {
        String dataIds = null;
