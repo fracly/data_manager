@@ -153,11 +153,11 @@ public class DataController extends BaseController {
         Result result = new Result();
         Data data = dataService.queryById(dataId);
         if (data.getType() == DbType.HIVE.getIndex()) {
-            result.setData(dataService.hbaseDetail(dataId));
+            result.setData(dataService.hiveDetail(dataId));
         } else if (data.getType() == DbType.HBASE.getIndex()) {
             result.setData(dataService.hbaseDetail(dataId));
         } else if (data.getType() == DbType.HDFS.getIndex()) {
-            result.setData(dataService.hiveDetail(dataId));
+            result.setData(dataService.hdfsDetail(dataId));
         }
         putMsg(result, Status.SUCCESS);
         return result;
