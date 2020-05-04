@@ -173,14 +173,24 @@ public class DataController extends BaseController {
         Result result = new Result();
         Data data = dataService.queryById(dataId);
         if (data.getType() == DbType.HIVE.getIndex()) {
-            result.setData(dataService.hiveDetail(dataId));
+            return dataService.hiveDetail(dataId);
         } else if (data.getType() == DbType.HBASE.getIndex()) {
-            result.setData(dataService.hbaseDetail(dataId));
+            return dataService.hbaseDetail(dataId);
         } else if (data.getType() == DbType.HDFS.getIndex()) {
-            result.setData(dataService.hdfsDetail(dataId));
+            return dataService.hdfsDetail(dataId);
         }
-        putMsg(result, Status.SUCCESS);
+        putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;
+    }
+
+    @GetMapping("/preview")
+    public Result preview(int dataId) {
+        Data data = dataService.queryById(dataId);
+        if(data.getType() == DbType.HDFS.getIndex()) {
+            return dataService.hdfsPreview(dataId);
+        } else {
+            return dataService.tablePreview(dataId);
+        }
     }
 
     @GetMapping("/listByDataSource")
@@ -246,7 +256,7 @@ public class DataController extends BaseController {
             List<String> lineList = null;
             if(data.getType() == DbType.HIVE.getIndex()) {
                 try{
-                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0);
                 } catch (SQLException e) {
                     logger.error("读取Hive表数据失败\n" + e.getMessage());
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
@@ -257,7 +267,7 @@ public class DataController extends BaseController {
 
             } else {
                 try{
-                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
+                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName(), Constants.maxDownloadRecord);
                 } catch (IOException e) {
                     logger.error("读取HBase数据失败\n" + e.getMessage());
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");

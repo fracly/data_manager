@@ -283,6 +283,50 @@ public class DataService extends BaseService {
         return result;
     }
 
+    public Result hdfsPreview(int dataId) {
+        Result result = new Result();
+        Data data = dataMapper.queryById(dataId);
+        List<String> list;
+        try{
+            list = HDFSUtils.previewFile(data.getDataName());
+            result.setData(list);
+            putMsg(result, Status.SUCCESS);
+        } catch (IOException e) {
+            putMsg(result, Status.HDFS_PREVIEW_FILE_DATA_FAILED);
+            logger.error("预览HDFS文件失败\n" + e.getMessage());
+        }
+        return result;
+    }
+
+    public Result tablePreview(int dataId) {
+        Result result = new Result();
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+        Data data = dataMapper.queryById(dataId);
+
+        List<String> list;
+        try{
+            if(dataSource.getType() == DbType.HIVE.getIndex()) {
+                list = HiveUtils.previewTableData(dataSource, data.getDataName());
+            } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
+                list = HBaseUtils.previewTableData(dataSource, data.getDataName());
+            } else{
+                list = null;
+            }
+            result.setData(list);
+            putMsg(result, Status.SUCCESS);
+        } catch (SQLException e) {
+            putMsg(result, Status.HIVE_PREVIEW_TABLE_DATA_FAILED);
+            logger.error("预览Hive表数据失败\n" + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+            logger.error("预览Hive表数据失败\n" + e.getMessage());
+        } catch (IOException e) {
+            putMsg(result, Status.HBASE_PREVIEW_TABLE_DATA_FAILED);
+            logger.error("预览Hive表数据失败\n" + e.getMessage());
+        }
+        return result;
+    }
+
     /**
      * for analysis dashboard
      */

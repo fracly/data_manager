@@ -1,5 +1,6 @@
 package com.bcht.data_manager.utils;
 
+import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
@@ -8,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class HDFSUtils {
@@ -115,6 +118,23 @@ public class HDFSUtils {
         ContentSummary contentSummary = fs.getContentSummary(new Path(fileName));
         close(fs);
         return contentSummary;
+    }
+
+    public static List<String> previewFile(String fileName) throws IOException {
+        List<String> result = new ArrayList<>();
+        FileSystem fs = getDefaultFileSystem();
+        FSDataInputStream fsDataInputStream;
+        Path path = new Path(fileName);
+        fsDataInputStream = fs.open(path);
+        String line;
+        int total = 1;
+        while((line = fsDataInputStream.readLine()) != null && total <= Constants.maxPreviewRecord) {
+            result.add(line);
+            total ++;
+        }
+        fsDataInputStream.close();
+        close(fs);
+        return result;
     }
 
     // 关闭资源

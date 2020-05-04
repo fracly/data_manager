@@ -1,5 +1,6 @@
 package com.bcht.data_manager.utils;
 
+import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -25,8 +26,8 @@ public class HBaseUtils {
 
     public static Connection getHBaseConnection(String ip, int port) throws IOException {
         Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", ip);
-        conf.set("hbase.zookeeper.property.clientPort", port + "");
+        conf.set(Constants.HBASE_ZOOKEEPER_QUOEUM, ip);
+        conf.set(Constants.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, port + "");
         Connection conn = ConnectionFactory.createConnection(conf);
         return conn;
     }
@@ -132,19 +133,30 @@ public class HBaseUtils {
     }
 
     // DML
-    public static List<String> downloadTableData(DataSource dataSource, String tableName) throws IOException {
+    public static List<String> downloadTableData(DataSource dataSource, String tableName, int limit) throws IOException {
         List<String> resultList = new ArrayList<>();
         Connection connection =  null;
         Table table = null;
-            connection = getHBaseConnection(dataSource);
-            table = connection.getTable(TableName.valueOf(tableName));
-            Scan scan = new Scan();
-            ResultScanner resultScanner = table.getScanner(scan);
-            for(Result result : resultScanner) {
+        connection = getHBaseConnection(dataSource);
+        table = connection.getTable(TableName.valueOf(tableName));
+        Scan scan = new Scan();
+        ResultScanner resultScanner = table.getScanner(scan);
+        if (limit == 0) { limit  = Constants.maxDownloadRecord; }
+        int counter = 1;
+        for(Result result : resultScanner) {
+            if(counter <= limit) {
                 resultList.add(result.toString());
+            } else {
+                break;
             }
-            close(connection, null, table);
+
+        }
+        close(connection, null, table);
         return  resultList;
+    }
+
+    public static List<String> previewTableData(DataSource dataSource, String tableName) throws IOException {
+        return downloadTableData(dataSource, tableName, Constants.maxPreviewRecord);
     }
 
     //关闭资源

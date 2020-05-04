@@ -54,12 +54,12 @@ public final class Constants {
     /**
      * max download hive lines
      */
-    public static final int maxDownloadHiveLines = 200000;
+    public static final int maxDownloadRecord = 200000;
 
     /**
      * max preview hive lines
      */
-    public static final int maxPreviewHiveLines = 100;
+    public static final int maxPreviewRecord = 10;
 
     /**
      * driver

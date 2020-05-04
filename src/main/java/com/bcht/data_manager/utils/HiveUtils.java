@@ -112,7 +112,7 @@ public class HiveUtils {
 
 
     //DML
-    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition) throws SQLException, ClassNotFoundException {
+    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition, int limit) throws SQLException, ClassNotFoundException {
         List<String> result = new ArrayList<>();
 
         Connection connection = getHiveConnection(dataSource);
@@ -130,7 +130,12 @@ public class HiveUtils {
         }
         result.add(firstLine.toString());
 
-        StringBuilder sql = new StringBuilder("select * from " + tableName + " limit " + Constants.maxDownloadHiveLines);
+        StringBuilder sql = new StringBuilder();
+        if (limit == 0) {
+            sql.append("select * from " + tableName + " limit " + Constants.maxDownloadRecord);
+        } else {
+            sql.append("select * from " + tableName + " limit " + limit);
+        };
 
         if(condition != null && org.apache.commons.lang3.StringUtils.isNotEmpty(condition)) {
             sql.append( " " + condition);
@@ -155,6 +160,9 @@ public class HiveUtils {
 
     }
 
+    public static List<String> previewTableData(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
+        return downloadTableData(dataSource,tableName, null, Constants.maxPreviewRecord);
+    }
     // 关闭资源
     private static void close(Connection connection, Statement stmt, ResultSet rs) {
         if(rs != null) {
