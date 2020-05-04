@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.mapper.SearchMapper;
 import com.bcht.data_manager.utils.HttpClient;
+import com.bcht.data_manager.utils.MapUtils;
 import com.bcht.data_manager.utils.PropertyUtils;
 import com.bcht.data_manager.utils.StringUtils;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,5 +61,19 @@ public class AnalysisService extends BaseService {
             tmp.put("userCount", 1);
         }
         return resultList;
+    }
+
+    public List<Map<String, Object>> searchCountByDay(String startDate, String endDate) {
+        List<Map<String, Object>> tmpList = searchMapper.searchCountByDay(startDate, endDate);
+        return MapUtils.formatMapList(tmpList);
+    }
+
+    public List<Map<String, Object>> searchUserByDay(String startDate, String endDate) {
+        List<Map<String, Object>> tmpList = searchMapper.searchUserByDay(startDate, endDate);
+        return MapUtils.formatMapList(tmpList);
+    }
+
+    public Integer searchUserTotal(String startDate, String endDate) {
+        return searchMapper.searchUserTotal(startDate, endDate);
     }
 }

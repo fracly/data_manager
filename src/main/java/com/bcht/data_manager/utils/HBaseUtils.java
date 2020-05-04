@@ -32,25 +32,36 @@ public class HBaseUtils {
     }
 
     //DDL
-    public static void createNameSpace(DataSource dataSource){
+    public static void createNameSpace(DataSource dataSource, String namespace) throws IOException {
         Connection conn = null;
         Admin admin = null;
-        try{
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
-            NamespaceDescriptor mkNameSpace = NamespaceDescriptor.create(dataSource.getCategory1()).build();
+            NamespaceDescriptor mkNameSpace = NamespaceDescriptor.create(namespace).build();
             admin.createNamespace(mkNameSpace);
-        }catch (IOException e) {
-            logger.error("删除Hbase表失败！" + e.getMessage());
-        }finally {
             close(conn, admin);
-        }
     }
 
-    public static void createTable(DataSource dataSource, String tableName, String columnFamilies) {
+    public static void createNameSpace(DataSource dataSource) throws IOException {
+        createNameSpace(dataSource, dataSource.getCategory1());
+    }
+
+    public static void dropNameSpace(DataSource dataSource, String namespace) throws IOException {
         Connection conn = null;
         Admin admin = null;
-        try{
+            conn = getHBaseConnection(dataSource);
+            conn.getAdmin();
+            admin.deleteNamespace(namespace);
+            close(conn, admin);
+    }
+
+    public static void dropNameSpace(DataSource dataSource) throws IOException {
+        dropNameSpace(dataSource, dataSource.getCategory1());
+    }
+
+    public static void createTable(DataSource dataSource, String tableName, String columnFamilies) throws IOException {
+        Connection conn = null;
+        Admin admin = null;
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
             TableDescriptorBuilder mk = TableDescriptorBuilder.newBuilder(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
@@ -62,35 +73,25 @@ public class HBaseUtils {
             }
             mk.setColumnFamilies(columnFamilyDescriptors);
             admin.createTable(mk.build());
-        }catch (IOException e) {
-            logger.error("删除Hbase表失败！" + e.getMessage());
-        }finally {
             close(conn, admin);
-        }
     }
 
-    public static void disableTable(DataSource dataSource, String tableName) {
+    public static void disableTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
         Admin admin = null;
-        try{
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
             TableName tb = TableName.valueOf(tableName);
             if(admin.tableExists(tb)) {
                 admin.disableTable(tb);
             }
-        }catch (IOException e) {
-            logger.error("删除Hbase表失败！" + e.getMessage());
-        } finally {
             close(conn, admin);
-        }
 
     }
 
-    public static void dropTable(DataSource dataSource, String tableName) {
+    public static void dropTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
         Admin admin = null;
-        try{
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
             TableName tb = TableName.valueOf(tableName);
@@ -98,18 +99,13 @@ public class HBaseUtils {
                 admin.disableTable(tb);
                 admin.deleteTable(tb);
             }
-        }catch (IOException e) {
-            logger.error("删除Hbase表失败！" + e.getMessage());
-        } finally {
             close(conn, admin);
-        }
 
     }
 
-    public static void addColumnFamily(DataSource dataSource, String tableName, String columnFamily) {
+    public static void addColumnFamily(DataSource dataSource, String tableName, String columnFamily) throws IOException {
         Connection conn = null;
         Admin admin = null;
-        try{
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
             TableName tb = TableName.valueOf(tableName);
@@ -117,18 +113,13 @@ public class HBaseUtils {
                 ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(columnFamily));
                 admin.addColumnFamily(tb, columnBuilder.build());
             }
-        }catch (IOException e) {
-            logger.error("Hbase添加ColumnFamily失败！" + e.getMessage());
-        } finally {
             close(conn, admin);
-        }
     }
 
-    public static List<String> getTableColumnFamilyList(DataSource dataSource, String tableName) {
+    public static List<String> getTableColumnFamilyList(DataSource dataSource, String tableName) throws IOException {
         List<String> list = new ArrayList<>();
         Connection conn = null;
         Table table = null;
-        try{
             conn = getHBaseConnection(dataSource);
             conn.getAdmin();
             table = conn.getTable(TableName.valueOf(tableName));
@@ -136,20 +127,15 @@ public class HBaseUtils {
             for(HColumnDescriptor fdescriptor : hTableDescriptor.getColumnFamilies()){
                 list.add(fdescriptor.getNameAsString());
             }
-        }catch (IOException e) {
-            logger.error("Hbase添加ColumnFamily失败！" + e.getMessage());
-        } finally {
             close(conn, null, table);
-        }
         return list;
     }
 
     // DML
-    public static List<String> downloadTableData(DataSource dataSource, String tableName) {
+    public static List<String> downloadTableData(DataSource dataSource, String tableName) throws IOException {
         List<String> resultList = new ArrayList<>();
         Connection connection =  null;
         Table table = null;
-        try{
             connection = getHBaseConnection(dataSource);
             table = connection.getTable(TableName.valueOf(tableName));
             Scan scan = new Scan();
@@ -157,16 +143,12 @@ public class HBaseUtils {
             for(Result result : resultScanner) {
                 resultList.add(result.toString());
             }
-        }catch (IOException e) {
-            logger.error("查询Hbase表失败" + e.getMessage());
-        } finally {
             close(connection, null, table);
-        }
         return  resultList;
     }
 
     //关闭资源
-    public static void close(Connection conn, Admin admin, Table table) {
+    public static void close(Connection conn, Admin admin, Table table) throws IOException {
         if(table != null) {
             try{
                 table.close();
@@ -177,7 +159,7 @@ public class HBaseUtils {
         close(conn, admin);
     }
 
-    public static void close(Connection conn, Admin admin) {
+    public static void close(Connection conn, Admin admin) throws IOException {
         if(admin != null) {
             try{
                 admin.close();
@@ -188,7 +170,7 @@ public class HBaseUtils {
         close(conn);
     }
 
-    public static void close(Connection conn) {
+    public static void close(Connection conn) throws IOException {
         if(conn != null) {
             try{
                 conn.close();

@@ -1,5 +1,6 @@
 package com.bcht.data_manager.service;
 
+import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
@@ -16,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,26 +37,8 @@ public class DataSourceService extends BaseService {
      *      HDFS  => Directory 划分业务
      *      HBase => NameSpace 划分业务
      */
-    public Result insert(DataSource dataSource) {
-        Result result = new Result();
-        if(dataSource.getType() == DbType.HIVE.getIndex()) {
-            HiveUtils.createDatabase(dataSource);
-        } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
-            HBaseUtils.createNameSpace(dataSource);
-        } else if(dataSource.getType() == DbType.HDFS.getIndex()) {
-            boolean success = HDFSUtils.mkdir(dataSource, dataSource.getCategory1());
-            if(!success) {
-                putMsg(result, Status.CUSTOM_FAILED, "HDFS目录存在且不为空");
-                return result;
-            }
-        }
-        int count = dataSourceMapper.insert(dataSource);
-        if(count > 0) {
-            putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
-        } else {
-            putMsg(result, Status.CUSTOM_FAILED, "创建数据源失败");
-        }
-        return result;
+    public int insert(DataSource dataSource) {
+        return dataSourceMapper.insert(dataSource);
     }
 
     public int update(DataSource dataSource) {
@@ -93,39 +78,50 @@ public class DataSourceService extends BaseService {
     public Result testConnection(int type, String ip, int port, String category1) {
         Result result = new Result();
         if (type == DbType.HIVE.getIndex()) {
-            Connection connection = HiveUtils.getHiveConnection(ip, port, category1);
-            if(connection != null) {
-                result.setMsg("Hive连接测试成功");
-                result.setCode(0);
-            } else {
-                result.setMsg("Hive连接测试失败");
-                result.setCode(-1);
+            Connection connection ;
+            try {
+                connection =  HiveUtils.getHiveConnection(ip, port, category1);
+                if(connection != null) {
+                    putMsg(result, Status.CUSTOM_SUCESSS, "HBase连接测试成功");
+                } else {
+                    putMsg(result, Status.HIVE_CONNECTION_TEST_FAILED);
+                }
+            } catch (SQLException e) {
+                putMsg(result, Status.HIVE_CONNECTION_TEST_FAILED);
+                logger.error("Hive连接测试失败\n" + e.getMessage());
+            } catch (ClassNotFoundException e) {
+                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+                logger.error("Hive连接测试失败\n" + e.getMessage());
             }
+            return result;
         } else if (type == DbType.HBASE.getIndex()) {
             Configuration configuration = HBaseConfiguration.create();
-            configuration.set("hbase.zookeeper.quorum", ip);
-            configuration.set("hbase.zookeeper.property.clientPort", port + "");
+            configuration.set(Constants.HBASE_ZOOKEEPER_QUOEUM, ip);
+            configuration.set(Constants.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, port + "");
             try{
                 HBaseAdmin.available(configuration);
-                result.setMsg("HBase连接成功");
-                result.setCode(0);
+                putMsg(result, Status.HBASE_CONNECTION_TEST_SUCCESS);
             }catch (Exception e) {
-                result.setMsg("HBase连接失败");
-                result.setCode(-1);
-                e.printStackTrace();
+                putMsg(result, Status.HBASE_CONNECTION_TEST_FAILED);
+                logger.error("HBase连接测试失败\n" + e.getMessage());
             }
+            return result;
         } else if (type == DbType.HDFS.getIndex()) {
-            boolean success = HDFSUtils.checkConnection(ip, port);
-            if(success) {
-                result.setCode(0);
-                result.setMsg("HDFS连接成功");
-            } else {
-                result.setCode(-1);
-                result.setMsg("HDFS连接失败");
+            try {
+                boolean success = HDFSUtils.checkConnection(ip, port);
+                if(success) {
+                    putMsg(result, Status.HDFS_CONNECTION_TEST_SUCCESS);
+                } else{
+                    putMsg(result, Status.HDFS_CONNECTION_TEST_FAILED);
+                    logger.error("HDFS连接测试失败");
+                }
+            } catch (IOException e) {
+                putMsg(result, Status.HDFS_CONNECTION_TEST_FAILED);
+                logger.error("HDFS连接测试失败\n" + e.getMessage());
             }
+            return result;
         } else {
-            result.setCode(-1);
-            result.setMsg("未知的数据源类型");
+            putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         }
         return result;
     }

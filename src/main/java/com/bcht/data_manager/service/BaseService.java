@@ -34,32 +34,6 @@ import java.util.Map;
 public class BaseService {
 
     /**
-     * check admin
-     *
-     * @param user
-     * @return
-     */
-    protected boolean isAdmin(User user) {
-        return user.getType() == UserType.ADMIN_USER.getValue();
-    }
-
-    /**
-     * check admin
-     *
-     * @param loginUser
-     * @param result
-     * @return
-     */
-    protected boolean checkAdmin(User loginUser, Map<String, Object> result) {
-        //only admin can operate
-        if (!isAdmin(loginUser)) {
-            putMsg(result, Status.USER_NO_OPERATION_PERM);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * put message to map
      *
      * @param result

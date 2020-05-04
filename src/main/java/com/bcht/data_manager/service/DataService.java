@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 import static com.bcht.data_manager.utils.StringUtils.*;
@@ -31,9 +32,6 @@ public class DataService extends BaseService {
     private DataMapper dataMapper;
 
     @Autowired
-    private DataSourceMapper dataSourceMapper;
-
-    @Autowired
     private SearchMapper searchMapper;
 
     /**
@@ -41,36 +39,76 @@ public class DataService extends BaseService {
      *      方式1:直接通过SQL的方式执行
      *      方式2: 拼接字段的方式，生成SQL再执行
      */
-    public void createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels) {
+    public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels) {
+        Result result = new Result();
         if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
             tableName = getTableName(createSql);
         } else if (createWay == Constants.CREATE_TABLE_METHOD_OF_COLUMN_COMPOSE){
             createSql = composeCreateSql(dataSource.getCategory1(), tableName, columns);
         }
-        HiveUtils.createTable(dataSource, createSql);
+        try{
+            HiveUtils.createTable(dataSource, createSql);
+        } catch (SQLException e) {
+            putMsg(result, Status.HIVE_CREATE_TABLE_FAILED);
+            logger.error("Hive创建表失败\n" + e.getMessage());
+            return result;
+        } catch (ClassNotFoundException e) {
+            putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+            logger.error("Hive创建表失败\n" + e.getMessage());
+            return result;
+        }
+
         store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+        putMsg(result, Status.CUSTOM_SUCESSS, "创建Hive表成功");
+        return result;
     }
 
     /**
      * 创建Hbase表
      */
-    public void createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels) {
-        HBaseUtils.createTable(dataSource, tableName, columns);
-        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels) {
+        Result result = new Result();
+        try{
+            HBaseUtils.createTable(dataSource, tableName, columns);
+        } catch (IOException e) {
+            putMsg(result, Status.HBASE_CREATE_TABLE_FAILED);
+            logger.error("删除Hbase表\n" + e.getMessage());
+            return result;
+        }
 
+        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+        putMsg(result, Status.CUSTOM_SUCESSS, "创建HBase表成功");
+        return result;
     }
 
     /**
      * 创建HDFS文件，并上传
      */
-    public void createHDFSData(DataSource dataSource, User loginUser, String localFileName, MultipartFile file, String name, String description, String labels) {
+    public Result createHDFSData(DataSource dataSource, User loginUser, String localFileName, MultipartFile file, String name, String description, String labels) {
+        Result result = new Result();
         // 先将文件保存到本地
-        FileUtils.copyFile(file, localFileName);
+        try{
+            FileUtils.copyFile(file, localFileName);
+        } catch (IOException e) {
+            putMsg(result, Status.HDFS_COPY_UPLOAD_TO_LOCAL_FAILED);
+            logger.error("上传文件复制到本地出错\n" + e.getMessage());
+            return result;
+        }
+
 
         // 然后通过本地上传至HDFS
         String hdfsFilename = dataSource.getCategory1() + file.getOriginalFilename();
-        HDFSUtils.copyLocalToHdfs(localFileName, hdfsFilename, true, true);
+        try{
+            HDFSUtils.copyLocalToHdfs(localFileName, hdfsFilename, true, true);
+        } catch (IOException e) {
+            putMsg(result, Status.HDFS_COPY_LOCAL_TO_HDFS_FAILED);
+            logger.error("本地文件上传到HDFS出错\n" + e.getMessage());
+            return result;
+        }
+
         store2Mysql(dataSource, loginUser, name, file.getOriginalFilename(), description, labels);
+        putMsg(result, Status.CUSTOM_SUCESSS, "创建HDFS文件成功");
+        return result;
     }
 
     private void store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels) {
@@ -192,22 +230,57 @@ public class DataService extends BaseService {
      * Hive：    返回Hive表的字段信息，还可以添加字段
      * HBase:    返回HBase的字段族信息
      */
-    public List<Map<String, String>> hiveDetail(int dataId) {
+    public Result hiveDetail(int dataId) {
+        Result result = new Result();
+        List<Map<String, String>> resultMapList;
         Data data = dataMapper.queryById(dataId);
         DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
-        return HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
+        try{
+            resultMapList = HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
+            result.setData(resultMapList);
+            putMsg(result, Status.CUSTOM_SUCESSS, "查询Hive数据详情成功");
+        } catch (SQLException e) {
+            putMsg(result, Status.HIVE_QUERY_HIVE_COLUMN_DETAIL_FAILED);
+            logger.error("查询Hive数据表详情失败\n" + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+            logger.error("查询Hive数据表详情失败\n" + e.getMessage());
+        }
+        return result;
     }
 
-    public List<String> hbaseDetail(int dataId) {
+    public Result hbaseDetail(int dataId) {
+        List<String> list ;
+        Result result = new Result();
+
         Data data = dataMapper.queryById(dataId);
         DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
-        return HBaseUtils.getTableColumnFamilyList(dataSource, data.getDataName());
+        try{
+            list = HBaseUtils.getTableColumnFamilyList(dataSource, data.getDataName());
+            result.setData(list);
+            putMsg(result, Status.CUSTOM_SUCESSS, "查询HBase数据详情成功");
+        } catch (IOException e) {
+            putMsg(result, Status.HBASE_QUERY_HBASE_COLUMN_FAMILY_DETAIL_FAILED);
+            logger.error("查询HBase数据表详情失败\n" + e.getMessage());
+        }
+        return result;
     }
 
-    public ContentSummary hdfsDetail(int dataId) {
+    public Result hdfsDetail(int dataId) {
+        ContentSummary contentSummary;
+        Result result = new Result();
+
         Data data = dataMapper.queryById(dataId);
         DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
-        return HDFSUtils.getFileInfo(dataSource, data.getDataName());
+        try{
+            contentSummary =  HDFSUtils.getFileInfo(dataSource, data.getDataName());
+            result.setData(contentSummary);
+            putMsg(result, Status.CUSTOM_SUCESSS, "查询HDFS数据详情成功");
+        } catch (IOException e) {
+            putMsg(result, Status.HDFS_QUERY_HDFS_FILE_DETAIL_FAILED);
+            logger.error("查询HDFS文件详情失败\n" + e.getMessage());
+        }
+        return result;
     }
 
     /**
@@ -262,15 +335,7 @@ public class DataService extends BaseService {
 
     public Result countIncreaseByDay(String startDate, String endDate) {
         Result result  = new Result();
-        List<Map<String, Object>> resultList = new ArrayList<>();
-        List<Map<String, Object>> tmpList = dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59");
-        for(Map<String, Object> map : tmpList) {
-            Map<String, Object> newMap = new HashMap<>();
-            newMap.put("x", map.get("dayStr").toString());
-            newMap.put("y", Long.parseLong(map.get("total").toString()));
-            resultList.add(newMap);
-        }
-        result.setData(resultList);
+        result.setData(MapUtils.formatMapList(dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59")));
         putMsg(result, Status.SUCCESS);
         return result;
     }

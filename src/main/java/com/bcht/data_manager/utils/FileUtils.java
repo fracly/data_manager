@@ -27,20 +27,15 @@ public class FileUtils {
     public static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
 
-    public static void copyFile(MultipartFile file, String destFilename) {
-        try {
+    public static void copyFile(MultipartFile file, String destFilename) throws IOException {
+        File destFile = new File(destFilename);
+        File destParentDir = new File(destFile.getParent());
 
-            File destFile = new File(destFilename);
-            File destParentDir = new File(destFile.getParent());
-
-            if (!destParentDir.exists()) {
-                org.apache.commons.io.FileUtils.forceMkdir(destParentDir);
-            }
-
-            Files.copy(file.getInputStream(), Paths.get(destFilename));
-        } catch (IOException e) {
-            logger.error(String.format("failed to copy file , {} is empty file", file.getOriginalFilename()), e);
+        if (!destParentDir.exists()) {
+            org.apache.commons.io.FileUtils.forceMkdir(destParentDir);
         }
+
+        Files.copy(file.getInputStream(), Paths.get(destFilename));
     }
 
     /**

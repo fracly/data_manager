@@ -29,10 +29,6 @@ public class SearchMapperProvider {
         }.toString();
     }
 
-
-    /**
-     * query by data id
-     */
     public String searchKeyword(Map<String, Object> parameter) {
         return new SQL() {
             {
@@ -41,6 +37,40 @@ public class SearchMapperProvider {
                 WHERE("`search_time` >= #{startDate}", "`search_time` <= #{endDate}");
                 GROUP_BY("keyword");
                 ORDER_BY("count(1) desc ");
+            }
+        }.toString();
+    }
+
+    public String searchCountByDay(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("DATE_FORMAT(search_time,'%Y-%m-%d') as dayStr, count(1) as total");
+                FROM(SEARCH_LOG_TABLE_NAME);
+                WHERE("`search_time` >= #{startDate}", "`search_time` <= #{endDate}");
+                GROUP_BY("DATE_FORMAT(search_time,'%Y-%m-%d')");
+                ORDER_BY("DATE_FORMAT(search_time,'%Y-%m-%d')");
+            }
+        }.toString();
+    }
+
+    public String searchUserByDay(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("DATE_FORMAT(search_time,'%Y-%m-%d') as dayStr, count(user_id) as total");
+                FROM(SEARCH_LOG_TABLE_NAME);
+                WHERE("`search_time` >= #{startDate}", "`search_time` <= #{endDate}");
+                GROUP_BY("DATE_FORMAT(search_time,'%Y-%m-%d')");
+                ORDER_BY("DATE_FORMAT(search_time,'%Y-%m-%d')");
+            }
+        }.toString();
+    }
+
+    public String searchUserTotal(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("count(distinct user_id) as total");
+                FROM(SEARCH_LOG_TABLE_NAME);
+                WHERE("`search_time` >= #{startDate}", "`search_time` <= #{endDate}");
             }
         }.toString();
     }

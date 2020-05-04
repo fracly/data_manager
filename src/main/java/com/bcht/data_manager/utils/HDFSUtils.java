@@ -13,33 +13,22 @@ import java.util.Map;
 public class HDFSUtils {
     private static Logger logger = LoggerFactory.getLogger(HDFSUtils.class);
 
-    private static FileSystem getDefaultFileSystem() {
+    private static FileSystem getDefaultFileSystem() throws IOException {
         Configuration configuration = new Configuration();
         configuration.set("fs.defaultFS", PropertyUtils.getString("fs.defaultFS"));
-        FileSystem fs = null;
-        try{
-            FileSystem.get(configuration);
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        FileSystem fs = FileSystem.get(configuration);
         return fs;
     }
 
-    public static boolean checkConnection(String ip, int port) {
+    public static boolean checkConnection(String ip, int port) throws IOException{
         Configuration conf = new Configuration();
         String hdfsUrl = "hdfs://" + ip + ":" + port;
         conf.set("fs.defaultFS", hdfsUrl);
-        FileSystem fs = null;
-        try {
-            fs = FileSystem.get(conf);
-            boolean exists = fs.exists(new Path("/"));
-            return exists;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            close(fs);
-        }
+        FileSystem fs = FileSystem.get(conf);
+        boolean exists = fs.exists(new Path("/"));
+        close(fs);
+        return exists;
+
     }
 
     /**
@@ -47,43 +36,40 @@ public class HDFSUtils {
      *  目录存在为空
      *  目录不存在，创建成功 都返回true
      */
-    public static boolean mkdir(DataSource dataSource, String path) {
-        Configuration conf = new Configuration();
-        String hdfsUrl = "hdfs://" + dataSource.getIp() + ":" + dataSource.getPort();
-        conf.set("fs.defaultFS", hdfsUrl);
-        Path p = new Path(path);
-        FileSystem fs = null;
-        try {
-            fs = FileSystem.get(conf);
-            boolean exists = fs.exists(p);
-            if(exists) {
-                boolean isDirecotory = fs.isDirectory(p);
-                if(isDirecotory) {
-                    FileStatus[] fileStatuses = fs.listStatus(p);
-                    if(fileStatuses.length != 0){
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }else {
-                    return false;
+    public static boolean mkdir(String path) throws IOException{
+        boolean result = false;
+        FileSystem fs = getDefaultFileSystem();
+        boolean exists = fs.exists(new Path(path));
+        if(exists) {
+            boolean isDirecotory = fs.isDirectory(new Path(path));
+            if(isDirecotory) {
+                FileStatus[] fileStatuses = fs.listStatus(new Path(path));
+                if(fileStatuses.length == 0){
+                    result = true;
                 }
-            } else {
-                return fs.mkdirs(p);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            try{
-                fs.close();
-            } catch (Exception e){}
+        } else {
+            result =  fs.mkdirs(new Path(path));
         }
+        close(fs);
+        return result;
     }
 
-    public static boolean copyHdfsToLocal(String srcHdfsFilePath, String dstFile, boolean deleteSource, boolean overwrite) {
+    public static boolean rmdir(String path) throws IOException{
+        boolean result = false;
+        FileSystem fs = getDefaultFileSystem();
+        Path p = new Path(path);
+        if (fs.exists(p)) {
+            result = fs.delete(p, false);
+        }
+        return result;
+    }
+
+    public static boolean copyHdfsToLocal(String srcHdfsFilePath, String dstFile, boolean deleteSource, boolean overwrite) throws IOException{
         Path srcPath = new Path(srcHdfsFilePath);
         File dstPath = new File(dstFile);
+
+        boolean result;
 
         if (dstPath.exists()) {
             if (dstPath.isFile()) {
@@ -98,54 +84,37 @@ public class HDFSUtils {
             dstPath.getParentFile().mkdirs();
         }
         FileSystem fs = getDefaultFileSystem();
-        boolean result = false;
-        try{
-            return FileUtil.copy(fs, srcPath, dstPath, deleteSource, fs.getConf());
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            close(fs);
-        }
+        result =  FileUtil.copy(fs, srcPath, dstPath, deleteSource, fs.getConf());
+        close(fs);
         return result;
     }
 
-    public static boolean copyLocalToHdfs(String srcFile, String dstHdfsPath, boolean deleteSource, boolean overwrite) {
+    public static boolean copyLocalToHdfs(String srcFile, String dstHdfsPath, boolean deleteSource, boolean overwrite) throws IOException {
+        boolean result = false;
         Path srcPath = new Path(srcFile);
         Path dstPath= new Path(dstHdfsPath);
         FileSystem fs = getDefaultFileSystem();
-        try {
-            fs.copyFromLocalFile(deleteSource, overwrite, srcPath, dstPath);
-        } catch (IOException e) {
-            logger.error("上传文件失败" + e.getMessage());
-        }finally {
-            close(fs);
-        }
+        fs.copyFromLocalFile(deleteSource, overwrite, srcPath, dstPath);
+        close(fs);
         return true;
     }
 
-    public static boolean deleteHDFSFile(DataSource dataSource, String fileName) {
+    public static boolean deleteHDFSFile(DataSource dataSource, String fileName) throws IOException {
+        boolean result = false;
         FileSystem fs = getDefaultFileSystem();
-        try {
-            String absPath = dataSource.getCategory1() + "/" + fileName;
-            if(fs.exists(new Path(absPath))) {
-                return fs.delete(new Path(absPath), true);
-            }
-        } catch (IOException e) {
-            logger.error("删除HDFS文件失败！" + e.getMessage());
-        } finally {
-            close(fs);
+        String absPath = dataSource.getCategory1() + "/" + fileName;
+        if(fs.exists(new Path(absPath))) {
+            result = fs.delete(new Path(absPath), true);
         }
-        return false;
+        close(fs);
+        return result;
     }
 
-    public static ContentSummary getFileInfo(DataSource dataSource, String fileName) {
+    public static ContentSummary getFileInfo(DataSource dataSource, String fileName) throws IOException {
         FileSystem fs = getDefaultFileSystem();
-        try {
-            return fs.getContentSummary(new Path(fileName));
-        } catch (IOException e) {
-            logger.error("查询文件内容总结失败！" + e.getMessage());
-        }
-        return null;
+        ContentSummary contentSummary = fs.getContentSummary(new Path(fileName));
+        close(fs);
+        return contentSummary;
     }
 
     // 关闭资源

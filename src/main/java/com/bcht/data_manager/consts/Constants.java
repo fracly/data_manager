@@ -29,6 +29,10 @@ public final class Constants {
 
     public static final String DEVELOPMENT = "";
 
+    /** zookeeper **/
+    public static final String HBASE_ZOOKEEPER_QUOEUM = "hbase.zookeeper.quorum";
+    public static final String HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT = "hbase.zookeeper.property.clientPort";
+
     /**
      * session user
      */

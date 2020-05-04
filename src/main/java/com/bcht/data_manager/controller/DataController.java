@@ -14,7 +14,6 @@ import com.bcht.data_manager.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +23,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -64,17 +66,13 @@ public class DataController extends BaseController {
 
         // 数据的创建根据数据源的不同，创建方式也不同
         if (type == DbType.HIVE.getIndex()) {
-            dataService.createHiveData(dataSource, loginUser, method, createSql, tableName, columns, name, description, labels);
-            putMsg(result, Status.SUCCESS);
+            return dataService.createHiveData(dataSource, loginUser, method, createSql, tableName, columns, name, description, labels);
         } else if (type == DbType.HBASE.getIndex()) {
-            dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
-            putMsg(result, Status.SUCCESS);
+            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
         } else if (type == DbType.HDFS.getIndex()) {
-            dataService.createHDFSData(dataSource, loginUser, localAbsolutePath, file, name, description, labels);
-            putMsg(result, Status.SUCCESS);
-        } else {
-            putMsg(result, Status.FAILED);
+            return dataService.createHDFSData(dataSource, loginUser, localAbsolutePath, file, name, description, labels);
         }
+        putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;
     }
 
@@ -135,11 +133,33 @@ public class DataController extends BaseController {
         DataSource dataSource = dataService.queryDataSourceByDataId(id);
         Data data = dataService.queryById(id);
         if(data.getType() == DbType.HIVE.getIndex()) {
-            HiveUtils.dropTable(dataSource, data.getDataName());
+            try{
+                HiveUtils.dropTable(dataSource, data.getDataName());
+            } catch (SQLException e) {
+                putMsg(result, Status.HIVE_DROP_TABLE_FAILED);
+                logger.error("删除Hive表失败\n" + e.getMessage());
+                return result;
+            } catch (ClassNotFoundException e) {
+                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+                logger.error("删除Hive数据表失败\n" + e.getMessage());
+                return result;
+            }
         } else if(data.getType() == DbType.HBASE.getIndex()) {
-            HBaseUtils.dropTable(dataSource, data.getDataName());
+            try{
+                HBaseUtils.dropTable(dataSource, data.getDataName());
+            } catch (IOException e) {
+                putMsg(result, Status.HBASE_DROP_TABLE_FAILED);
+                logger.error("删除HBase表失败\n" + e.getMessage());
+                return result;
+            }
         } else if (data.getType() == DbType.HDFS.getIndex()) {
-            HDFSUtils.deleteHDFSFile(dataSource, data.getDataName());
+            try{
+                HDFSUtils.deleteHDFSFile(dataSource, data.getDataName());
+            } catch (IOException e) {
+                putMsg(result, Status.HDFS_DELETE_FILE_FAILED);
+                logger.error("删除HDFS文件失败\n" + e.getMessage());
+                return result;
+            }
         }
         dataService.deleteById(id);
         dataService.deleteDataSourceDataRelation(id);
@@ -201,7 +221,13 @@ public class DataController extends BaseController {
             // 直接从HDFS上下载文件
             String hdfsFileName = data.getDataName();
             String localFileName = FileUtils.getDownloadFilename(data.getName());
-            HDFSUtils.copyHdfsToLocal(hdfsFileName, localFileName, false, true);
+            try{
+                HDFSUtils.copyHdfsToLocal(hdfsFileName, localFileName, false, true);
+            } catch (IOException e) {
+                logger.error("从HDFS上下载文件到本地失败\n" + e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("HDFS文件下载失败");
+            }
+
             try {
                 org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
                 if(file == null){
@@ -219,9 +245,23 @@ public class DataController extends BaseController {
 
             List<String> lineList = null;
             if(data.getType() == DbType.HIVE.getIndex()) {
-                lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+                try{
+                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition);
+                } catch (SQLException e) {
+                    logger.error("读取Hive表数据失败\n" + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
+                } catch (ClassNotFoundException e) {
+                    logger.error("数据驱动加载失败\n" + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据驱动加载失败");
+                }
+
             } else {
-                lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
+                try{
+                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName());
+                } catch (IOException e) {
+                    logger.error("读取HBase数据失败\n" + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");
+                }
             }
             String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".cvs";
             File localFile =  new File(localFileName);

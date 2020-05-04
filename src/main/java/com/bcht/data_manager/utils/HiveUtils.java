@@ -15,142 +15,104 @@ public class HiveUtils {
     public static final Logger logger = LoggerFactory.getLogger(HiveUtils.class);
 
     // 获取链接, 所以一切操作，都需要指定数据源
-    public static Connection getHiveConnection(DataSource dataSource) {
+    public static Connection getHiveConnection(DataSource dataSource) throws SQLException, ClassNotFoundException {
         return getHiveConnection(dataSource.getIp(), dataSource.getPort(), dataSource.getCategory1());
     }
 
-    public static Connection getHiveConnection(String ip, int port, String database) {
+    public static Connection getHiveConnection(String ip, int port, String database) throws SQLException, ClassNotFoundException {
 
         Connection connection = null;
-        try{
-            Class.forName(Constants.ORG_APACHE_HIVE_JDBC_HIVE_DRIVER);
-            connection = DriverManager.getConnection("jdbc:hive2://" + ip + ":" + port + "/" + database);
-        } catch (SQLException e) {
-            logger.error("获取链接失败！请检查JDBC URL" + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            logger.error("加载Hive驱动类失败，请确认jar包在classpath中" + e.getMessage());
-        }
+        Class.forName(Constants.ORG_APACHE_HIVE_JDBC_HIVE_DRIVER);
+        connection = DriverManager.getConnection("jdbc:hive2://" + ip + ":" + port + "/" + database);
         return connection;
     }
 
     // DDL
-    public static void createDatabase(DataSource dataSource) {
+    public static void createDatabase(DataSource dataSource, String database) throws SQLException, ClassNotFoundException {
         Connection conn =  getHiveConnection(dataSource);
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            stmt.execute("create database " + dataSource.getCategory1());
-        } catch (SQLException e) {
-            logger.error("创建数据库失败/或库已被创建，请检查库名" + e.getMessage());
-        } finally{
-            close(conn, stmt);
-        }
+        Statement stmt = conn.createStatement();
+        stmt.execute("create database " + database);
+        close(conn, stmt);
     }
 
-    public static void createTable(DataSource dataSource, String createSql) {
-        Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
-        try{
-            stmt = connection.createStatement();
-            stmt.execute(createSql);
-        } catch (Exception e){
-
-            logger.error("创建表失败，报错信息" + e.getMessage());
-        } finally {
-            close(connection, stmt);
-        }
+    public static void createDatabase(DataSource dataSource) throws SQLException, ClassNotFoundException {
+        createDatabase(dataSource, dataSource.getCategory1());
     }
 
-    public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns) {
+    public static void dropDatabase(DataSource dataSource, String database) throws SQLException, ClassNotFoundException {
+        Connection conn =  getHiveConnection(dataSource);
+        Statement stmt = conn.createStatement();
+        stmt.execute("drop database " + database);
+        close(conn, stmt);
+    }
+
+    public static void dropDatabase(DataSource dataSource) throws SQLException, ClassNotFoundException {
+        dropDatabase(dataSource, dataSource.getCategory1());
+    }
+
+    public static void createTable(DataSource dataSource, String createSql) throws SQLException, ClassNotFoundException {
         Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
+        Statement stmt = connection.createStatement();
+        stmt.execute(createSql);
+        close(connection, stmt);
+    }
+
+    public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns)  throws SQLException, ClassNotFoundException{
+        Connection connection = getHiveConnection(dataSource);
+        Statement stmt = connection.createStatement();
         StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " add column (");
         StringUtils.appendColumns(alterTableSql, columns);
-        try {
-            stmt = connection.createStatement();
-            stmt.execute(alterTableSql.toString());
-        } catch (SQLException e) {
-            logger.error("添加字段失败" + e.getMessage());
-        } finally{
-          close(connection, stmt);
-        }
+        stmt.execute(alterTableSql.toString());
+        close(connection, stmt);
     }
 
-    public static void dropTable(DataSource dataSource, String tableName) {
+    public static void dropTable(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
         Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
-        try{
-           stmt = connection.createStatement();
-           stmt.execute("drop table " + tableName);
-        } catch (SQLException e) {
-            logger.error("删除表失败" + e.getMessage());
-        } finally {
-            close(connection, stmt);
-        }
+        Statement stmt = connection.createStatement();
+        stmt.execute("drop table " + tableName);
+        close(connection, stmt);
     }
 
-    public static List<String> getDbTableList(DataSource dataSource) {
+    public static List<String> getDbTableList(DataSource dataSource) throws SQLException, ClassNotFoundException {
         List<String> result = new ArrayList<>();
         Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("show tables");
-            while (rs.next()) { result.add(rs.getString(1)); }
-        }catch (SQLException e) {
-            logger.error("查询数据库表清单失败" + e.getMessage());
-        }finally {
-            close(connection, stmt, rs);
-        }
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery("show tables");
+        while (rs.next()) { result.add(rs.getString(1)); }
+        close(connection, stmt, rs);
         return result;
 
     }
 
-    public static List<Map<String, String>> getTableColumnMapList(DataSource dataSource, String tableName) {
+    public static List<Map<String, String>> getTableColumnMapList(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
         List<Map<String, String>> columnList = new ArrayList<>();
         Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("desc " + tableName);
-            while (rs.next()) {
-                Map<String, String> m = new HashMap<>();
-                m.put("name", rs.getString(1));
-                m.put("type", rs.getString(2));
-                m.put("comment", rs.getString(3));
-                columnList.add(m);
-            }
-        }catch (SQLException e) {
-            logger.error("查询表字段信息失败" + e.getMessage());
-        }finally {
-            close(connection, stmt, rs);
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery("desc " + tableName);
+        while (rs.next()) {
+            Map<String, String> m = new HashMap<>();
+            m.put("name", rs.getString(1));
+            m.put("type", rs.getString(2));
+            m.put("comment", rs.getString(3));
+            columnList.add(m);
+        }
+        close(connection, stmt, rs);
+        return columnList;
+    }
+
+    public static List<String> getTableColumnNameList(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
+        List<String> columnList = new ArrayList<>();
+        List<Map<String, String>> mapList = getTableColumnMapList(dataSource, tableName);
+        for(Map<String, String> map : mapList) {
+            columnList.add(map.get("name"));
         }
         return columnList;
     }
 
-    public static List<String> getTableColumnNameList(DataSource dataSource, String tableName) {
-        List<String> columnList = new ArrayList<>();
-        Connection connection = getHiveConnection(dataSource);
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("desc " + tableName);
-            while (rs.next()) {
-                columnList.add(rs.getString(1));
-            }
-        }catch (SQLException e) {
-            logger.error("查询表字段信息失败" + e.getMessage());
-        }finally {
-            close(connection, stmt, rs);
-        }
-        return columnList;
-    }
+
 
     //DML
-    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition) {
+    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition) throws SQLException, ClassNotFoundException {
         List<String> result = new ArrayList<>();
 
         Connection connection = getHiveConnection(dataSource);
@@ -174,29 +136,21 @@ public class HiveUtils {
             sql.append( " " + condition);
         }
 
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(sql.toString());
-
-            while(rs.next()) {
-                StringBuilder row = new StringBuilder();
-                for(int i = 0; i < columnList.size(); i ++) {
-                    row.append(rs.getString(columnList.get(i)));
-                    if(i == (columnList.size() - 1)) {
-                        row.append("\n");
-                    } else {
-                        row.append(",");
-                    }
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(sql.toString());
+        while(rs.next()) {
+            StringBuilder row = new StringBuilder();
+            for(int i = 0; i < columnList.size(); i ++) {
+                row.append(rs.getString(columnList.get(i)));
+                if(i == (columnList.size() - 1)) {
+                    row.append("\n");
+                } else {
+                    row.append(",");
                 }
-                result.add(row.toString());
             }
-        } catch (SQLException e) {
-            logger.error("查询表数据失败" + e.getMessage());
-        } finally {
-            close(connection, stmt, rs);
+            result.add(row.toString());
         }
+        close(connection, stmt, rs);
         return result;
 
     }

@@ -23,4 +23,13 @@ public interface SearchMapper {
     @SelectProvider(type = SearchMapperProvider.class, method = "searchKeyword")
     List<Map<String, Object>> searchKeyword(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    @SelectProvider(type = SearchMapperProvider.class, method = "searchCountByDay")
+    List<Map<String, Object>> searchCountByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @SelectProvider(type = SearchMapperProvider.class, method = "searchUserByDay")
+    List<Map<String, Object>> searchUserByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    @SelectProvider(type = SearchMapperProvider.class, method = "searchUserTotal")
+    Integer searchUserTotal(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
 }

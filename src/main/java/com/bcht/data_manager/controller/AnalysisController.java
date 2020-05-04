@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @RestController
@@ -129,6 +127,51 @@ public class AnalysisController extends BaseController {
         List<Map<String, Object>> list = dataService.dateTypePercentage(startDateTime, endDateTime);
         result.setData(list);
         putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 搜索次数统计
+     */
+    @GetMapping("/search-count-by-day")
+    public Result searchCountByDay() {
+        Result result = new Result();
+        Map<String, Object> map = new HashMap<>();
+
+        String endDateTime = DateUtils.getDateTime();
+        Date date = DateUtils.nextDay(-30);
+        String startDateTime = DateUtils.formatDate(date, DateUtils.DATETIME_FORMAT);
+
+        List<Map<String, Object>> resultList = analysisService.searchCountByDay(startDateTime, endDateTime);
+        long total = 0L;
+
+        for(Map<String, Object> m : resultList) {
+            total += Long.parseLong(m.get("y").toString());
+        }
+        map.put("total", total);
+
+        result.setData(resultList);
+        result.setDataMap(map);
+        return result;
+    }
+
+    /**
+     * 搜索用户次数统计
+     */
+    @GetMapping("/search-user-by-day")
+    public Result searchUserByDay() {
+        Result result = new Result();
+        Map<String, Object> map = new HashMap<>();
+
+        String endDateTime = DateUtils.getDateTime();
+        Date date = DateUtils.nextDay(-30);
+        String startDateTime = DateUtils.formatDate(date, DateUtils.DATETIME_FORMAT);
+
+        List<Map<String, Object>> resultList = analysisService.searchUserByDay(startDateTime, endDateTime);
+        map.put("total", analysisService.searchUserTotal(startDateTime, endDateTime));
+
+        result.setData(resultList);
+        result.setDataMap(map);
         return result;
     }
 
