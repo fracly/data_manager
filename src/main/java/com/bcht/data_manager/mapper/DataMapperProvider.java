@@ -16,7 +16,7 @@ public class DataMapperProvider {
 
     private static final String DATASOURCE_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_datasource_data";
 
-    public static final String LABEL_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_label_data";
+    public  static final String LABEL_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_label_data";
 
     /**
      * insert data
@@ -100,9 +100,9 @@ public class DataMapperProvider {
                 UPDATE(DATA_TABLE_NAME);
                 SET("`name` = #{data.name}");
                 SET("`type` = #{data.type}");
-                SET("`ip` = #{data.ip}");
-                SET("`port` = #{data.port}");
-                SET("`category1` = #{data.category1}");
+                SET("`data_name` = #{data.dataName}");
+                SET("`creatorId` = #{data.creatorId}");
+                SET("`update_time` = #{data.updateTime}");
                 SET("`description` = #{data.description}");
                 WHERE("`id` = #{data.id}");
             }
@@ -254,7 +254,6 @@ public class DataMapperProvider {
             }
         }.toString();
     }
-
 
     public String queryMaxId(Map<String, Object> parameter) {
         return new SQL() {{
