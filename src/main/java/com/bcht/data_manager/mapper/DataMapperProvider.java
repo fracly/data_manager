@@ -246,7 +246,10 @@ public class DataMapperProvider {
                 SELECT("count(1)");
                 FROM(DATA_TABLE_NAME + " a ");
                 INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
-                WHERE(" b.datasource_id = #{dataSourceId} ");
+                Object dataSourceId = parameter.get("dataSourceId");
+                if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
+                    WHERE(" b.datasource_id = #{dataSourceId} ");
+                }
                 WHERE(" a.creatorId = #{creatorId}");
             }
         }.toString();
