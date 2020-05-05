@@ -60,7 +60,7 @@ public class HiveUtils {
     public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns)  throws SQLException, ClassNotFoundException{
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
-        StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " add column (");
+        StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " add columns (");
         StringUtils.appendColumns(alterTableSql, columns);
         stmt.execute(alterTableSql.toString());
         close(connection, stmt);
