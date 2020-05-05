@@ -89,6 +89,13 @@ public class DataController extends BaseController {
         return result;
     }
 
+    @PostMapping("/add-column")
+    public Result addColumn(@RequestBody Map<String, Object> parameter) {
+        int dataId = MapUtils.getInt(parameter, "dataId");
+        String columns = MapUtils.getString(parameter, "columns");
+        return dataService.addColumn(dataId, columns);
+    }
+
     @GetMapping("/queryById")
     public Result queryById(int id){
         Result result = new Result();

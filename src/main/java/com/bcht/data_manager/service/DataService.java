@@ -1,5 +1,8 @@
 package com.bcht.data_manager.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
@@ -121,7 +124,7 @@ public class DataService extends BaseService {
         data.setCreatorId(loginUser.getId());
         data.setName(name);
         data.setStatus(0);
-        data.setType(DbType.HIVE.getIndex());
+        data.setType(dataSource.getType());
         data.setDataName(tableName);
         data.setDescription(description);
         try{
@@ -164,7 +167,35 @@ public class DataService extends BaseService {
         return dataMapper.deleteLabelDataRelation(dataId);
     }
 
+    public Result addColumn(int dataId, String columns) {
+        Result result = new Result();
 
+        Data data = dataMapper.queryById(dataId);
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+
+        if(data.getType() != DbType.HIVE.getIndex()) {
+            putMsg(result, Status.CUSTOM_FAILED, "目前只支持Hive表进行字段的添加");
+            return result;
+        } else{
+            List<Map> list = JSON.parseArray(columns, Map.class);
+            try{
+                HiveUtils.addTableColumn(dataSource, data.getDataName(), list);
+            } catch (SQLException e) {
+                putMsg(result, Status.HIVE_TABLE_ADD_COLUMN_FAILED);
+                logger.error("Hive表添加字段失败！" + e.getMessage());
+                return result;
+            } catch (ClassNotFoundException e) {
+                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
+                logger.error("Hive驱动类加载失败！" + e.getMessage());
+                return result;
+            }
+
+            data.setUpdateTime(new Date());
+            dataMapper.update(data);
+        }
+        putMsg(result, Status.CUSTOM_SUCESSS, "添加字段成功");
+        return result;
+    }
 
     /**
      * 数据的修改

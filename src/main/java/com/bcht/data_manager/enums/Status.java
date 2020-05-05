@@ -35,6 +35,7 @@ public enum Status {
     HIVE_CREATE_TABLE_FAILED(10006, "Hive创建表失败"),
     HIVE_QUERY_HIVE_COLUMN_DETAIL_FAILED(10007, "查询Hive字段详情失败"),
     HIVE_DROP_TABLE_FAILED(10008, "HIVE表删除失败"),
+    HIVE_TABLE_ADD_COLUMN_FAILED(10009, "HIVE表添加字段失败"),
 
 
     // HBase 错误码
