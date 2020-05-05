@@ -121,8 +121,7 @@ public class HiveUtils {
         StringBuilder firstLine = new StringBuilder();
         for(int j = 0; j < columnList.size(); j ++) {
             firstLine.append(columnList.get(j));
-            if( j == (columnList.size() - 1))
-            if(j != columnList.size()) {
+            if(j == (columnList.size() - 1)) {
                 firstLine.append("\n");
             } else {
                 firstLine.append(",");
