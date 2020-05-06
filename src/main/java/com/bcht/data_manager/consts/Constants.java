@@ -124,6 +124,8 @@ public final class Constants {
 
     public static final Integer DB2 = 4;
 
+    public static final Integer FILE = 9;
+
     /**
      * job status
      */

@@ -144,7 +144,7 @@ public class DataCollectionController extends BaseController {
     }
 
     @PostMapping("/file")
-    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, MultipartFile file, long dataId, Integer inputType) {
+    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, MultipartFile file, long dataId, String inputType) {
         Result result = new Result();
 
 
@@ -153,7 +153,7 @@ public class DataCollectionController extends BaseController {
 
         Job job = new Job();
         job.setCreatorId(loginUser.getId());
-        job.setInputType(inputType);
+        job.setInputType(FILE);
         job.setOutputId(dataId);
         job.setOutputType(DbType.HIVE.getIndex());
         job.setStartTime(new Date());
