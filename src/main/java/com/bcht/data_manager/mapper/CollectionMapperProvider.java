@@ -19,15 +19,20 @@ public class CollectionMapperProvider {
                 SELECT("*");
                 FROM(IMPORT_LOG_TABLE_NAME);
                 WHERE("creatorId = #{creatorId}");
-                Object nameObj = parameter.get("name");
-                if(nameObj != null && StringUtils.isNotEmpty(nameObj.toString())) {
-                    WHERE("name like concat('%', #{name}, '%')");
-                }
                 int status = Integer.parseInt(parameter.get("status").toString());
-                if (status != 0) {
+                if (status != 999) {
                     WHERE(" status = #{status}" );
                 }
-                ORDER_BY("start_time");
+                ORDER_BY("start_time desc");
+            }
+        }.toString();
+    }
+
+    public String jobDelete(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                DELETE_FROM(IMPORT_LOG_TABLE_NAME);
+                WHERE("`id`=#{id}");
             }
         }.toString();
     }

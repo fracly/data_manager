@@ -113,6 +113,8 @@ public class DataCollectionController extends BaseController {
 
         String command = SqoopUtils.importRDBSToHive(inputType, ip, port, database, table, username, password);
 
+        Data data = dataService.queryById(outputId);
+
         // 记录执行历史
         Job job = new Job();
         job.setCreatorId(loginUser.getId());
@@ -122,6 +124,7 @@ public class DataCollectionController extends BaseController {
         job.setOutputType(DbType.HIVE.getIndex());
         job.setStartTime(new Date());
         job.setType(DB2HIVE);
+        job.setOutputName(data.getDataName());
 
         Process process = null;
         StringBuilder output = new StringBuilder();
@@ -155,6 +158,7 @@ public class DataCollectionController extends BaseController {
         job.setOutputType(DbType.HIVE.getIndex());
         job.setStartTime(new Date());
         job.setType(FILE2HIVE);
+        job.setOutputName(data.getDataName());
 
         String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
 
@@ -188,11 +192,24 @@ public class DataCollectionController extends BaseController {
     }
 
     @GetMapping("/job-list")
-    public Result jobList(@RequestAttribute(value = SESSION_USER) User loginUser, String name, int status) {
+    public Result jobList(@RequestAttribute(value = SESSION_USER) User loginUser, int status) {
         Result result = new Result();
-        List<Map<String, Object>> list = collectionMapper.jobList(loginUser.getId(), name, status);
+        List<Job> list = collectionMapper.jobList(loginUser.getId(), status);
         result.setData(list);
         putMsg(result, Status.SUCCESS);
         return result;
     }
+
+    @GetMapping("/job-delete")
+    public Result jobDelete(@RequestAttribute(value = SESSION_USER) User loginUser, int id) {
+        Result result = new Result();
+        int count = collectionMapper.jobDelete(id);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "删除成功");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "删除失败");
+        }
+        return result;
+    }
+
 }

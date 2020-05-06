@@ -15,6 +15,8 @@ public class Job {
 
     private long outputId;
 
+    private String outputName;
+
     private Date startTime;
 
     private Date endTime;
@@ -69,6 +71,14 @@ public class Job {
 
     public void setOutputId(long outputId) {
         this.outputId = outputId;
+    }
+
+    public String getOutputName() {
+        return outputName;
+    }
+
+    public void setOutputName(String outputName) {
+        this.outputName = outputName;
     }
 
     public Date getStartTime() {
