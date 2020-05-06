@@ -93,12 +93,12 @@ public class LabelMapperProvider {
         }.toString();
     }
 
-    public String queryByName(Map<String, Object> parameter) {
+    public String queryDataCountById(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("*");
-                FROM(LABEL_TABLE_NAME);
-                WHERE("name like concat('%', #{labelName}, '%')");
+                SELECT("count(1)");
+                FROM(RELATION_LABEL_DATA_TABLE_NAME);
+                WHERE("label_id=#{labelId}");
             }
         }.toString();
     }

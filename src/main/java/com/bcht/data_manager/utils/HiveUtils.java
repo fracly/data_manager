@@ -162,6 +162,13 @@ public class HiveUtils {
     public static List<String> previewTableData(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
         return downloadTableData(dataSource,tableName, null, Constants.maxPreviewRecord);
     }
+
+    public static void loadDataFromLocalFile(DataSource dataSource, String tableName, String localFilePath) throws SQLException, ClassNotFoundException {
+        Connection connection = getHiveConnection(dataSource);
+        Statement stmt = connection.createStatement();
+        stmt.execute("load data local inpath '" + localFilePath +"'");
+        close(connection, stmt);
+    }
     // 关闭资源
     private static void close(Connection connection, Statement stmt, ResultSet rs) {
         if(rs != null) {

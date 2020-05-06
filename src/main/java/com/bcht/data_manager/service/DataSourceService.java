@@ -49,7 +49,7 @@ public class DataSourceService extends BaseService {
         return dataSourceMapper.deleteById(dataSourceId);
     }
 
-    public DataSource queryById(int dataSourceId) {
+    public DataSource queryById(long dataSourceId) {
         return dataSourceMapper.queryById(dataSourceId);
     }
 

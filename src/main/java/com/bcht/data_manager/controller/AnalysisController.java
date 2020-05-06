@@ -156,7 +156,7 @@ public class AnalysisController extends BaseController {
     }
 
     /**
-     * 搜索用户次数统计
+     * 搜索用户数统计
      */
     @GetMapping("/search-user-by-day")
     public Result searchUserByDay() {

@@ -55,6 +55,9 @@ public class LabelService extends BaseService {
         return labelMapper.queryById(labelId);
     }
 
+    public int queryDataCountById(int labelId) {
+        return labelMapper.queryDataCountById(labelId);
+    }
     public List<Label> queryByDataId(long dataId) {
         return labelMapper.queryByDataId(dataId);
     }

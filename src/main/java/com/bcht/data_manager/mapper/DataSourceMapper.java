@@ -50,7 +50,7 @@ public interface DataSourceMapper {
             @Result(property = "description", column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR)
     })
     @SelectProvider(type = DataSourceMapperProvider.class, method = "queryById")
-    DataSource queryById(@Param("dataSourceId") int dataSourceId);
+    DataSource queryById(@Param("dataSourceId") long dataSourceId);
 
     /**
      * query datasource list by user id

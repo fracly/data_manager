@@ -71,7 +71,7 @@ public interface DataMapper {
             @Result(property = "description", column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR)
     })
     @SelectProvider(type = DataMapperProvider.class, method = "queryDataSourceByDataId")
-    DataSource queryDataSourceByDataId(@Param("dataId") int dataId);
+    DataSource queryDataSourceByDataId(@Param("dataId") long dataId);
 
     @SelectProvider(type = DataMapperProvider.class, method = "groupByStatus")
     List<Map<String, Object>> groupByStatus();

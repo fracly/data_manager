@@ -87,9 +87,10 @@ public class DataService extends BaseService {
     /**
      * 创建HDFS文件，并上传
      */
-    public Result createHDFSData(DataSource dataSource, User loginUser, String localFileName, MultipartFile file, String name, String description, String labels) {
+    public Result createHDFSData(DataSource dataSource, User loginUser, MultipartFile file, String name, String description, String labels) {
         Result result = new Result();
         // 先将文件保存到本地
+        String localFileName = FileUtils.getUploadFilename(file.getName());
         try{
             FileUtils.copyFile(file, localFileName);
         } catch (IOException e) {
@@ -246,7 +247,7 @@ public class DataService extends BaseService {
         return dataMapper.queryById(dataId);
     }
 
-    public DataSource queryDataSourceByDataId(int dataId) {
+    public DataSource queryDataSourceByDataId(long dataId) {
         return dataMapper.queryDataSourceByDataId(dataId);
     }
 

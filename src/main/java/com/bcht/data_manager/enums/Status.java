@@ -60,6 +60,19 @@ public enum Status {
     HDFS_PREVIEW_FILE_DATA_FAILED(30009, "预览HDFS文件失败"),
 
     UNKOWN_DATASOURCE_TYPE(90001, "未知的数据源类型"),
+
+    SQLSERVER_JDBC_DRIVER_CLASS_NOT_FOUNT(11001, "SqlServer驱动类没有找到"),
+    MYSQL_JDBC_DRIVER_CLASS_NOT_FOUNT(11002, "Mysql驱动类没有找到"),
+    ORACLE_JDBC_DRIVER_CLASS_NOT_FOUNT(11003, "Oracle驱动类没有找到"),
+    DB2_JDBC_DRIVER_CLASS_NOT_FOUNT(11004, "DB2驱动类没有找到"),
+
+    GET_INPUT_DATASOURCE_FAILED(11005, "获取输入源连接失败"),
+    NOT_FOUND_TABLE_IN_THIS_DATABASE(11006, "在该数据库中没有找到该表"),
+
+    // 数据采集相关
+    EXECUTE_SHELL_FAILED(12001, "shell脚本执行失败"),
+    FILE_UPLOAD_FAILED(12002, "文件上传至服务器本地失败"),
+    LOAD_LOCAL_FILE_TO_HIVE_TABLE_FAILED(12003, "本地文件上传至Hive表失败-load data local"),
     ;
 
     private int code;

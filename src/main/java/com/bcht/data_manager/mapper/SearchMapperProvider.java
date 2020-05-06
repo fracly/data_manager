@@ -56,7 +56,7 @@ public class SearchMapperProvider {
     public String searchUserByDay(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("DATE_FORMAT(search_time,'%Y-%m-%d') as dayStr, count(user_id) as total");
+                SELECT("DATE_FORMAT(search_time,'%Y-%m-%d') as dayStr, count(distinct user_id) as total");
                 FROM(SEARCH_LOG_TABLE_NAME);
                 WHERE("`search_time` >= #{startDate}", "`search_time` <= #{endDate}");
                 GROUP_BY("DATE_FORMAT(search_time,'%Y-%m-%d')");

@@ -85,6 +85,10 @@ public class FileUtils {
         return String.format("%s/%s/%s", getString(DATA_DOWNLOAD_BASEDIR_PATH), DateUtils.getCurrentTime(YYYYMMDDHHMMSS), filename);
     }
 
+    public static String getUploadFilename(String filename) {
+        return String.format("%s/%s/%s", getString(DATA_UPLOAD_BASEDIR_PATH), DateUtils.getCurrentTime(YYYYMMDDHHMMSS), filename);
+    }
+
     /**
      * get upload file absolute path and name
      *
@@ -379,6 +383,4 @@ public class FileUtils {
             throw new RuntimeException(e);
         }
     }
-
-
 }

@@ -66,6 +66,15 @@ public final class Constants {
      */
     public static final String ORG_APACHE_HIVE_JDBC_HIVE_DRIVER = "org.apache.hive.jdbc.HiveDriver";
 
+    public static final String COM_MYSQL_JDBC_DRIVER = "com.mysql.jdbc.Driver";
+
+    public static final String COM_ORACLE_JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
+
+    public static final String COM_SQLSERVER_JDBC_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+
+    public static final String COM_DB2_JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
+
+
     /**
      * create hive table method
      */
@@ -90,6 +99,11 @@ public final class Constants {
     public static final String DATA_DOWNLOAD_BASEDIR_PATH = "data.download.basedir.path";
 
     /**
+     * data.upload.basedir.path
+     */
+    public static final String DATA_UPLOAD_BASEDIR_PATH = "data.upload.basedir.path";
+
+    /**
      * date format of yyyy-MM-dd HH:mm:ss
      */
     public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
@@ -98,4 +112,15 @@ public final class Constants {
      * date format of yyyyMMddHHmmss
      */
     public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
+
+    /**
+     * collection resource type
+     */
+    public static final String MYSQL = "mysql";
+
+    public static final String ORACLE = "oracle";
+
+    public static final String SQLSERVER = "sqlserver";
+
+    public static final String DB2 = "db2";
 }

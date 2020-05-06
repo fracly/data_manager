@@ -77,11 +77,17 @@ public class LabelController extends BaseController {
     public Result delete(int labelId) {
         logger.info("deleting label using id {}", labelId);
         Result result = new Result();
+        int count = labelService.queryDataCountById(labelId);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_FAILED, "不可删除正在使用的标签");
+            return result;
+        }
         boolean isSuccess = labelService.delete(labelId);
+
         if(isSuccess) {
-            putMsg(result, Status.SUCCESS);
+            putMsg(result, Status.CUSTOM_SUCESSS, "删除标签成功");
         } else {
-            putMsg(result, Status.FAILED);
+            putMsg(result, Status.CUSTOM_FAILED, "删除标签失败");
         }
         return result;
     }

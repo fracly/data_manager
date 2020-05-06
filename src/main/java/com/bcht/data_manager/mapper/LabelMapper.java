@@ -41,14 +41,8 @@ public interface LabelMapper {
     @SelectProvider(type = LabelMapperProvider.class, method = "countData")
     int countData(@Param("labelId") int labelId);
 
-    @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
-            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-            @Result(property = "total", column = "total", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
-    })
-    @SelectProvider(type = LabelMapperProvider.class, method = "queryByName")
-    List<Label> queryByName(@Param("labelName") String labelName);
+    @SelectProvider(type = LabelMapperProvider.class, method = "queryDataCountById")
+    Integer queryDataCountById(@Param("labelId") int labelId);
 
 
     @InsertProvider(type = LabelMapperProvider.class, method = "insert")
