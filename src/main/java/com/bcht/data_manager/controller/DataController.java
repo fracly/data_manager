@@ -217,6 +217,9 @@ public class DataController extends BaseController {
         for(Data data : dataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
+            DataSource dataSource = dataService.queryDataSourceByDataId(data.getId());
+            data.setDataSourceId(dataSource.getId());
+            data.setDataSourceName(dataSource.getName());
         }
         result.setData(dataList);
 
@@ -280,7 +283,7 @@ public class DataController extends BaseController {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");
                 }
             }
-            String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".cvs";
+            String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".csv";
             File localFile =  new File(localFileName);
             if(!localFile.exists()) {
                 localFile.getParentFile().mkdirs();
