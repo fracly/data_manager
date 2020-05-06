@@ -34,6 +34,10 @@ public class Data {
 
     private String destroyTime;
 
+    private long dataSourceId;
+
+    private String dataSourceName;
+
     private List<Label> labelList;
 
     public long getId() {
@@ -140,6 +144,22 @@ public class Data {
         this.labelList = labelList;
     }
 
+    public long getDataSourceId() {
+        return dataSourceId;
+    }
+
+    public void setDataSourceId(long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    public void setDataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+    }
+
     @Override
     public String toString() {
         return "Data{" +
@@ -155,6 +175,8 @@ public class Data {
                 ", status=" + status +
                 ", destroyMethod=" + destroyMethod +
                 ", destroyTime='" + destroyTime + '\'' +
+                ", dataSourceId=" + dataSourceId +
+                ", dataSourceName='" + dataSourceName + '\'' +
                 ", labelList=" + labelList +
                 '}';
     }
