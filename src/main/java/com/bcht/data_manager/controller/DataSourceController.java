@@ -268,11 +268,30 @@ public class DataSourceController extends BaseController {
     }
 
     @GetMapping("/tree")
-    public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+    public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer type) {
         Result result = new Result();
         List<Map<String, Object>> resultList = new ArrayList();
 
-        for(DbType dbType : DbType.values()) {
+        if(type == null || type == 0) {
+            for(DbType dbType : DbType.values()) {
+                Map map = new HashMap();
+                map.put("key", "key-0" + dbType.getIndex());
+                map.put("title", dbType.getName());
+                map.put("value", 1);
+                List<DataSource> hiveList = dataSourceService.query(loginUser.getId(), dbType.getIndex(), null);
+                List<Map> hiveChildren = new ArrayList<>();
+                for (DataSource dataSource : hiveList) {
+                    Map<String, Object> tmp = new HashMap();
+                    tmp.put("key", "key-0" + dbType.getIndex() + "-" + dataSource.getId());
+                    tmp.put("title", dataSource.getName());
+                    tmp.put("value", dataSource.getId());
+                    hiveChildren.add(tmp);
+                }
+                map.put("children", hiveChildren);
+                resultList.add(map);
+            }
+        } else {
+            DbType dbType = DbType.valueOf(type);
             Map map = new HashMap();
             map.put("key", "key-0" + dbType.getIndex());
             map.put("title", dbType.getName());
@@ -289,6 +308,7 @@ public class DataSourceController extends BaseController {
             map.put("children", hiveChildren);
             resultList.add(map);
         }
+
         result.setData(resultList);
         putMsg(result, Status.SUCCESS);
         return result;

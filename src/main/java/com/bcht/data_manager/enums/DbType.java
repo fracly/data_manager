@@ -21,4 +21,13 @@ public enum DbType {
     public int getIndex() {
         return index;
     }
+
+    public static DbType valueOf(int idx) {
+        for(DbType dbType : DbType.values()) {
+            if(dbType.getIndex() == idx) {
+                return dbType;
+            }
+        }
+        return null;
+    }
 }
