@@ -212,6 +212,7 @@ public class DataService extends BaseService {
     public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         int offset = 0;
         if (pageNo > 1) { offset = (pageNo - 1) * 10; }
+
         return dataMapper.search(creatorId, name, type, queryDataIdsByLabelId(labels), offset, pageSize, startDate, endDate);
     }
 

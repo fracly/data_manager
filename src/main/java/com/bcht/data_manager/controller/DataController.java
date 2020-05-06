@@ -116,14 +116,14 @@ public class DataController extends BaseController {
     }
 
     @GetMapping("/search")
-    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
+    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startTime, String endTime) {
         Result result = new Result();
-        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startDate, endDate);
+        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startTime, endTime);
         for(Data data : targetDataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
         }
-        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startDate, endDate);
+        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startTime, endTime);
         result.setData(targetDataList);
         Map resultMap = new HashMap();
         resultMap.put("total", total);

@@ -50,7 +50,7 @@ public class LabelService extends BaseService {
     }
 
     public boolean insertDataLabelRelation(int labelId, long dataId) {
-        int count = labelMapper.deleteLabelDataRelation(labelId, dataId);
+        int count = labelMapper.insertLabelDataRelation(labelId, dataId);
         if(count > 0) {
             return true;
         }
