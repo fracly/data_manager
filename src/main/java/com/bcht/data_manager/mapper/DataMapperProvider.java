@@ -146,22 +146,22 @@ public class DataMapperProvider {
     }
 
     public String search(Map<String, Object> parameter) {
-        System.out.println(new SQL() {
+        String sql = new SQL() {
             {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
+                WHERE("creatorId = " + parameter.get("creatorId").toString());
                 Object name = parameter.get("name");
                 if(name != null && StringUtils.isNotEmpty(name.toString())) {
-                    WHERE("name like concat('%', #{name}, '%')");
+                    WHERE("name like concat('%', " + parameter.get("name").toString() + ", '%')");
                 }
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if (type != 0) {
-                    WHERE(" type = #{type}" );
+                    WHERE(" type =" + type);
                 }
                 Object dataIds = parameter.get("dataIds");
                 if (dataIds != null && StringUtils.isNotEmpty(dataIds.toString())) {
-                    WHERE(" id in (#{dataIds})");
+                    WHERE(" id in (" + dataIds + ")");
                 }
                 Object startDate = parameter.get("startDate");
                 Object endDate = parameter.get("endDate");
@@ -169,35 +169,10 @@ public class DataMapperProvider {
                         StringUtils.isNotEmpty(startDate.toString()) && StringUtils.isNotEmpty(endDate.toString())) {
                     WHERE(" create_time >= '" + startDate.toString() + "' and create_time <= '" + endDate.toString() + "'");
                 }
-                ORDER_BY("update_time limit #{offset}, #{pageSize}");
-            }
-        }.toString());
-        return new SQL() {
-            {
-                SELECT("*");
-                FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
-                Object name = parameter.get("name");
-                if(name != null && StringUtils.isNotEmpty(name.toString())) {
-                    WHERE("name like concat('%', #{name}, '%')");
-                }
-                int type = Integer.parseInt(parameter.get("type").toString());
-                if (type != 0) {
-                    WHERE(" type = #{type}" );
-                }
-                Object dataIds = parameter.get("dataIds");
-                if (dataIds != null && StringUtils.isNotEmpty(dataIds.toString())) {
-                    WHERE(" id in (#{dataIds})");
-                }
-                Object startDate = parameter.get("startDate");
-                Object endDate = parameter.get("endDate");
-                if(startDate != null && endDate != null &&
-                        StringUtils.isNotEmpty(startDate.toString()) && StringUtils.isNotEmpty(endDate.toString())) {
-                    WHERE(" create_time >= '" + startDate.toString() + "' and create_time <= '" + endDate.toString() + "'");
-                }
-                ORDER_BY("update_time limit #{offset}, #{pageSize}");
+                ORDER_BY("update_time limit " + parameter.get("offset").toString() + ", " + parameter.get("pageSize"));
             }
         }.toString();
+        return sql;
     }
 
     public String searchTotal(Map<String, Object> parameter) {

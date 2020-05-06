@@ -247,10 +247,11 @@ public class DataController extends BaseController {
     public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition) {
         // 根据下载的文件类型来决定下载下来的格式，如果是HBase/Hive数据，下载成cvs文件，如果是HDFS文件，则直接从HDFS上拉取
         Data data = dataService.queryById(dataId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
         if(data.getType() == DbType.HDFS.getIndex()) {
             // 直接从HDFS上下载文件
-            String hdfsFileName = data.getDataName();
-            String localFileName = FileUtils.getDownloadFilename(data.getName());
+            String hdfsFileName = dataSource.getCategory1() + File.separator + data.getDataName();
+            String localFileName = FileUtils.getDownloadFilename(data.getDataName());
             try{
                 HDFSUtils.copyHdfsToLocal(hdfsFileName, localFileName, false, true);
             } catch (IOException e) {
@@ -265,14 +266,12 @@ public class DataController extends BaseController {
                 }
                 return ResponseEntity
                             .ok()
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getFilename(),"UTF-8") + "\"")
                             .body(file);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
             }
         } else {
-            DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-
             List<String> lineList = null;
             if(data.getType() == DbType.HIVE.getIndex()) {
                 try{

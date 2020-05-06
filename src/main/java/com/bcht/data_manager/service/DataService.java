@@ -15,6 +15,7 @@ import com.bcht.data_manager.mapper.SearchMapper;
 import com.bcht.data_manager.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.tomcat.util.bcel.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class DataService extends BaseService {
     public Result createHDFSData(DataSource dataSource, User loginUser, MultipartFile file, String name, String description, String labels) {
         Result result = new Result();
         // 先将文件保存到本地
-        String localFileName = FileUtils.getUploadFilename(file.getName());
+        String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
         try{
             FileUtils.copyFile(file, localFileName);
         } catch (IOException e) {
@@ -102,7 +103,7 @@ public class DataService extends BaseService {
 
 
         // 然后通过本地上传至HDFS
-        String hdfsFilename = "file:///" + dataSource.getCategory1() + File.separator + file.getOriginalFilename();
+        String hdfsFilename = PropertyUtils.getString("fs.defaultFS") + dataSource.getCategory1() + "/" + file.getOriginalFilename();
         try{
             HDFSUtils.copyLocalToHdfs(localFileName, hdfsFilename, true, true);
         } catch (IOException e) {
