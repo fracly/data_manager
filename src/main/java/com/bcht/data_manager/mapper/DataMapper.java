@@ -60,7 +60,7 @@ public interface DataMapper {
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
     })
     @SelectProvider(type = DataMapperProvider.class, method = "queryById")
-    Data queryById(@Param("dataId") int dataId);
+    Data queryById(@Param("dataId") long dataId);
 
     @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),

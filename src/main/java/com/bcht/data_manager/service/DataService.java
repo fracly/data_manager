@@ -246,7 +246,7 @@ public class DataService extends BaseService {
     /**
      * 数据查询接口 - ID查询
      */
-    public Data queryById(int dataId) {
+    public Data queryById(long dataId) {
         return dataMapper.queryById(dataId);
     }
 

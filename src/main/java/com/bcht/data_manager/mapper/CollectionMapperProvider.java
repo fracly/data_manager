@@ -31,4 +31,21 @@ public class CollectionMapperProvider {
             }
         }.toString();
     }
+
+    public String insert(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                INSERT_INTO(IMPORT_LOG_TABLE_NAME);
+                VALUES("`type`", "#{job.type}");
+                VALUES("`input_type`", "#{job.inputType}");
+                VALUES("`input_parameter`", "#{job.inputParameter}");
+                VALUES("`output_type`", "#{job.outputType}");
+                VALUES("`output_id`", "#{job.outputId}");
+                VALUES("`start_time`", "#{job.startTime}");
+                VALUES("`end_time`", "#{job.endTime}");
+                VALUES("`status`", "#{job.status}");
+                VALUES("`creatorId`", "#{job.creatorId}");
+            }
+        }.toString();
+    }
 }

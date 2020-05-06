@@ -116,11 +116,31 @@ public final class Constants {
     /**
      * collection resource type
      */
-    public static final String MYSQL = "mysql";
+    public static final Integer MYSQL = 1;
 
-    public static final String ORACLE = "oracle";
+    public static final Integer ORACLE = 2;
 
-    public static final String SQLSERVER = "sqlserver";
+    public static final Integer SQLSERVER = 3;
 
-    public static final String DB2 = "db2";
+    public static final Integer DB2 = 4;
+
+    /**
+     * job status
+     */
+    public static final Integer RUNNING = 2;
+
+    public static final Integer FINISHED = 1;
+
+    public static final Integer KILLED = 9;
+
+    public static final Integer FAILED = -1;
+
+    public static final Integer INITIAL = 0;
+
+    /**
+     * job type
+     */
+    public static final Integer DB2HIVE = 1;
+
+    public static final Integer FILE2HIVE = 2;
 }

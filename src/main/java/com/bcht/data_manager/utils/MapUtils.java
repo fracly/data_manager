@@ -22,6 +22,19 @@ public class MapUtils {
         return result;
     }
 
+    public static final Long getLong(Map<String, Object> map, String key) {
+        long result = 0L;
+        Object valueObj = map.get(key);
+        if(valueObj != null) {
+            try{
+                result  = Long.parseLong(valueObj.toString());
+            }catch(Exception e) {
+                logger.error("调用工具类MapUtils.getLong出错：" + e.getMessage());
+            }
+        }
+        return result;
+    }
+
     public static final String getString(Map<String, Object> map, String key) {
         Object valueObj = map.get(key);
         if(valueObj != null) {
@@ -29,14 +42,6 @@ public class MapUtils {
         } else {
             return "";
         }
-    }
-
-    public static final MultipartFile getFile(Map<String, Object> map, String key) {
-        Object obj = map.get(key);
-        if(obj != null) {
-            return (MultipartFile) obj;
-        }
-        return null;
     }
 
     public static final String join(Set<Integer> set, String joinChar) {
