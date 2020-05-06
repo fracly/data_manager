@@ -40,7 +40,7 @@ public class DataCollectionController extends BaseController {
     @PostMapping("/test")
     public Result test(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         Result result = new Result();
-        int type = MapUtils.getInt(parameter, "type");
+        int type = MapUtils.getInt(parameter, "inputType");
         String ip = MapUtils.getString(parameter, "ip");
         int port = MapUtils.getInt(parameter, "port");
         String username = MapUtils.getString(parameter, "username");
@@ -144,7 +144,7 @@ public class DataCollectionController extends BaseController {
     }
 
     @PostMapping("/file")
-    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, MultipartFile file, long dataId, String inputType) {
+    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, MultipartFile file, Long dataId, Integer inputType) {
         Result result = new Result();
 
 
