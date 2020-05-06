@@ -46,31 +46,32 @@ public class DataController extends BaseController {
     private LabelService labelService;
 
     @PostMapping("/create")
-    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
+                         String columns, String tableName, String createSql, String description, String labels, MultipartFile file) {
         Result result = new Result();
-        int method = MapUtils.getInt(parameter, "createMethod");
-        int type = MapUtils.getInt(parameter, "type");
-        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
-
-        String name = MapUtils.getString(parameter, "name");
-        String columns = MapUtils.getString(parameter, "columnList");
-        String tableName = MapUtils.getString(parameter, "tableName");
-        String createSql = MapUtils.getString(parameter, "createSql");
-        String description = MapUtils.getString(parameter, "description");
-        String labels = MapUtils.getString(parameter, "labels");
-        String localAbsolutePath = MapUtils.getString(parameter, "localFilePath");
-
-        MultipartFile file = MapUtils.getFile(parameter, "file");
+//        int method = MapUtils.getInt(parameter, "createMethod");
+//        int type = MapUtils.getInt(parameter, "type");
+//        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
+//
+//        String name = MapUtils.getString(parameter, "name");
+//        String columns = MapUtils.getString(parameter, "columnList");
+//        String tableName = MapUtils.getString(parameter, "tableName");
+//        String createSql = MapUtils.getString(parameter, "createSql");
+//        String description = MapUtils.getString(parameter, "description");
+//        String labels = MapUtils.getString(parameter, "labels");
+//        String localAbsolutePath = MapUtils.getString(parameter, "localFilePath");
+//
+//        MultipartFile file = MapUtils.getFile(parameter, "file");
 
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
         // 数据的创建根据数据源的不同，创建方式也不同
         if (type == DbType.HIVE.getIndex()) {
-            return dataService.createHiveData(dataSource, loginUser, method, createSql, tableName, columns, name, description, labels);
+            return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels);
         } else if (type == DbType.HBASE.getIndex()) {
             return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
         } else if (type == DbType.HDFS.getIndex()) {
-            return dataService.createHDFSData(dataSource, loginUser, localAbsolutePath, file, name, description, labels);
+            return dataService.createHDFSData(dataSource, loginUser, file, name, description, labels);
         }
         putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;
