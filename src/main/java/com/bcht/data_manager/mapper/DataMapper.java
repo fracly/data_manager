@@ -123,7 +123,7 @@ public interface DataMapper {
     /**
      * for analysis dashboard
      */
-    @Select("select DATE_FORMAT(start_time,'%Y-%m-%d') as dayStr, count(1) as total from t_data_manager_download_detail " +
+    @Select("select DATE_FORMAT(start_time,'%Y-%m-%d') as dayStr, count(1) as total from t_data_manager_download_log " +
             "where start_time>=#{startDate} and start_time <=#{endDate} group by dayStr")
     List<Map<String, Object>> countDownloadByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
 

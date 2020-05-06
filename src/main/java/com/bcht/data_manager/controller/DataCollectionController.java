@@ -6,6 +6,7 @@ import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
+import com.bcht.data_manager.mapper.CollectionMapper;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.utils.*;
 
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +32,9 @@ public class DataCollectionController extends BaseController {
 
     @Autowired
     private DataService dataService;
+
+    @Autowired
+    private CollectionMapper collectionMapper;
 
     @PostMapping("/test")
     public Result test(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
@@ -160,6 +165,15 @@ public class DataCollectionController extends BaseController {
                 return result;
             }
         }
+        return result;
+    }
+
+    @GetMapping("/job-list")
+    public Result jobList(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int status) {
+        Result result = new Result();
+        List<Map<String, Object>> list = collectionMapper.jobList(loginUser.getId(), name, status);
+        result.setData(list);
+        putMsg(result, Status.SUCCESS);
         return result;
     }
 }

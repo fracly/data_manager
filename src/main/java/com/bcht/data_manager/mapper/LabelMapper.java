@@ -48,8 +48,14 @@ public interface LabelMapper {
     @InsertProvider(type = LabelMapperProvider.class, method = "insert")
     int insert(@Param("label") Label label);
 
+    @InsertProvider(type = LabelMapperProvider.class, method = "insertLabelDataRelation")
+    int insertLabelDataRelation(@Param("labelId") int labelId, @Param("dataId") long dataId);
+
     @DeleteProvider(type = LabelMapperProvider.class, method = "delete")
     int delete(@Param("labelId") int labelId);
+
+    @DeleteProvider(type = LabelMapperProvider.class, method = "deleteLabelDataRelation")
+    int deleteLabelDataRelation(@Param("labelId") int labelId, @Param("dataId") long dataId);
 
     @UpdateProvider(type = LabelMapperProvider.class, method = "update")
     int update(@Param("label") Label label);

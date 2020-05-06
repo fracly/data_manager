@@ -40,10 +40,10 @@ public class DataController extends BaseController {
     private DataService dataService;
 
     @Autowired
-    private DataSourceService dataSourceService;
+    private LabelService labelService;
 
     @Autowired
-    private LabelService labelService;
+    private DataSourceService dataSourceService;
 
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
@@ -83,6 +83,15 @@ public class DataController extends BaseController {
 
         Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
         data.setName(MapUtils.getString(parameter, "name"));
+        String labels = MapUtils.getString(parameter, "labels");
+        String[] ids = labels.replace("[", "").replace("]", "").split(",");
+        List<Label> labelList = labelService.queryByDataId(data.getId());
+        for(Label label : labelList) {
+            labelService.deleteDataLabelRelation(label.getId(), data.getId());
+        }
+        for(String id: ids) {
+            labelService.insertDataLabelRelation(Integer.parseInt(id), data.getId());
+        }
         data.setDescription(MapUtils.getString(parameter, "description"));
         data.setUpdateTime(new Date());
         dataService.update(data);

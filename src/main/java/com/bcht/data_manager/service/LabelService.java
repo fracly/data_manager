@@ -41,6 +41,22 @@ public class LabelService extends BaseService {
         return false;
     }
 
+    public boolean deleteDataLabelRelation(int labelId, long dataId) {
+        int count = labelMapper.deleteLabelDataRelation(labelId, dataId);
+        if(count > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean insertDataLabelRelation(int labelId, long dataId) {
+        int count = labelMapper.deleteLabelDataRelation(labelId, dataId);
+        if(count > 0) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean update(int labelId, String name) {
         Label label = labelMapper.queryById(labelId);
         label.setName(name);

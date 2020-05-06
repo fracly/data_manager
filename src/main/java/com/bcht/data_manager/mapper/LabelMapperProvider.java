@@ -53,11 +53,29 @@ public class LabelMapperProvider {
         }}.toString();
     }
 
+    public String insertLabelDataRelation(Map<String, Object> parameter) {
+        return new SQL(){{
+            INSERT_INTO(RELATION_LABEL_DATA_TABLE_NAME);
+            VALUES("`label_id`", "#{labelId}");
+            VALUES("`data_id`", "#{dataId}");
+        }}.toString();
+    }
+
     public String delete(Map<String, Object> parameter) {
         return new SQL() {
             {
                 DELETE_FROM(LABEL_TABLE_NAME);
                 WHERE("`id`=#{labelId}");
+            }
+        }.toString();
+    }
+
+    public String deleteLabelDataRelation(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                DELETE_FROM(RELATION_LABEL_DATA_TABLE_NAME);
+                WHERE("`label_id`=#{labelId}");
+                WHERE("`data_id`=#{dataId}");
             }
         }.toString();
     }
