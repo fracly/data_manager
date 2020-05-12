@@ -88,7 +88,7 @@ public class HiveUtils {
         List<Map<String, String>> columnList = new ArrayList<>();
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("desc " + tableName);
+        ResultSet rs = stmt.executeQuery("desc " + dataSource.getCategory1() + "." + tableName);
         while (rs.next()) {
             Map<String, String> m = new HashMap<>();
             m.put("name", rs.getString(1));

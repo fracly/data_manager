@@ -89,30 +89,9 @@ public class DataService extends BaseService {
     /**
      * 创建HDFS文件，并上传
      */
-    public Result createHDFSData(DataSource dataSource, User loginUser, MultipartFile file, String name, String description, String labels) {
+    public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels) {
         Result result = new Result();
-        // 先将文件保存到本地
-        String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
-        try{
-            FileUtils.copyFile(file, localFileName);
-        } catch (IOException e) {
-            putMsg(result, Status.HDFS_COPY_UPLOAD_TO_LOCAL_FAILED);
-            logger.error("上传文件复制到本地出错\n" + e.getMessage());
-            return result;
-        }
-
-
-        // 然后通过本地上传至HDFS
-        String hdfsFilename = PropertyUtils.getString("fs.defaultFS") + dataSource.getCategory1() + "/" + file.getOriginalFilename();
-        try{
-            HDFSUtils.copyLocalToHdfs(localFileName, hdfsFilename, true, true);
-        } catch (IOException e) {
-            putMsg(result, Status.HDFS_COPY_LOCAL_TO_HDFS_FAILED);
-            logger.error("本地文件上传到HDFS出错\n" + e.getMessage());
-            return result;
-        }
-
-        store2Mysql(dataSource, loginUser, name, file.getOriginalFilename(), description, labels);
+        store2Mysql(dataSource, loginUser, name, fileName, description, labels);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HDFS文件成功");
         return result;
     }

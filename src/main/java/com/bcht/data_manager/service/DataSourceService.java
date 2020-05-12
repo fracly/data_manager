@@ -82,7 +82,7 @@ public class DataSourceService extends BaseService {
             try {
                 connection =  HiveUtils.getHiveConnection(ip, port, category1);
                 if(connection != null) {
-                    putMsg(result, Status.CUSTOM_SUCESSS, "HBase连接测试成功");
+                    putMsg(result, Status.CUSTOM_SUCESSS, "Hive连接测试成功");
                 } else {
                     putMsg(result, Status.HIVE_CONNECTION_TEST_FAILED);
                 }
@@ -100,7 +100,7 @@ public class DataSourceService extends BaseService {
             configuration.set(Constants.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, port + "");
             try{
                 HBaseAdmin.available(configuration);
-                putMsg(result, Status.HBASE_CONNECTION_TEST_SUCCESS);
+                putMsg(result, Status.CUSTOM_SUCESSS, "HBase连接测试成功！");
             }catch (Exception e) {
                 putMsg(result, Status.HBASE_CONNECTION_TEST_FAILED);
                 logger.error("HBase连接测试失败\n" + e.getMessage());
@@ -118,8 +118,8 @@ public class DataSourceService extends BaseService {
             } catch (IOException e) {
                 putMsg(result, Status.HDFS_CONNECTION_TEST_FAILED);
                 logger.error("HDFS连接测试失败\n" + e.getMessage());
+                return result;
             }
-            return result;
         } else {
             putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         }

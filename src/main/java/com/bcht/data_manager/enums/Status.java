@@ -41,7 +41,6 @@ public enum Status {
     // HBase 错误码
     HBASE_DROP_NAMESPACE_FAILED(20001, "Hbase删除表空间失败"),
     HBASE_CREATE_NAMESPACE_FAILED(20002, "Hbase创建表空间失败"),
-    HBASE_CONNECTION_TEST_SUCCESS(20003, "Hbase连接测试成功"),
     HBASE_CONNECTION_TEST_FAILED(20004, "Hbase连接测试失败"),
     HBASE_CREATE_TABLE_FAILED(20005, "Hbase创建表失败"),
     HBASE_QUERY_HBASE_COLUMN_FAMILY_DETAIL_FAILED(20006, "查询HBase字段簇详情失败"),

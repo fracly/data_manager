@@ -164,12 +164,15 @@ public class DataCollectionController extends BaseController {
 
         File localFile =  new File(localFileName);
         try{
+            if(!localFile.getParentFile().exists()){
+                localFile.getParentFile().mkdirs();
+            }
             file.transferTo(localFile);
         } catch (IOException e) {
             putMsg(result, Status.FILE_UPLOAD_FAILED);
             job.setStatus(FAILED);
             collectionMapper.insert(job);
-            logger.error("文件写入本地失败");
+            logger.error("文件写入本地失败" + e.getMessage());
             return result;
         }
 

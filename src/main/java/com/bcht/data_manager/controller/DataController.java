@@ -47,7 +47,7 @@ public class DataController extends BaseController {
 
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
-                         String columns, String tableName, String createSql, String description, String labels, MultipartFile file) {
+                         String columns, String tableName, String createSql, String description, String labels, String fileName) {
         Result result = new Result();
 //        int method = MapUtils.getInt(parameter, "createMethod");
 //        int type = MapUtils.getInt(parameter, "type");
@@ -71,7 +71,7 @@ public class DataController extends BaseController {
         } else if (type == DbType.HBASE.getIndex()) {
             return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
         } else if (type == DbType.HDFS.getIndex()) {
-            return dataService.createHDFSData(dataSource, loginUser, file, name, description, labels);
+            return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels);
         }
         putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;

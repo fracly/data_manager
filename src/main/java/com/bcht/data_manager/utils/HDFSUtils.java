@@ -115,7 +115,7 @@ public class HDFSUtils {
 
     public static ContentSummary getFileInfo(DataSource dataSource, String fileName) throws IOException {
         FileSystem fs = getDefaultFileSystem();
-        ContentSummary contentSummary = fs.getContentSummary(new Path(fileName));
+        ContentSummary contentSummary = fs.getContentSummary(new Path(dataSource.getCategory1() + "/" + fileName));
         close(fs);
         return contentSummary;
     }

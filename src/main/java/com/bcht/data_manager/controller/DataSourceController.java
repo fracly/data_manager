@@ -285,6 +285,7 @@ public class DataSourceController extends BaseController {
                     tmp.put("key", "key-0" + dbType.getIndex() + "-" + dataSource.getId());
                     tmp.put("title", dataSource.getName());
                     tmp.put("value", dataSource.getId());
+                    tmp.put("category1", dataSource.getCategory1());
                     hiveChildren.add(tmp);
                 }
                 map.put("children", hiveChildren);
