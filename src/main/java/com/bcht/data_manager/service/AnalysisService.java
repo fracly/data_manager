@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import java.util.Map;
 @Service
 public class AnalysisService extends BaseService {
     public static final Logger logger = LoggerFactory.getLogger(AnalysisService.class);
-
 
     @Autowired
     private HttpClient client;
@@ -43,7 +41,7 @@ public class AnalysisService extends BaseService {
             // 默认的大小单位为byte，需要进行大小转化
             long total = Long.parseLong(map.get("CapacityTotal").toString());
             long used = Long.parseLong(map.get("CapacityUsed").toString());
-            long free = Long.parseLong(map.get("CapacityRemaining").toString());
+            long free =  Long.parseLong(map.get("CapacityRemaining").toString());
 
             result.put("CapacityTotal", StringUtils.byteFormat(total));
             result.put("CapacityUsed", StringUtils.byteFormat(used));

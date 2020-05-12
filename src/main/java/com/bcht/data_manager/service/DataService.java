@@ -203,8 +203,15 @@ public class DataService extends BaseService {
     /**
      * 记录用户的查询动作
      */
-    public int log(int userId, String keyword) {
+    public int logSearch(int userId, String keyword) {
         return searchMapper.insert(userId, keyword);
+    }
+
+    /**
+     * 记录用户的下载动作
+     */
+    public int logDownload(int userId, Data data) {
+        return dataMapper.insertDownload(userId, data);
     }
 
     /**

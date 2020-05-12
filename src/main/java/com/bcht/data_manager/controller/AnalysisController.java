@@ -15,7 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
-
+/**
+ * 统计 Controller
+ * 统计面板所需接口，按照数据各维度进行数据统计、分类，形成图标和表格
+ *
+ * @author fracly
+ * @date 2020-05-12:15:50:00
+ */
 @RestController
 @RequestMapping("/api/analysis")
 public class AnalysisController extends BaseController {
@@ -31,7 +37,7 @@ public class AnalysisController extends BaseController {
     private DataSourceService dataSourceService;
 
     /**
-     * query system capacity
+     * 集群容量统计
      */
     @GetMapping("/capacity")
     public Result capacity() {
@@ -44,7 +50,7 @@ public class AnalysisController extends BaseController {
     }
 
     /**
-     * query data count
+     * 数据数量统计
      */
     @GetMapping("/data-count")
     public Result dataCount() {
@@ -53,7 +59,7 @@ public class AnalysisController extends BaseController {
     }
 
     /**
-     * query datasource count
+     * 数据源数量统计
      */
     @GetMapping("/datasource-count")
     public Result datasourceCount() {
@@ -66,37 +72,38 @@ public class AnalysisController extends BaseController {
     }
 
     /**
-     * query data download count
+     * 数据下载统计
      */
     @GetMapping("/download-count")
     public Result downloadCount() {
         logger.info("querying download data count");
-
-
         return dataService.countDownloadByDay();
     }
 
     /**
-     * query data increase count by day
+     * 数据每日新增数量
      */
     @GetMapping("/increase-by-day")
     public Result increaseByDay(String startDate, String endDate) {
+        logger.info("querying data increase by day between {} and {}", startDate, endDate);
         return dataService.countIncreaseByDay(startDate, endDate);
     }
 
     /**
-     * query data increase count by day
+     * 数据标签分布量
      */
     @GetMapping("/count-by-label")
     public Result countByLabel(String startDate, String endDate) {
+        logger.info("querying label's data count between {} and {}", startDate, endDate);
         return dataService.countByLabel(startDate, endDate);
     }
 
     /**
-     * query data increase count by day
+     * 关键字搜索统计
      */
     @GetMapping("/search-keyword")
     public Result searchKeyword() {
+        logger.info("querying recent one month search record");
         Result result = new Result();
         String endDateTime = DateUtils.getDateTime();
         Date date = DateUtils.nextDay(-30);
@@ -108,10 +115,11 @@ public class AnalysisController extends BaseController {
     }
 
     /**
-     * query data type percentage pie
+     * 数据类型占比统计
      */
     @GetMapping("/data-type-percentage")
     public Result typePercentage(Integer type) {
+        logger.info("querying data type percentage");
         Result result = new Result();
         String startDateTime = null;
         String endDateTime = DateUtils.getDateTime();

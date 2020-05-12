@@ -18,19 +18,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
+/**
+ * 数据Controller
+ * 对应数据的CRUD、下载等操作，以及花式查询，数据分为3类
+ *      1、Hive表，对应表的增删改查，不加载数据。
+ *      2、HBase表，暂无实现
+ *      3、HDFS文件，要上传相应数据。
+ *
+ *  @author fracly
+ *  @date 2020-05-12 17:00:00
+ */
 @RestController
 @RequestMapping("/api/data")
 public class DataController extends BaseController {
@@ -45,24 +53,13 @@ public class DataController extends BaseController {
     @Autowired
     private DataSourceService dataSourceService;
 
+    /**
+     * 数据新增
+     */
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
                          String columns, String tableName, String createSql, String description, String labels, String fileName) {
         Result result = new Result();
-//        int method = MapUtils.getInt(parameter, "createMethod");
-//        int type = MapUtils.getInt(parameter, "type");
-//        int dataSourceId = MapUtils.getInt(parameter, "dataSourceId");
-//
-//        String name = MapUtils.getString(parameter, "name");
-//        String columns = MapUtils.getString(parameter, "columnList");
-//        String tableName = MapUtils.getString(parameter, "tableName");
-//        String createSql = MapUtils.getString(parameter, "createSql");
-//        String description = MapUtils.getString(parameter, "description");
-//        String labels = MapUtils.getString(parameter, "labels");
-//        String localAbsolutePath = MapUtils.getString(parameter, "localFilePath");
-//
-//        MultipartFile file = MapUtils.getFile(parameter, "file");
-
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
         // 数据的创建根据数据源的不同，创建方式也不同
@@ -77,72 +74,8 @@ public class DataController extends BaseController {
         return result;
     }
 
-    @PostMapping("/update")
-    public Result update(@RequestBody Map<String, Object> parameter) {
-        Result result = new Result();
-
-        Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
-        data.setName(MapUtils.getString(parameter, "name"));
-        String labels = MapUtils.getString(parameter, "labels");
-        String[] ids = labels.replace("[", "").replace("]", "").split(",");
-        List<Label> labelList = labelService.queryByDataId(data.getId());
-        for(Label label : labelList) {
-            labelService.deleteDataLabelRelation(label.getId(), data.getId());
-        }
-        for(String id: ids) {
-            labelService.insertDataLabelRelation(Integer.parseInt(id), data.getId());
-        }
-        data.setDescription(MapUtils.getString(parameter, "description"));
-        data.setUpdateTime(new Date());
-        dataService.update(data);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-    @PostMapping("/add-column")
-    public Result addColumn(@RequestBody Map<String, Object> parameter) {
-        int dataId = MapUtils.getInt(parameter, "dataId");
-        String columns = MapUtils.getString(parameter, "columns");
-        return dataService.addColumn(dataId, columns);
-    }
-
-    @GetMapping("/queryById")
-    public Result queryById(int id){
-        Result result = new Result();
-        Data data = dataService.queryById(id);
-        result.setData(data);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-    @GetMapping("/search")
-    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startTime, String endTime) {
-        Result result = new Result();
-        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startTime, endTime);
-        for(Data data : targetDataList) {
-            List<Label> labelList = labelService.queryByDataId(data.getId());
-            data.setLabelList(labelList);
-        }
-        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startTime, endTime);
-        result.setData(targetDataList);
-        Map resultMap = new HashMap();
-        resultMap.put("total", total);
-        resultMap.put("pageSize", pageSize);
-        result.setDataMap(resultMap);
-        putMsg(result, Status.SUCCESS);
-
-        // 记录用户的搜索行为
-        if (org.apache.commons.lang3.StringUtils.isNotEmpty(name)){
-            int count = dataService.log(loginUser.getId(), name);
-            if( count == 0) {
-                logger.error("记录查询日志失败！");
-            }
-        }
-        return result;
-    }
-
     /**
-     * delete data
+     * 数据删除
      */
     @GetMapping("/delete")
     public Result delete(int id){
@@ -152,13 +85,9 @@ public class DataController extends BaseController {
         if(data.getType() == DbType.HIVE.getIndex()) {
             try{
                 HiveUtils.dropTable(dataSource, data.getDataName());
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 putMsg(result, Status.HIVE_DROP_TABLE_FAILED);
                 logger.error("删除Hive表失败\n" + e.getMessage());
-                return result;
-            } catch (ClassNotFoundException e) {
-                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
-                logger.error("删除Hive数据表失败\n" + e.getMessage());
                 return result;
             }
         } else if(data.getType() == DbType.HBASE.getIndex()) {
@@ -185,6 +114,85 @@ public class DataController extends BaseController {
         return result;
     }
 
+    /**
+     * 数据修改
+     */
+    @PostMapping("/update")
+    public Result update(@RequestBody Map<String, Object> parameter) {
+        Result result = new Result();
+
+        Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
+        data.setName(MapUtils.getString(parameter, "name"));
+        String labels = MapUtils.getString(parameter, "labels");
+        String[] ids = labels.replace("[", "").replace("]", "").split(",");
+        List<Label> labelList = labelService.queryByDataId(data.getId());
+        for(Label label : labelList) {
+            labelService.deleteDataLabelRelation(label.getId(), data.getId());
+        }
+        for(String id: ids) {
+            labelService.insertDataLabelRelation(Integer.parseInt(id), data.getId());
+        }
+        data.setDescription(MapUtils.getString(parameter, "description"));
+        data.setUpdateTime(new Date());
+        dataService.update(data);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 数据修改-Hive表增加列
+     */
+    @PostMapping("/add-column")
+    public Result addColumn(@RequestBody Map<String, Object> parameter) {
+        int dataId = MapUtils.getInt(parameter, "dataId");
+        String columns = MapUtils.getString(parameter, "columns");
+        return dataService.addColumn(dataId, columns);
+    }
+
+    /**
+     * 数据查询-根据ID查询
+     */
+    @GetMapping("/queryById")
+    public Result queryById(int id){
+        Result result = new Result();
+        Data data = dataService.queryById(id);
+        result.setData(data);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 数据查询-复杂查询，可根据标签、时间、关键字来查询
+     */
+    @GetMapping("/search")
+    public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startTime, String endTime) {
+        Result result = new Result();
+        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startTime, endTime);
+        for(Data data : targetDataList) {
+            List<Label> labelList = labelService.queryByDataId(data.getId());
+            data.setLabelList(labelList);
+        }
+        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startTime, endTime);
+        result.setData(targetDataList);
+        Map resultMap = new HashMap();
+        resultMap.put("total", total);
+        resultMap.put("pageSize", pageSize);
+        result.setDataMap(resultMap);
+        putMsg(result, Status.SUCCESS);
+
+        // 记录用户的搜索行为
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(name)){
+            int count = dataService.logSearch(loginUser.getId(), name);
+            if( count == 0) {
+                logger.error("记录查询日志失败！");
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 数据元信息查询
+     */
     @GetMapping("/detail")
     public Result detail(int dataId) {
         Result result = new Result();
@@ -200,6 +208,9 @@ public class DataController extends BaseController {
         return result;
     }
 
+    /**
+     * 数据查询-预览前N行数据
+     */
     @GetMapping("/preview")
     public Result preview(int dataId) {
         Data data = dataService.queryById(dataId);
@@ -210,20 +221,17 @@ public class DataController extends BaseController {
         }
     }
 
+    /**
+     * 数据查询-根据数据源查询
+     */
     @GetMapping("/listByDataSource")
     public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize) {
         Result result = new Result();
-        if(pageNo == null || pageNo == 0) {
-            pageNo = 1;
-        }
-        if(pageSize == null || pageSize == 0) {
-            pageSize = 10;
-        }
-        if(dataSourceId == null) {
-            dataSourceId = 0;
-        }
+        if(pageNo == null || pageNo == 0) { pageNo = 1; }
+        if(pageSize == null || pageSize == 0) { pageSize = 10; }
+        if(dataSourceId == null) { dataSourceId = 0; }
+
         List<Data> dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize);
-        int total = dataService.listTotal(loginUser.getId(), dataSourceId);
         for(Data data : dataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
@@ -234,6 +242,7 @@ public class DataController extends BaseController {
         result.setData(dataList);
 
         Map<String, Object> map = new HashMap<>();
+        int total = dataService.listTotal(loginUser.getId(), dataSourceId);
         map.put("pageNo", pageNo);
         map.put("total", total);
         result.setDataMap(map);
@@ -242,53 +251,35 @@ public class DataController extends BaseController {
         return result;
     }
 
+    /**
+     * 数据查询-下载数据
+     */
     @GetMapping("/download")
     @ResponseBody
     public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition) {
-        // 根据下载的文件类型来决定下载下来的格式，如果是HBase/Hive数据，下载成cvs文件，如果是HDFS文件，则直接从HDFS上拉取
+        // 根据文件类型判断处理逻辑：
+        //  1、HBase/Hive数据，下载成cvs文件，返回生成 ResponseEntity
+        //  2、HDFS 文件 由前端直接请求webhdfs rest api, 此接口仅记录下载记录
         Data data = dataService.queryById(dataId);
-        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-        if(data.getType() == DbType.HDFS.getIndex()) {
-            // 直接从HDFS上下载文件
-            String hdfsFileName = dataSource.getCategory1() + File.separator + data.getDataName();
-            String localFileName = FileUtils.getDownloadFilename(data.getDataName());
-            try{
-                HDFSUtils.copyHdfsToLocal(hdfsFileName, localFileName, false, true);
-            } catch (IOException e) {
-                logger.error("从HDFS上下载文件到本地失败\n" + e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("HDFS文件下载失败");
-            }
 
-            try {
-                org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
-                if(file == null){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据文件不存在");
-                }
-                return ResponseEntity
-                            .ok()
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getFilename(),"UTF-8") + "\"")
-                            .body(file);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
-            }
+        if (data.getType() == DbType.HDFS.getIndex()) {
+            dataService.logDownload(loginUser.getId(), data);
+            return ResponseEntity.status(HttpStatus.OK).body("HDFS文件下载成功");
         } else {
+            DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
             List<String> lineList = null;
             if(data.getType() == DbType.HIVE.getIndex()) {
                 try{
                     lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0);
-                } catch (SQLException e) {
-                    logger.error("读取Hive表数据失败\n" + e.getMessage());
+                } catch (Exception e) {
+                    logger.error("下载Hive表数据失败\n" + e.getMessage());
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
-                } catch (ClassNotFoundException e) {
-                    logger.error("数据驱动加载失败\n" + e.getMessage());
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据驱动加载失败");
                 }
-
             } else {
                 try{
                     lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName(), Constants.maxDownloadRecord);
                 } catch (IOException e) {
-                    logger.error("读取HBase数据失败\n" + e.getMessage());
+                    logger.error("下载HBase数据失败\n" + e.getMessage());
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");
                 }
             }
@@ -308,6 +299,7 @@ public class DataController extends BaseController {
                 logger.error("查询数据写入本地文件失败" + e.getMessage());
                 e.printStackTrace();
             }
+            dataService.logDownload(loginUser.getId(), data);
             try {
                 org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
                 if(file == null){

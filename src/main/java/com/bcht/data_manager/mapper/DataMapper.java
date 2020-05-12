@@ -21,6 +21,9 @@ public interface DataMapper {
     @InsertProvider(type = DataMapperProvider.class, method = "insert")
     int insert(@Param("data") Data data);
 
+    @InsertProvider(type = DataMapperProvider.class, method = "insertDownload")
+    int insertDownload(@Param("userId") int userId, @Param("data") Data data);
+
     @InsertProvider(type = DataMapperProvider.class, method = "insertDataSourceDataRelation")
     int insertDataSourceDataRelation(@Param("dataId") long dataId, @Param("dataSourceId") long dataSourceId);
 
@@ -102,6 +105,7 @@ public interface DataMapper {
 
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "dataName", column = "data_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),

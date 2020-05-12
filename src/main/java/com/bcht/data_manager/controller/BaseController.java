@@ -11,13 +11,16 @@ import java.util.Map;
 
 
 /**
- * base controller
+ * 基础 Controller
+ *
+ * @author fracly
+ * @date 2020-05-12 17:00:00
  */
 public class BaseController {
 
 
     /**
-     * get ip address in the http request
+     * 从请求中获取IP地址
      */
     public static String getClientIpAddress(HttpServletRequest request) {
         String clientIp = request.getHeader("X-Forwarded-For");
@@ -47,15 +50,6 @@ public class BaseController {
         return result;
     }
 
-    protected void putMsg(Map<String, Object> result, Status status, Object... statusParams) {
-        result.put(Constants.STATUS, status);
-        if (statusParams != null && statusParams.length > 0) {
-            result.put(Constants.MSG, MessageFormat.format(status.getMsg(), statusParams));
-        } else {
-            result.put(Constants.MSG, status.getMsg());
-        }
-    }
-
     protected void putMsg(Result result, Status status, Object... statusParams) {
         result.setCode(status.getCode());
 
@@ -64,6 +58,5 @@ public class BaseController {
         } else {
             result.setMsg(status.getMsg());
         }
-
     }
 }

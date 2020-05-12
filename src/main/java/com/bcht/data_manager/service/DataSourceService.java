@@ -5,7 +5,6 @@ import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.DataSourceMapper;
-import com.bcht.data_manager.utils.HBaseUtils;
 import com.bcht.data_manager.utils.HDFSUtils;
 import com.bcht.data_manager.utils.HiveUtils;
 import com.bcht.data_manager.utils.Result;
@@ -31,12 +30,6 @@ public class DataSourceService extends BaseService {
     @Autowired
     private DataSourceMapper dataSourceMapper;
 
-    /**
-     * 创建数据源说明：
-     *      Hive  => Database  划分业务
-     *      HDFS  => Directory 划分业务
-     *      HBase => NameSpace 划分业务
-     */
     public int insert(DataSource dataSource) {
         return dataSourceMapper.insert(dataSource);
     }
@@ -110,7 +103,7 @@ public class DataSourceService extends BaseService {
             try {
                 boolean success = HDFSUtils.checkConnection(ip, port);
                 if(success) {
-                    putMsg(result, Status.HDFS_CONNECTION_TEST_SUCCESS);
+                    putMsg(result, Status.CUSTOM_SUCESSS, "HDFS连接测试成功");
                 } else{
                     putMsg(result, Status.HDFS_CONNECTION_TEST_FAILED);
                     logger.error("HDFS连接测试失败");

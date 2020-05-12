@@ -18,6 +18,8 @@ public class DataMapperProvider {
 
     public  static final String LABEL_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_label_data";
 
+    public static final String DATA_DOWNLOAD_LOG_TABLE_NAME = "t_data_manager_download_log";
+
     /**
      * insert data
      */
@@ -37,6 +39,20 @@ public class DataMapperProvider {
                 VALUES("`status`", "#{data.status}");
                 VALUES("`destroy_method`", "#{data.destroyMethod}");
                 VALUES("`destroy_time`", "#{data.destroyTime}");
+            }
+        }.toString();
+    }
+
+    public String insertDownload(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                INSERT_INTO(DATA_DOWNLOAD_LOG_TABLE_NAME);
+                VALUES("`data_id`", "#{data.id}");
+                VALUES("`data_name`", "#{data.dataName}");
+                VALUES("`user_id`", "#{userId}");
+                VALUES("`status`", "#{data.status}");
+                VALUES("`start_time`", "now()");
+                VALUES("`end_time`", "now()");
             }
         }.toString();
     }

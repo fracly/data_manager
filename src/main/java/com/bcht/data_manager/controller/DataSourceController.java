@@ -16,13 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-
+/**
+ * 数据源Controller
+ * 对应数据源的CRUD，数据源跟数据一样，分为3类
+ *      1、Hive源 - 一个源对应Hive的数据库概念
+ *      2、HBase源 - 一个源对应Hbase命名空间的概念
+ *      3、HDFS源- 一个源对应HDFS一个目录的概念
+ *
+ *  @author fracly
+ *  @date 2020-05-12 17:27:00
+ */
 @RestController
 @RequestMapping("/api/datasource")
 public class DataSourceController extends BaseController {
@@ -33,12 +38,11 @@ public class DataSourceController extends BaseController {
 
 
     /**
-     * insert datasource
+     * 新增数据源
      */
     @PostMapping("/create")
     public Result insert(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String ip, int port, String category1, String description) {
         logger.info("user {} is creating datasource using name {}", loginUser.getUsername(), name);
-
         Result result = new Result();
 
         DataSource dataSource = new DataSource();
@@ -50,15 +54,12 @@ public class DataSourceController extends BaseController {
         dataSource.setDescription(description);
         dataSource.setCreatorId(loginUser.getId());
 
+        //先进行实际的物理操作，再对应的源创建相应的命名空间
         if(type == DbType.HIVE.getIndex()) {
             try {
                 HiveUtils.createDatabase(dataSource, category1);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 putMsg(result, Status.HIVE_CREATE_DATABASE_FAILED);
-                logger.error("创建Hive数据库失败\n" + e.getMessage());
-                return result;
-            } catch (ClassNotFoundException e) {
-                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
                 logger.error("创建Hive数据库失败\n" + e.getMessage());
                 return result;
             }
@@ -79,6 +80,7 @@ public class DataSourceController extends BaseController {
                 return result;
             }
         }
+        // 再保存数据源信息
         int count = dataSourceService.insert(dataSource);
         if(count > 0) {
             putMsg(result, Status.CUSTOM_SUCESSS, "创建数据源成功");
@@ -89,43 +91,32 @@ public class DataSourceController extends BaseController {
     }
 
     /**
-     * update datasource
+     * 修改数据源
      */
     @PostMapping("/update")
-    public Result update(int id, String name, int type, String ip, int port, String category1, String description) {
-        logger.info("user {} is updating datasource using name {}",  name);
+    public Result update(@RequestAttribute(value = Constants.SESSION_USER) User loginUser,  int id, String name, int type, String ip, int port, String category1, String description) {
+        logger.info("user {} is updating datasource using name {}",  loginUser.getUsername(), name);
         Result result = new Result();
+
         DataSource dataSource = dataSourceService.queryById(id);
-        if(!category1.equals(dataSource.getCategory1())) {
-            if(type == DbType.HIVE.getIndex()) {
-                // first delete old database
+        if (!category1.equals(dataSource.getCategory1())) {
+            // 先删表，再建新表
+            if (type == DbType.HIVE.getIndex()) {
                 try{
                     HiveUtils.dropDatabase(dataSource, dataSource.getCategory1());
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     putMsg(result, Status.HIVE_DROP_DATABASE_FAILED);
                     logger.error("删除Hive数据库失败\n" + e.getMessage());
                     return result;
-                } catch (ClassNotFoundException e) {
-                    putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
-                    logger.error("删除Hive数据库失败\n" + e.getMessage());
-                    return result;
                 }
-
-                // then create new database
                 try{
                     HiveUtils.createDatabase(dataSource, category1);
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     putMsg(result, Status.HIVE_CREATE_DATABASE_FAILED);
                     logger.error("创建Hive数据库失败\n" + e.getMessage());
                     return result;
-                } catch (ClassNotFoundException e) {
-                    putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
-                    logger.error("创建Hive数据库失败\n" + e.getMessage());
-                    return result;
                 }
-
-            } else if (type == DbType.HBASE.getIndex() && !category1.equals(dataSource.getCategory1())) {
-                // first delete old namespace
+            } else if (type == DbType.HBASE.getIndex()) {
                 try{
                     HBaseUtils.dropNameSpace(dataSource, dataSource.getCategory1());
                 } catch (IOException e) {
@@ -133,8 +124,6 @@ public class DataSourceController extends BaseController {
                     logger.error("删除Hbase表空间失败\n" + e.getMessage());
                     return result;
                 }
-
-                // then create new namespace
                 try{
                     HBaseUtils.createNameSpace(dataSource, category1);
                 } catch (IOException e) {
@@ -142,9 +131,7 @@ public class DataSourceController extends BaseController {
                     logger.error("创建Hbase表空间失败\n" + e.getMessage());
                     return result;
                 }
-
-            } else if (type == DbType.HDFS.getIndex() && !category1.equals(dataSource.getCategory1())) {
-                // first delete old directory
+            } else if (type == DbType.HDFS.getIndex()) {
                 try{
                     HDFSUtils.rmdir(dataSource.getCategory1());
                 } catch (IOException e) {
@@ -152,8 +139,6 @@ public class DataSourceController extends BaseController {
                     logger.error("删除HDFS目录失败\n" + e.getMessage());
                     return result;
                 }
-
-                // then create new directory
                 try{
                     HDFSUtils.mkdir(category1);
                 } catch (IOException e) {
@@ -163,6 +148,7 @@ public class DataSourceController extends BaseController {
                 }
             }
         }
+
         dataSource.setName(name);
         dataSource.setType(type);
         dataSource.setIp(ip);
@@ -179,7 +165,7 @@ public class DataSourceController extends BaseController {
     }
 
     /**
-     * query datasource by id
+     * 查询数据源-通过ID
      */
     @GetMapping("/queryById")
     public Result queryById(int id){
@@ -190,6 +176,9 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
+    /**
+     * 查询数据源-通过类型和名称匹配
+     */
     @GetMapping("/query")
     public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int type, String name) {
         Result result = new Result();
@@ -203,29 +192,26 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
-
+    /**
+     * 数据源可用性测试
+     */
     @PostMapping("/test")
     public Result test(int type, String ip, int port, String category1) {
         return dataSourceService.testConnection(type, ip, port, category1);
     }
 
     /**
-     * delete datasource
+     * 删除数据源
      */
     @GetMapping("/delete")
     public Result delete(int id){
         Result result = new Result();
-
         DataSource dataSource = dataSourceService.queryById(id);
         if (dataSource.getType() == DbType.HIVE.getIndex()) {
             try{
                 HiveUtils.dropDatabase(dataSource);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 putMsg(result, Status.HIVE_DROP_DATABASE_FAILED);
-                logger.error("删除Hive数据库失败\n" + e.getMessage());
-                return result;
-            } catch (ClassNotFoundException e) {
-                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
                 logger.error("删除Hive数据库失败\n" + e.getMessage());
                 return result;
             }
@@ -252,7 +238,7 @@ public class DataSourceController extends BaseController {
     }
 
     /**
-     * statistic all type datasource
+     * 数据源查询-按类型统计
      */
     @GetMapping("/statistic")
     public Result statistic(@RequestAttribute(value = Constants.SESSION_USER) User loginUser){
@@ -267,32 +253,22 @@ public class DataSourceController extends BaseController {
         return result;
     }
 
+    /**
+     * 数据源查询-返回树形结构
+     */
     @GetMapping("/tree")
     public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer type) {
         Result result = new Result();
         List<Map<String, Object>> resultList = new ArrayList();
+        List<DbType> dbTypeList = new ArrayList<>();
 
         if(type == null || type == 0) {
-            for(DbType dbType : DbType.values()) {
-                Map map = new HashMap();
-                map.put("key", "key-0" + dbType.getIndex());
-                map.put("title", dbType.getName());
-                map.put("value", 1);
-                List<DataSource> hiveList = dataSourceService.query(loginUser.getId(), dbType.getIndex(), null);
-                List<Map> hiveChildren = new ArrayList<>();
-                for (DataSource dataSource : hiveList) {
-                    Map<String, Object> tmp = new HashMap();
-                    tmp.put("key", "key-0" + dbType.getIndex() + "-" + dataSource.getId());
-                    tmp.put("title", dataSource.getName());
-                    tmp.put("value", dataSource.getId());
-                    tmp.put("category1", dataSource.getCategory1());
-                    hiveChildren.add(tmp);
-                }
-                map.put("children", hiveChildren);
-                resultList.add(map);
-            }
+            dbTypeList.addAll(Arrays.asList(DbType.values()));
         } else {
-            DbType dbType = DbType.valueOf(type);
+            dbTypeList.add(DbType.valueOf(type));
+        }
+
+        for(DbType dbType : dbTypeList) {
             Map map = new HashMap();
             map.put("key", "key-0" + dbType.getIndex());
             map.put("title", dbType.getName());
@@ -304,12 +280,12 @@ public class DataSourceController extends BaseController {
                 tmp.put("key", "key-0" + dbType.getIndex() + "-" + dataSource.getId());
                 tmp.put("title", dataSource.getName());
                 tmp.put("value", dataSource.getId());
+                tmp.put("category1", dataSource.getCategory1());
                 hiveChildren.add(tmp);
             }
             map.put("children", hiveChildren);
             resultList.add(map);
         }
-
         result.setData(resultList);
         putMsg(result, Status.SUCCESS);
         return result;
