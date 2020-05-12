@@ -53,12 +53,12 @@ public class MapUtils {
         return resultStr.substring(0, resultStr.length() - joinChar.length());
     }
 
-    public static final List<Map<String, Object>> formatMapList(List<Map<String, Object>> inputMapList) {
+    public static final List<Map<String, Object>> formatMapList(List<Map<String, Object>> inputMapList, String y) {
         List<Map<String, Object>> resultList = new ArrayList<>();
         for(Map<String, Object> map : inputMapList) {
             Map<String, Object> newMap = new HashMap<>();
             newMap.put("x", map.get("dayStr").toString());
-            newMap.put("y", Long.parseLong(map.get("total").toString()));
+            newMap.put(y, Long.parseLong(map.get("total").toString()));
             resultList.add(newMap);
         }
         return resultList;

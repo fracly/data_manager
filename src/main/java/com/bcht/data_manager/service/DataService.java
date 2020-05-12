@@ -400,7 +400,7 @@ public class DataService extends BaseService {
 
     public Result countIncreaseByDay(String startDate, String endDate) {
         Result result  = new Result();
-        result.setData(MapUtils.formatMapList(dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59")));
+        result.setData(MapUtils.formatMapList(dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59"), "新增数"));
         putMsg(result, Status.SUCCESS);
         return result;
     }

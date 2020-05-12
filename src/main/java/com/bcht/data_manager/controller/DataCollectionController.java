@@ -111,9 +111,10 @@ public class DataCollectionController extends BaseController {
         String username = MapUtils.getString(parameter, "username");
         String password = MapUtils.getString(parameter, "password");
 
-        String command = SqoopUtils.importRDBSToHive(inputType, ip, port, database, table, username, password);
-
         Data data = dataService.queryById(outputId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(outputId);
+
+        String command = SqoopUtils.importRDBSToHive(inputType, ip, port, database, table, username, password, dataSource.getCategory1(), data.getDataName());
 
         // 记录执行历史
         Job job = new Job();
