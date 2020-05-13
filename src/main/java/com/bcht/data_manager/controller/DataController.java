@@ -258,60 +258,73 @@ public class DataController extends BaseController {
     @ResponseBody
     public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition) {
         // 根据文件类型判断处理逻辑：
-        //  1、HBase/Hive数据，下载成cvs文件，返回生成 ResponseEntity
-        //  2、HDFS 文件 由前端直接请求webhdfs rest api, 此接口仅记录下载记录
+        //  HBase/Hive数据，下载成cvs文件，返回生成 ResponseEntity
         Data data = dataService.queryById(dataId);
 
-        if (data.getType() == DbType.HDFS.getIndex()) {
-            dataService.logDownload(loginUser.getId(), data);
-            return ResponseEntity.status(HttpStatus.OK).body("HDFS文件下载成功");
-        } else {
-            DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-            List<String> lineList = null;
-            if(data.getType() == DbType.HIVE.getIndex()) {
-                try{
-                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0);
-                } catch (Exception e) {
-                    logger.error("下载Hive表数据失败\n" + e.getMessage());
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
-                }
-            } else {
-                try{
-                    lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName(), Constants.maxDownloadRecord);
-                } catch (IOException e) {
-                    logger.error("下载HBase数据失败\n" + e.getMessage());
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");
-                }
-            }
-            String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".csv";
-            File localFile =  new File(localFileName);
-            if(!localFile.exists()) {
-                localFile.getParentFile().mkdirs();
-            }
+        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+        List<String> lineList = null;
+        if(data.getType() == DbType.HIVE.getIndex()) {
             try{
-                FileWriter fw = new FileWriter(localFileName);
-                for(int i = 0; i < lineList.size(); i ++) {
-                    fw.write(lineList.get(i));
-                }
-                fw.flush();
-                fw.close();
-            }catch (IOException e) {
-                logger.error("查询数据写入本地文件失败" + e.getMessage());
-                e.printStackTrace();
-            }
-            dataService.logDownload(loginUser.getId(), data);
-            try {
-                org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
-                if(file == null){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据文件下载失败");
-                }
-                return ResponseEntity
-                        .ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getFilename(),"UTF-8") + "\"")
-                        .body(file);
+                lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0);
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
+                logger.error("下载Hive表数据失败\n" + e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
             }
+        } else if(data.getType() == DbType.HBASE.getIndex()){
+            try{
+                lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName(), Constants.maxDownloadRecord);
+            } catch (IOException e) {
+                logger.error("下载HBase数据失败\n" + e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取HBase数据失败");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件类型错误！");
         }
+        String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".csv";
+        File localFile =  new File(localFileName);
+        if(!localFile.exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+        try{
+            FileWriter fw = new FileWriter(localFileName);
+            for(int i = 0; i < lineList.size(); i ++) {
+                fw.write(lineList.get(i));
+            }
+            fw.flush();
+            fw.close();
+        }catch (IOException e) {
+            logger.error("查询数据写入本地文件失败" + e.getMessage());
+            e.printStackTrace();
+        }
+        logDownload(loginUser, (int) data.getId());
+        try {
+            org.springframework.core.io.Resource file = FileUtils.file2Resource(localFileName);
+            if(file == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("数据文件下载失败");
+            }
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getFilename(),"UTF-8") + "\"")
+                    .body(file);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
+        }
+    }
+
+    /**
+     * 数据下载记录接口
+     */
+    @GetMapping("/download/log")
+    public Result logDownload(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId) {
+        Result result = new Result();
+        Data data = dataService.queryById(dataId);
+
+        int count = dataService.logDownload(loginUser.getId(), data);
+        if(count >0 ) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
     }
 }
