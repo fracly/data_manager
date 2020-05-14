@@ -21,13 +21,9 @@ import org.apache.ibatis.jdbc.SQL;
 
 import java.util.Map;
 
-/**
- * label mapper provider
- */
 public class LabelMapperProvider {
 
     private static final String LABEL_TABLE_NAME = "t_data_manager_label";
-
     private static final String RELATION_LABEL_DATA_TABLE_NAME = "t_data_manager_relation_label_data";
 
     public String list(Map<String, Object> parameter) {
@@ -121,19 +117,6 @@ public class LabelMapperProvider {
         }.toString();
     }
 
-    public String top10(Map<String, Object> parameter) {
-        return new SQL() {
-            {
-                SELECT("*");
-                FROM(LABEL_TABLE_NAME + " a ");
-                WHERE("a.creatorId= #{creatorId}");
-                INNER_JOIN("(select label_id, count(data_id) as total from t_data_manager_relation_label_data group by label_id) b on a.id=b.label_id ");
-                ORDER_BY(" b.total desc limit 10");
-
-            }
-        }.toString();
-    }
-
     public String countData(Map<String, Object> parameter) {
         return new SQL() {
             {
@@ -143,6 +126,4 @@ public class LabelMapperProvider {
             }
         }.toString();
     }
-
-
 }

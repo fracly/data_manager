@@ -77,9 +77,4 @@ public class LabelService extends BaseService {
     public List<Label> queryByDataId(long dataId) {
         return labelMapper.queryByDataId(dataId);
     }
-
-    public List<Label> top10(int creatorId) {
-        return labelMapper.top10(creatorId);
-    }
-
 }

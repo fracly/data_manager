@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 标签Controller
+ * 标签的CURD、和统计信息
+ */
 @RestController
 @RequestMapping("/api/label")
 public class LabelController extends BaseController {
@@ -24,8 +28,78 @@ public class LabelController extends BaseController {
     @Autowired
     public LabelService labelService;
 
-    @GetMapping("/list-tree")
+    /**
+     * 新增标签
+     */
+    @PostMapping("/create")
     @ResponseBody
+    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name) {
+        logger.info("user {} is creating label using name {}", loginUser.getUsername(), name);
+        Result result = new Result();
+        boolean isSuccess = labelService.create(loginUser.getId(), name);
+        if(isSuccess) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    /**
+     * 删除标签
+     */
+    @GetMapping("/delete")
+    public Result delete(int labelId) {
+        logger.info("deleting label using id {}", labelId);
+        Result result = new Result();
+        int count = labelService.queryDataCountById(labelId);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_FAILED, "不可删除正在使用的标签");
+            return result;
+        }
+        boolean isSuccess = labelService.delete(labelId);
+
+        if(isSuccess) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "删除标签成功");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "删除标签失败");
+        }
+        return result;
+    }
+
+    /**
+     * 更新标签
+     */
+    @PostMapping("/update")
+    public Result update(int labelId, String name) {
+        logger.info("updating label using name {} and id {}", name, labelId);
+        Result result = new Result();
+        boolean isSuccess = labelService.update(labelId, name);
+        if(isSuccess) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    /**
+     * 标签查询-根据ID
+     */
+    @GetMapping("/queryById")
+    public Result queryById(int labelId) {
+        logger.info("query label using id {} ", labelId);
+        Result result = new Result();
+        Label label = labelService.queryById(labelId);
+        result.setData(label);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 标签查询-返回树形列表
+     */
+    @GetMapping("/list-tree")
     public Result listTree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String searchVal) {
         logger.info("user {}, query label tree list using name {}", loginUser.getUsername(), searchVal);
         Result result = new Result();
@@ -46,84 +120,14 @@ public class LabelController extends BaseController {
         return result;
     }
 
+    /**
+     * 标签查询-返回平行列表
+     */
     @GetMapping("/list-flat")
-    @ResponseBody
     public Result listFlat(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         logger.info("user {}, query flat label list ", loginUser.getUsername());
         Result result = new Result();
         List<Label> labelList = labelService.list(loginUser.getId(), null);
-        result.setData(labelList);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-
-    @PostMapping("/create")
-    @ResponseBody
-    public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name) {
-        logger.info("user {} is creating label using name {}", loginUser.getUsername(), name);
-        Result result = new Result();
-        boolean isSuccess = labelService.create(loginUser.getId(), name);
-        if(isSuccess) {
-            putMsg(result, Status.SUCCESS);
-        } else {
-            putMsg(result, Status.FAILED);
-        }
-        return result;
-    }
-
-    @GetMapping("/delete")
-    @ResponseBody
-    public Result delete(int labelId) {
-        logger.info("deleting label using id {}", labelId);
-        Result result = new Result();
-        int count = labelService.queryDataCountById(labelId);
-        if(count > 0) {
-            putMsg(result, Status.CUSTOM_FAILED, "不可删除正在使用的标签");
-            return result;
-        }
-        boolean isSuccess = labelService.delete(labelId);
-
-        if(isSuccess) {
-            putMsg(result, Status.CUSTOM_SUCESSS, "删除标签成功");
-        } else {
-            putMsg(result, Status.CUSTOM_FAILED, "删除标签失败");
-        }
-        return result;
-    }
-
-    @PostMapping("/update")
-    @ResponseBody
-    public Result update(int labelId, String name) {
-        logger.info("updating label using name {} and id {}", name, labelId);
-        Result result = new Result();
-        boolean isSuccess = labelService.update(labelId, name);
-        if(isSuccess) {
-            putMsg(result, Status.SUCCESS);
-        } else {
-            putMsg(result, Status.FAILED);
-        }
-        return result;
-    }
-
-    @GetMapping("/queryById")
-    @ResponseBody
-    public Result queryById(int labelId) {
-        logger.info("query label using id {} ", labelId);
-        Result result = new Result();
-        Label label = labelService.queryById(labelId);
-        result.setData(label);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-
-    @GetMapping("/top10")
-    @ResponseBody
-    public Result top10(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        logger.info("query top 10 label using creatorId {} ", loginUser.getId());
-        Result result = new Result();
-        List<Label> labelList = labelService.top10(loginUser.getId());
         result.setData(labelList);
         putMsg(result, Status.SUCCESS);
         return result;

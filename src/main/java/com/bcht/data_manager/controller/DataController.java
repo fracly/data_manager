@@ -145,8 +145,11 @@ public class DataController extends BaseController {
      * 数据修改-状态更新
      */
     @PostMapping("updateStatus")
-    public Result updateStatus(Integer dataId, Integer status) {
+    public Result updateStatus(@RequestBody Map<String, Object> parameter) {
+
         Result result = new Result();
+        Integer dataId = MapUtils.getInt(parameter, "dataId");
+        Integer status = MapUtils.getInt(parameter, "status");
         Data data = dataService.queryById(dataId);
         data.setStatus(status);
         dataService.update(data);
@@ -163,8 +166,6 @@ public class DataController extends BaseController {
         String columns = MapUtils.getString(parameter, "columns");
         return dataService.addColumn(dataId, columns);
     }
-
-
 
     /**
      * 数据查询-根据ID查询
