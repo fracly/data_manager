@@ -120,6 +120,7 @@ public class DataMapperProvider {
                 SET("`creatorId` = #{data.creatorId}");
                 SET("`update_time` = #{data.updateTime}");
                 SET("`description` = #{data.description}");
+                SET("`status` = #{data.status}");
                 WHERE("`id` = #{data.id}");
             }
         }.toString();
