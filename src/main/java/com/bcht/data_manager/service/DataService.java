@@ -63,7 +63,8 @@ public class DataService extends BaseService {
             return result;
         }
 
-        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, 0);
+        result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建Hive表成功");
         return result;
     }
@@ -81,7 +82,8 @@ public class DataService extends BaseService {
             return result;
         }
 
-        store2Mysql(dataSource, loginUser, name, tableName, description, labels);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, 0);
+        result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HBase表成功");
         return result;
     }
@@ -91,12 +93,13 @@ public class DataService extends BaseService {
      */
     public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels) {
         Result result = new Result();
-        store2Mysql(dataSource, loginUser, name, fileName, description, labels);
+        long newID = store2Mysql(dataSource, loginUser, name, fileName, description, labels, 0);
+        result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HDFS文件成功");
         return result;
     }
 
-    private void store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels) {
+    private Long store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels, Integer status) {
         Long currentMaxId = queryMaxId();
         Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
         Data data = new Data();
@@ -105,7 +108,7 @@ public class DataService extends BaseService {
         data.setUpdateTime(new Date());
         data.setCreatorId(loginUser.getId());
         data.setName(name);
-        data.setStatus(0);
+        data.setStatus(status);
         data.setType(dataSource.getType());
         data.setDataName(tableName);
         data.setDescription(description);
@@ -120,6 +123,7 @@ public class DataService extends BaseService {
         } catch(Exception e) {
             logger.error("插入数据资产失败，资产信息：{}， 报错信息：{}", data.toString(), e.getMessage());
         }
+        return nextId;
     }
 
     public int insert(Data data) {
@@ -400,7 +404,7 @@ public class DataService extends BaseService {
 
     public Result countIncreaseByDay(String startDate, String endDate) {
         Result result  = new Result();
-        result.setData(MapUtils.formatMapList(dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59"), "新增数"));
+        result.setData(MapUtils.formatMapList(dataMapper.countIncreaseByDay(startDate + " 00:00:00", endDate + " 23:59:59"), "y"));
         putMsg(result, Status.SUCCESS);
         return result;
     }

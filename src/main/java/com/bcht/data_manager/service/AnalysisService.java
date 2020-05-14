@@ -63,12 +63,12 @@ public class AnalysisService extends BaseService {
 
     public List<Map<String, Object>> searchCountByDay(String startDate, String endDate) {
         List<Map<String, Object>> tmpList = searchMapper.searchCountByDay(startDate, endDate);
-        return MapUtils.formatMapList(tmpList, "搜索次数");
+        return MapUtils.formatMapList(tmpList, "y");
     }
 
     public List<Map<String, Object>> searchUserByDay(String startDate, String endDate) {
         List<Map<String, Object>> tmpList = searchMapper.searchUserByDay(startDate, endDate);
-        return MapUtils.formatMapList(tmpList, "用户数");
+        return MapUtils.formatMapList(tmpList, "y");
     }
 
     public Integer searchUserTotal(String startDate, String endDate) {
