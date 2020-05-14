@@ -169,7 +169,7 @@ public class DataMapperProvider {
                 WHERE("creatorId = " + parameter.get("creatorId").toString());
                 Object name = parameter.get("name");
                 if(name != null && StringUtils.isNotEmpty(name.toString())) {
-                    WHERE("name like concat('%', " + parameter.get("name").toString() + ", '%')");
+                    WHERE("name like concat('%', '" + parameter.get("name").toString() + "', '%')");
                 }
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if (type != 0) {
