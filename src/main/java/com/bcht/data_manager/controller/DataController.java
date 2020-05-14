@@ -58,17 +58,17 @@ public class DataController extends BaseController {
      */
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
-                         String columns, String tableName, String createSql, String description, String labels, String fileName) {
+                         String columns, String tableName, String createSql, String description, String labels, String fileName, Integer status) {
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
         // 数据的创建根据数据源的不同，创建方式也不同
         if (type == DbType.HIVE.getIndex()) {
-            return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels);
+            return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels, status);
         } else if (type == DbType.HBASE.getIndex()) {
-            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels);
+            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels, status);
         } else if (type == DbType.HDFS.getIndex()) {
-            return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels);
+            return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels, status);
         }
         putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;
@@ -124,6 +124,7 @@ public class DataController extends BaseController {
         Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
         data.setName(MapUtils.getString(parameter, "name"));
         String labels = MapUtils.getString(parameter, "labels");
+        Integer status = MapUtils.getInt(parameter, "status");
         String[] ids = labels.replace("[", "").replace("]", "").split(",");
         List<Label> labelList = labelService.queryByDataId(data.getId());
         for(Label label : labelList) {
@@ -134,6 +135,7 @@ public class DataController extends BaseController {
         }
         data.setDescription(MapUtils.getString(parameter, "description"));
         data.setUpdateTime(new Date());
+        data.setStatus(status);
         dataService.update(data);
         putMsg(result, Status.SUCCESS);
         return result;

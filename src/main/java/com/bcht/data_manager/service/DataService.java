@@ -44,7 +44,7 @@ public class DataService extends BaseService {
      *      方式1:直接通过SQL的方式执行
      *      方式2: 拼接字段的方式，生成SQL再执行
      */
-    public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels) {
+    public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels, Integer status) {
         Result result = new Result();
         if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
             tableName = getTableName(createSql);
@@ -63,7 +63,7 @@ public class DataService extends BaseService {
             return result;
         }
 
-        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, 0);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建Hive表成功");
         return result;
@@ -72,7 +72,7 @@ public class DataService extends BaseService {
     /**
      * 创建Hbase表
      */
-    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels) {
+    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels, Integer status) {
         Result result = new Result();
         try{
             HBaseUtils.createTable(dataSource, tableName, columns);
@@ -82,7 +82,7 @@ public class DataService extends BaseService {
             return result;
         }
 
-        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, 0);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HBase表成功");
         return result;
@@ -91,15 +91,16 @@ public class DataService extends BaseService {
     /**
      * 创建HDFS文件，并上传
      */
-    public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels) {
+    public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels, Integer status) {
         Result result = new Result();
-        long newID = store2Mysql(dataSource, loginUser, name, fileName, description, labels, 0);
+        long newID = store2Mysql(dataSource, loginUser, name, fileName, description, labels, status);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HDFS文件成功");
         return result;
     }
 
     private Long store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels, Integer status) {
+        if(status == null) status = 0;
         Long currentMaxId = queryMaxId();
         Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
         Data data = new Data();
