@@ -142,6 +142,19 @@ public class DataController extends BaseController {
     }
 
     /**
+     * 数据修改-状态更新
+     */
+    @PostMapping("updateStatus")
+    public Result updateStatus(Integer dataId, Integer status) {
+        Result result = new Result();
+        Data data = dataService.queryById(dataId);
+        data.setStatus(status);
+        dataService.update(data);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
      * 数据修改-Hive表增加列
      */
     @PostMapping("/add-column")
