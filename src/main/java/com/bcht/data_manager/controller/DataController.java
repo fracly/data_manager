@@ -137,23 +137,7 @@ public class DataController extends BaseController {
         data.setUpdateTime(new Date());
         data.setStatus(status);
         dataService.update(data);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-    /**
-     * 数据修改-状态更新
-     */
-    @PostMapping("updateStatus")
-    public Result updateStatus(@RequestBody Map<String, Object> parameter) {
-
-        Result result = new Result();
-        Integer dataId = MapUtils.getInt(parameter, "dataId");
-        Integer status = MapUtils.getInt(parameter, "status");
-        Data data = dataService.queryById(dataId);
-        data.setStatus(status);
-        dataService.update(data);
-        putMsg(result, Status.SUCCESS);
+        putMsg(result, Status.CUSTOM_SUCESSS, "更新数据成功");
         return result;
     }
 
