@@ -19,9 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -311,6 +312,25 @@ public class DataController extends BaseController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件下载出错");
         }
+    }
+
+    @GetMapping("/download/url")
+    public String downloadUrl(String fileName) {
+        String result = "";
+        String urlName = PropertyUtils.getString("http.defaultURL") + fileName + "?op=OPEN";
+        try {
+            HttpURLConnection conn = (HttpURLConnection)new URL(urlName).openConnection();
+            conn.setInstanceFollowRedirects(false);
+            conn.setConnectTimeout(5000);
+            String location = conn.getHeaderField("Location");
+            int secondIndex = location.indexOf(':', 7);
+            String domain = location.substring(7, secondIndex);
+            String ip = PropertyUtils.getString(domain);
+            return location.replace(domain, ip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**
