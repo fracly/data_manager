@@ -255,6 +255,10 @@ public class DataMapperProvider {
                 if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
                     WHERE(" b.datasource_id = #{dataSourceId} ");
                 }
+                Object searchVal = parameter.get("searchVal");
+                if(searchVal != null && StringUtils.isNotEmpty(searchVal.toString())) {
+                    WHERE("a.name like concat('%', '" + parameter.get("searchVal").toString() + "', '%')");
+                }
                 WHERE(" a.creatorId = #{creatorId}");
                 ORDER_BY(" a.id desc limit #{offset}, #{pageSize}");
             }

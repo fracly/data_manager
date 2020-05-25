@@ -222,12 +222,12 @@ public class DataService extends BaseService {
     /**
      * 数据的查询 - 数据源关联接口
      */
-    public List<Data> list(int creatorId, int dataSourceId, int pageNo, int pageSize) {
+    public List<Data> list(int creatorId, int dataSourceId, int pageNo, int pageSize, String searchVal) {
         int offset = 0;
         if(pageNo != 1) {
             offset = (pageNo - 1) * pageSize;
         }
-        return dataMapper.list(creatorId, dataSourceId, offset, pageSize);
+        return dataMapper.list(creatorId, dataSourceId, offset, pageSize, searchVal);
     }
 
     public Integer listTotal(int creatorId, int dataSourceId) {
@@ -329,10 +329,14 @@ public class DataService extends BaseService {
         DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
         Data data = dataMapper.queryById(dataId);
 
-        List<String> list;
+        List<Map<String, Object>> list;
         try{
             if(dataSource.getType() == DbType.HIVE.getIndex()) {
                 list = HiveUtils.previewTableData(dataSource, data.getDataName());
+                List columnList = HiveUtils.getTableColumnMapList(dataSource, data.getDataName());
+                Map map = new HashMap();
+                map.put("columnNames", columnList);
+                result.setDataMap(map);
             } else if(dataSource.getType() == DbType.HBASE.getIndex()) {
                 list = HBaseUtils.previewTableData(dataSource, data.getDataName());
             } else{
@@ -340,14 +344,8 @@ public class DataService extends BaseService {
             }
             result.setData(list);
             putMsg(result, Status.SUCCESS);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             putMsg(result, Status.HIVE_PREVIEW_TABLE_DATA_FAILED);
-            logger.error("预览Hive表数据失败\n" + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
-            logger.error("预览Hive表数据失败\n" + e.getMessage());
-        } catch (IOException e) {
-            putMsg(result, Status.HBASE_PREVIEW_TABLE_DATA_FAILED);
             logger.error("预览Hive表数据失败\n" + e.getMessage());
         }
         return result;

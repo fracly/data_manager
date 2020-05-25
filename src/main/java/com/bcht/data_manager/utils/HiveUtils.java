@@ -104,7 +104,11 @@ public class HiveUtils {
         List<String> columnList = new ArrayList<>();
         List<Map<String, String>> mapList = getTableColumnMapList(dataSource, tableName);
         for(Map<String, String> map : mapList) {
-            columnList.add(map.get("name"));
+            if(map.get("comment") != null && org.apache.commons.lang3.StringUtils.isNotEmpty(map.get("comment"))){
+                columnList.add(map.get("comment"));
+            } else {
+                columnList.add(map.get("name"));
+            }
         }
         return columnList;
     }
@@ -159,8 +163,26 @@ public class HiveUtils {
 
     }
 
-    public static List<String> previewTableData(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
-        return downloadTableData(dataSource,tableName, null, Constants.maxPreviewRecord);
+    public static List<Map<String, Object>> previewTableData(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        Map<String, Object> resutMap = new HashMap<>();
+
+        Connection connection = getHiveConnection(dataSource);
+        List<String> columnList = getTableColumnNameList(dataSource, tableName);
+        resutMap.put("columnNameList", columnList);
+
+        String sql = "select * from " + tableName + " limit 10";
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while(rs.next()) {
+            Map<String, Object> map = new HashMap<>();
+            for(int i = 0; i < columnList.size(); i ++) {
+                map.put(columnList.get(i), rs.getString(i + 1));
+            }
+            resultList.add(map);
+        }
+        close(connection, stmt, rs);
+        return resultList;
     }
 
     public static void loadDataFromLocalFile(DataSource dataSource, String tableName, String localFilePath) throws SQLException, ClassNotFoundException {

@@ -116,7 +116,7 @@ public interface DataMapper {
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
     })
     @SelectProvider(type = DataMapperProvider.class, method = "list")
-    List<Data> list(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize);
+    List<Data> list(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize, @Param("searchVal") String searchVal);
 
     @SelectProvider(type = DataMapperProvider.class, method = "listTotal")
     Integer listTotal(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId);

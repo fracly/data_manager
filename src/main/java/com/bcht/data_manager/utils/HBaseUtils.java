@@ -155,8 +155,8 @@ public class HBaseUtils {
         return  resultList;
     }
 
-    public static List<String> previewTableData(DataSource dataSource, String tableName) throws IOException {
-        return downloadTableData(dataSource, tableName, Constants.maxPreviewRecord);
+    public static List<Map<String, Object>> previewTableData(DataSource dataSource, String tableName) throws IOException {
+        return null;
     }
 
     //关闭资源

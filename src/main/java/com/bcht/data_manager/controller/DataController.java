@@ -228,13 +228,13 @@ public class DataController extends BaseController {
      * 数据查询-根据数据源查询
      */
     @GetMapping("/listByDataSource")
-    public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize) {
+    public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize, String searchVal) {
         Result result = new Result();
         if(pageNo == null || pageNo == 0) { pageNo = 1; }
         if(pageSize == null || pageSize == 0) { pageSize = 10; }
         if(dataSourceId == null) { dataSourceId = 0; }
 
-        List<Data> dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize);
+        List<Data> dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize, searchVal);
         for(Data data : dataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
