@@ -145,7 +145,7 @@ public class DataCollectionController extends BaseController {
     }
 
     @PostMapping("/file")
-    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, MultipartFile file, Long dataId, Integer inputType) {
+    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, String hdfsPath, Long dataId, Integer inputType) {
         Result result = new Result();
 
 
@@ -161,27 +161,12 @@ public class DataCollectionController extends BaseController {
         job.setType(FILE2HIVE);
         job.setOutputName(data.getDataName());
 
-        String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
-
-        File localFile =  new File(localFileName);
-        try{
-            if(!localFile.getParentFile().exists()){
-                localFile.getParentFile().mkdirs();
-            }
-            file.transferTo(localFile);
-        } catch (IOException e) {
-            putMsg(result, Status.FILE_UPLOAD_FAILED);
-            job.setStatus(FAILED);
-            collectionMapper.insert(job);
-            logger.error("文件写入本地失败" + e.getMessage());
-            return result;
-        }
 
         if(data.getType() == DbType.HIVE.getIndex()) {
             try{
-                HiveUtils.loadDataFromLocalFile(dataSource, data.getDataName(), localFileName);
+                HiveUtils.loadDataFromHdfsFile(dataSource, data.getDataName(), hdfsPath);
             } catch (Exception e) {
-                putMsg(result, Status.LOAD_LOCAL_FILE_TO_HIVE_TABLE_FAILED);
+                putMsg(result, Status.LOAD_HDFS_FILE_TO_HIVE_TABLE_FAILED);
                 logger.error("load data local 到Hive表失败，请查询原因" + e.getMessage());
                 job.setStatus(FAILED);
                 collectionMapper.insert(job);

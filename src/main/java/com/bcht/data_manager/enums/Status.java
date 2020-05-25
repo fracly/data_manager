@@ -71,6 +71,7 @@ public enum Status {
     EXECUTE_SHELL_FAILED(12001, "shell脚本执行失败"),
     FILE_UPLOAD_FAILED(12002, "文件上传至服务器本地失败"),
     LOAD_LOCAL_FILE_TO_HIVE_TABLE_FAILED(12003, "本地文件上传至Hive表失败-load data local"),
+    LOAD_HDFS_FILE_TO_HIVE_TABLE_FAILED(12004, "HDFS文件上传至Hive表失败- load data hdfs"),
     ;
 
     private int code;
