@@ -52,7 +52,7 @@ public class DataService extends BaseService {
             createSql = composeCreateSql(dataSource.getCategory1(), tableName, columns);
         }
         try{
-            HiveUtils.createTable(dataSource, createSql);
+            HiveUtils.createTable(dataSource, createSql, tableName);
         } catch (SQLException e) {
             putMsg(result, Status.HIVE_CREATE_TABLE_FAILED);
             logger.error("Hive创建表失败\n" + e.getMessage());

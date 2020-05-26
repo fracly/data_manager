@@ -1,6 +1,5 @@
 package com.bcht.data_manager.controller;
 
-import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.Job;
@@ -16,13 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
-import org.springframework.web.multipart.MultipartFile;
 
 import static com.bcht.data_manager.consts.Constants.*;
 
@@ -145,7 +142,7 @@ public class DataCollectionController extends BaseController {
     }
 
     @PostMapping("/file")
-    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, String hdfsPath, Long dataId, Integer inputType) {
+    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, String hdfsPath, Long dataId, boolean overwrite, Integer inputType) {
         Result result = new Result();
 
 
@@ -164,10 +161,10 @@ public class DataCollectionController extends BaseController {
 
         if(data.getType() == DbType.HIVE.getIndex()) {
             try{
-                HiveUtils.loadDataFromHdfsFile(dataSource, data.getDataName(), hdfsPath);
+                HiveUtils.loadDataFromHdfsFile(dataSource, data.getDataName(), overwrite, hdfsPath);
             } catch (Exception e) {
                 putMsg(result, Status.LOAD_HDFS_FILE_TO_HIVE_TABLE_FAILED);
-                logger.error("load data local 到Hive表失败，请查询原因" + e.getMessage());
+                logger.error("load data hdfs 到Hive表失败，请查询原因" + e.getMessage());
                 job.setStatus(FAILED);
                 collectionMapper.insert(job);
                 return result;
@@ -177,6 +174,7 @@ public class DataCollectionController extends BaseController {
         }
         job.setStatus(FINISHED);
         collectionMapper.insert(job);
+        putMsg(result, Status.CUSTOM_SUCESSS, "导入数据成功");
         return result;
     }
 

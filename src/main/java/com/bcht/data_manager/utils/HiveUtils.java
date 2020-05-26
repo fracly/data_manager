@@ -50,12 +50,14 @@ public class HiveUtils {
         dropDatabase(dataSource, dataSource.getCategory1());
     }
 
-    public static void createTable(DataSource dataSource, String createSql) throws SQLException, ClassNotFoundException {
+    public static void createTable(DataSource dataSource, String createSql, String tableName) throws SQLException, ClassNotFoundException {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
         stmt.execute(createSql);
+        stmt.execute("alter table " + tableName + " set serdeproperties('field.delim'=' ')");
         close(connection, stmt);
     }
+
 
     public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns)  throws SQLException, ClassNotFoundException{
         Connection connection = getHiveConnection(dataSource);
@@ -113,6 +115,15 @@ public class HiveUtils {
         return columnList;
     }
 
+    public static List<String> getTableColumnCommentList(DataSource dataSource, String tableName) throws SQLException, ClassNotFoundException {
+        List<String> columnList = new ArrayList<>();
+        List<Map<String, String>> mapList = getTableColumnMapList(dataSource, tableName);
+        for(Map<String, String> map : mapList) {
+           columnList.add(map.get("name"));
+        }
+        return columnList;
+    }
+
 
 
     //DML
@@ -120,7 +131,7 @@ public class HiveUtils {
         List<String> result = new ArrayList<>();
 
         Connection connection = getHiveConnection(dataSource);
-        List<String> columnList = getTableColumnNameList(dataSource, tableName);
+        List<String> columnList = getTableColumnCommentList(dataSource, tableName);
 
         StringBuilder firstLine = new StringBuilder();
         for(int j = 0; j < columnList.size(); j ++) {
@@ -192,10 +203,17 @@ public class HiveUtils {
         close(connection, stmt);
     }
 
-    public static void loadDataFromHdfsFile(DataSource dataSource, String tableName, String hdfsPath) throws SQLException, ClassNotFoundException {
+    public static void loadDataFromHdfsFile(DataSource dataSource, String tableName, boolean overwrite, String hdfsPath) throws SQLException, ClassNotFoundException {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
-        stmt.execute("load data inpath '" + PropertyUtils.getString("fs.defaultFS") + hdfsPath + "'");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("load data inpath '");
+        stringBuilder.append(PropertyUtils.getString("fs.defaultFS") + hdfsPath + "' ");
+        if(overwrite) {
+            stringBuilder.append(" overwrite ");
+        }
+        stringBuilder.append(" into table " + dataSource.getCategory1() + "." + tableName);
+        stmt.execute(stringBuilder.toString());
         close(connection, stmt);
     }
     // 关闭资源
