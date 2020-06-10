@@ -2,7 +2,9 @@ package com.bcht.data_manager.controller;
 
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.User;
+import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.SessionService;
+import com.bcht.data_manager.service.SystemService;
 import com.bcht.data_manager.service.UserService;
 import com.bcht.data_manager.utils.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -27,11 +30,14 @@ public class LoginController extends BaseController{
     @Autowired
     private SessionService sessionService;
 
+    @Autowired
+    private SystemService systemService;
+
     /**
      * logout
      */
     @PostMapping("/signOut")
-    public Result signOut(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, HttpServletRequest request){
+    public Result signOut(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, HttpServletRequest request, HttpServletResponse response){
         logger.info("login user:{} sign out", loginUser.getUsername());
         String ip = getClientIpAddress(request);
         userService.signOut(ip, loginUser);
@@ -68,9 +74,20 @@ public class LoginController extends BaseController{
         }
 
         //verify name/password
+        int errorCount = userService.queryErrorCount(user.getUsername());
+        if (errorCount >= 5) {
+            result.setCode(-1);
+            result.setMsg("该账号已经被锁定，请联系管理员");
+            User user1 = userService.queryByName(user.getUsername());
+            if(user1 != null) {
+                systemService.disableUser(user1.getId());
+            }
+
+            return result;
+        }
         User userE = userService.auth(user.getUsername(), user.getPassword());
         if(userE == null) {
-            result.setMsg("用户不存在或者密码不正确");
+            result.setMsg("账号或密码错误");
             result.setCode(-1);
             return result;
         }
@@ -88,9 +105,12 @@ public class LoginController extends BaseController{
 
         userE.setToken(token);
 
+        systemService.updateUserLoginInfo(userE.getId(), new Date(), ip);
+        userService.logLogin(userE.getName(), userE.getUsername(), ip);
         result.setCode(0);
         result.setMsg("登录成功");
         Cookie cookie = new Cookie(Constants.SESSION_ID, sessionId);
+        cookie.setMaxAge(60 * 60 * 2); //单位秒
         cookie.setPath("/api");
         response.addCookie(cookie);
         logger.info("sessionId = " + sessionId);

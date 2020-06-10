@@ -99,19 +99,4 @@ public class SessionService extends BaseService{
 
         return session.getId();
     }
-
-    /**
-     * sign out
-     *
-     * @param ip
-     * @param loginUser
-     */
-    public void signOut(String ip, User loginUser) {
-        /**
-         * query session by user id and ip
-         */
-        Session session = sessionMapper.queryByUserIdAndIp(loginUser.getId(), ip);
-        //delete session
-        sessionMapper.deleteById(session.getId());
-    }
 }

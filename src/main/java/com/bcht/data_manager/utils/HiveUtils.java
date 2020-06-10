@@ -54,16 +54,24 @@ public class HiveUtils {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
         stmt.execute(createSql);
-        stmt.execute("alter table " + tableName + " set serdeproperties('field.delim'=' ')");
+        stmt.execute("alter table " + tableName + " set serdeproperties('field.delim'='|')");
         close(connection, stmt);
     }
-
 
     public static void addTableColumn(DataSource dataSource, String tableName, List<Map> columns)  throws SQLException, ClassNotFoundException{
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
         StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " add columns (");
         StringUtils.appendColumns(alterTableSql, columns);
+        stmt.execute(alterTableSql.toString());
+        close(connection, stmt);
+    }
+
+    public static void modifyTableColumn(DataSource dataSource, String tableName, String type, String oldName, String newName, String comment)  throws SQLException, ClassNotFoundException{
+        Connection connection = getHiveConnection(dataSource);
+        Statement stmt = connection.createStatement();
+        StringBuilder alterTableSql = new StringBuilder("alter table " +  tableName + " change " + oldName
+                + " " + newName + " " + type + " comment '" + comment + "'");
         stmt.execute(alterTableSql.toString());
         close(connection, stmt);
     }
@@ -94,6 +102,7 @@ public class HiveUtils {
         while (rs.next()) {
             Map<String, String> m = new HashMap<>();
             m.put("name", rs.getString(1));
+            m.put("key", rs.getString(1));
             m.put("type", rs.getString(2));
             m.put("comment", rs.getString(3));
             columnList.add(m);
@@ -123,8 +132,6 @@ public class HiveUtils {
         }
         return columnList;
     }
-
-
 
     //DML
     public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition, int limit) throws SQLException, ClassNotFoundException {
@@ -180,9 +187,9 @@ public class HiveUtils {
 
         Connection connection = getHiveConnection(dataSource);
         List<String> columnList = getTableColumnNameList(dataSource, tableName);
-        resutMap.put("columnNameList", columnList);
 
-        String sql = "select * from " + tableName + " limit 10";
+        resutMap.put("columnNameList", columnList);
+        String sql = "select * from " + tableName + " limit 100";
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while(rs.next()) {

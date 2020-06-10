@@ -132,7 +132,9 @@ public class DataController extends BaseController {
             labelService.deleteDataLabelRelation(label.getId(), data.getId());
         }
         for(String id: ids) {
-            labelService.insertDataLabelRelation(Integer.parseInt(id), data.getId());
+            if(org.apache.commons.lang3.StringUtils.isNotEmpty(id)){
+                labelService.insertDataLabelRelation(Integer.parseInt(id), data.getId());
+            }
         }
         data.setDescription(MapUtils.getString(parameter, "description"));
         data.setUpdateTime(new Date());
@@ -150,6 +152,21 @@ public class DataController extends BaseController {
         int dataId = MapUtils.getInt(parameter, "dataId");
         String columns = MapUtils.getString(parameter, "columns");
         return dataService.addColumn(dataId, columns);
+    }
+
+    /**
+     * 数据修改-Hive表增加列
+     */
+    @PostMapping("/modify-column")
+    public Result modifyColumn(@RequestBody Map<String, Object> parameter) {
+        int dataId = MapUtils.getInt(parameter, "dataId");
+        String type = MapUtils.getString(parameter, "type");
+        String oldName = MapUtils.getString(parameter, "key");
+        String newName = MapUtils.getString(parameter, "name");
+        String comment = MapUtils.getString(parameter, "comment");
+
+
+        return dataService.modifyColumn(dataId, type, oldName, newName, comment);
     }
 
     /**
@@ -212,10 +229,10 @@ public class DataController extends BaseController {
     }
 
     /**
-     * 数据查询-预览前N行数据
+     * 数据查询-预览前1000行数据
      */
     @GetMapping("/preview")
-    public Result preview(int dataId) {
+    public Result preview(int dataId, Integer pageNo, Integer pageSize) {
         Data data = dataService.queryById(dataId);
         if(data.getType() == DbType.HDFS.getIndex()) {
             return dataService.hdfsPreview(dataId);

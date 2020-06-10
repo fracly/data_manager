@@ -1,5 +1,6 @@
 package com.bcht.data_manager.entity;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -9,9 +10,17 @@ public class Role {
 
     private int id;
 
+    private int key;
+
     private String name;
 
     private String cn_name;
+
+    private int status;
+
+    private Date createTime;
+
+    private int creatorId;
 
     private String desc;
 
@@ -31,6 +40,14 @@ public class Role {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
     }
 
     public String getName() {
@@ -57,13 +74,27 @@ public class Role {
         this.desc = desc;
     }
 
-    @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", cn_name='" + cn_name + '\'' +
-                ", desc='" + desc + '\'' +
-                '}';
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public int getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(int creatorId) {
+        this.creatorId = creatorId;
     }
 }

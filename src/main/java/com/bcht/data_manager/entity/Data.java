@@ -24,6 +24,8 @@ public class Data {
 
     private int creatorId;
 
+    private String owner;
+
     private Date createTime;
 
     private Date updateTime;
@@ -96,6 +98,14 @@ public class Data {
         this.creatorId = creatorId;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -160,24 +170,4 @@ public class Data {
         this.dataSourceName = dataSourceName;
     }
 
-    @Override
-    public String toString() {
-        return "Data{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", dataName='" + dataName + '\'' +
-                ", type=" + type +
-                ", description='" + description + '\'' +
-                ", size='" + size + '\'' +
-                ", creatorId=" + creatorId +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
-                ", status=" + status +
-                ", destroyMethod=" + destroyMethod +
-                ", destroyTime='" + destroyTime + '\'' +
-                ", dataSourceId=" + dataSourceId +
-                ", dataSourceName='" + dataSourceName + '\'' +
-                ", labelList=" + labelList +
-                '}';
-    }
 }

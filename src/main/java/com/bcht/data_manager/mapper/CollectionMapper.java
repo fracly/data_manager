@@ -20,6 +20,7 @@ public interface CollectionMapper {
             @Result(property = "inputParameter", column = "input_parameter", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "outputType", column = "output_type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "outputId", column = "output_id", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "outputName", column = "output_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "startTime", column = "start_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
             @Result(property = "endTime", column = "end_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
             @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),

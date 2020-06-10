@@ -44,6 +44,19 @@ public class MapUtils {
         }
     }
 
+    public static final boolean getBoolean(Map<String, Object> map, String key) {
+        boolean result = false;
+        Object valueObj = map.get(key);
+        if(valueObj != null) {
+            try{
+                result = Boolean.parseBoolean(valueObj.toString());
+            }catch (Exception e) {
+                logger.error("调用工具类MapUtils.getBoolean出错：" + e.getMessage());
+            }
+        }
+        return result;
+    }
+
     public static final String join(Set<Integer> set, String joinChar) {
         StringBuilder sb = new StringBuilder();
         for(Integer integer : set) {

@@ -3,9 +3,13 @@ package com.bcht.data_manager.entity;
 public class Permission {
     private int id;
 
+    private int key;
+
     private String name;
 
     private String cn_name;
+
+    private int status;
 
     private String operations;
 
@@ -15,6 +19,14 @@ public class Permission {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
     }
 
     public String getName() {
@@ -33,21 +45,19 @@ public class Permission {
         this.cn_name = cn_name;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public String getOperations() {
         return operations;
     }
 
     public void setOperations(String operations) {
         this.operations = operations;
-    }
-
-    @Override
-    public String toString() {
-        return "Permission{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", cn_name='" + cn_name + '\'' +
-                ", operations='" + operations + '\'' +
-                '}';
     }
 }

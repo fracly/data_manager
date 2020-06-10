@@ -46,7 +46,7 @@ public class UserService extends BaseService{
         Result result = new Result<>();
         Map<String, Object> map = new HashMap<>();
         User user = userMapper.findById(id);
-        List<Role> roleList = userRoleMapper.findRolesByUser(user);
+        List<Role> roleList = userRoleMapper.findRolesByUser(id);
         if(roleList.size() > 0) {
             Role firstRole = roleList.get(0);
             Map<String, Object> roleObjMap = new HashMap();
@@ -90,11 +90,23 @@ public class UserService extends BaseService{
 
     public User auth(String username, String password) {
         User user = userMapper.findByName(username);
-        if(password.equals(user.getPassword())){
-            return user;
-        } else {
-            return null;
+        if(user != null){
+            if(password.equals(user.getPassword())){
+                userMapper.cleanErrorCount(username);
+                return user;
+            } else {
+                userMapper.increseErrorCount(username);
+                return null;
+            }
         }
+        return null;
+    }
 
+    public int logLogin(String name, String username, String ip) {
+        return userMapper.insertLoginLog(name, username, new Date(), ip);
+    }
+
+    public int queryErrorCount(String username) {
+        return userMapper.queryErrorCount(username);
     }
 }

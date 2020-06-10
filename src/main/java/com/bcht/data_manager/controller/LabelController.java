@@ -38,9 +38,9 @@ public class LabelController extends BaseController {
         Result result = new Result();
         boolean isSuccess = labelService.create(loginUser.getId(), name);
         if(isSuccess) {
-            putMsg(result, Status.SUCCESS);
+            putMsg(result, Status.CUSTOM_SUCESSS, "创建数据标签成功");
         } else {
-            putMsg(result, Status.FAILED);
+            putMsg(result, Status.CUSTOM_FAILED, "创建数据标签失败");
         }
         return result;
     }
@@ -71,14 +71,14 @@ public class LabelController extends BaseController {
      * 更新标签
      */
     @PostMapping("/update")
-    public Result update(int labelId, String name) {
-        logger.info("updating label using name {} and id {}", name, labelId);
+    public Result update(int id, String name) {
+        logger.info("updating label using name {} and id {}", name, id);
         Result result = new Result();
-        boolean isSuccess = labelService.update(labelId, name);
+        boolean isSuccess = labelService.update(id, name);
         if(isSuccess) {
-            putMsg(result, Status.SUCCESS);
+            putMsg(result, Status.CUSTOM_SUCESSS, "更新数据标签成功");
         } else {
-            putMsg(result, Status.FAILED);
+            putMsg(result, Status.CUSTOM_FAILED, "更新数据标签失败");
         }
         return result;
     }

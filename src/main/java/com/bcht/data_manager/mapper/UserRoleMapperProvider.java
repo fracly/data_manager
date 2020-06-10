@@ -25,9 +25,9 @@ import java.util.Map;
  */
 public class UserRoleMapperProvider {
 
-    private static final String USER_TABLE_NAME = "t_data_manager_role";
+    private static final String USER_TABLE_NAME = "t_data_manager_user";
 
-    private static final String ROLE_TABLE_NAME = "t_data_manager_permission";
+    private static final String ROLE_TABLE_NAME = "t_data_manager_role";
 
     private static final String USER_ROLE_RELATION_TABLE_NAME = "t_data_manager_relation_user_role";
 
@@ -40,11 +40,11 @@ public class UserRoleMapperProvider {
     public String findRolesByUser(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("a.*");
+                SELECT("c.*");
                 FROM(USER_TABLE_NAME + " a ");
                 INNER_JOIN(USER_ROLE_RELATION_TABLE_NAME + " b on a.id = b.user_id ");
                 INNER_JOIN(ROLE_TABLE_NAME + " c on b.role_id = c.id ");
-                WHERE("a.id = #{user.id}");
+                WHERE("a.id = #{id}");
             }
         }.toString();
     }

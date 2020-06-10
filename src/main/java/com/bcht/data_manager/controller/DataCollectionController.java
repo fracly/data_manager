@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -80,7 +83,6 @@ public class DataCollectionController extends BaseController {
                 putMsg(result, Status.NOT_FOUND_TABLE_IN_THIS_DATABASE);
                 return result;
             }
-
         } catch (ClassNotFoundException e) {
             putMsg(result, Status.MYSQL_JDBC_DRIVER_CLASS_NOT_FOUNT);
             logger.error("连接测试失败" + e.getMessage());
@@ -107,12 +109,14 @@ public class DataCollectionController extends BaseController {
         String table = MapUtils.getString(parameter, "table");
         String username = MapUtils.getString(parameter, "username");
         String password = MapUtils.getString(parameter, "password");
+        boolean overwrite = MapUtils.getBoolean(parameter, "overwrite");
 
         Data data = dataService.queryById(outputId);
         DataSource dataSource = dataService.queryDataSourceByDataId(outputId);
 
-        String command = SqoopUtils.importRDBSToHive(inputType, ip, port, database, table, username, password, dataSource.getCategory1(), data.getDataName());
+        String command = SqoopUtils.importRDBSToHive(inputType, ip, port, database, table, username, password, dataSource.getCategory1(), data.getDataName(), overwrite);
 
+        System.out.println(command);
         // 记录执行历史
         Job job = new Job();
         job.setCreatorId(loginUser.getId());
@@ -128,14 +132,23 @@ public class DataCollectionController extends BaseController {
         StringBuilder output = new StringBuilder();
         try{
             process = Runtime.getRuntime().exec(command);
-        } catch (IOException e) {
+            OutputProcessor error = new OutputProcessor(process.getErrorStream());
+            OutputProcessor input = new OutputProcessor(process.getInputStream());
+            error.start();
+            input.start();
+            int exitCode = process.waitFor();
+            if(exitCode == 0) {
+                job.setStatus(FINISHED);
+            } else {
+                job.setStatus(FAILED);
+            }
+        } catch (IOException | InterruptedException e) {
             putMsg(result, Status.EXECUTE_SHELL_FAILED);
             logger.error("sqoop 脚本执行失败！");
             job.setStatus(FAILED);
             collectionMapper.insert(job);
             return result;
         }
-        job.setStatus(RUNNING);
         collectionMapper.insert(job);
         putMsg(result, Status.CUSTOM_SUCESSS, "sqoop 脚本执行成功");
         return result;
@@ -173,6 +186,7 @@ public class DataCollectionController extends BaseController {
             putMsg(result, Status.CUSTOM_FAILED, "暂不支持除Hive表之外的数据导入！");
         }
         job.setStatus(FINISHED);
+        job.setEndTime(new Date());
         collectionMapper.insert(job);
         putMsg(result, Status.CUSTOM_SUCESSS, "导入数据成功");
         return result;
@@ -199,4 +213,27 @@ public class DataCollectionController extends BaseController {
         return result;
     }
 
+}
+
+class OutputProcessor extends Thread {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutputProcessor.class);
+    private InputStream inputStream;
+
+    public OutputProcessor(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    @Override
+    public void run() {
+        try {
+            InputStreamReader isr = new InputStreamReader(inputStream);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                LOGGER.info("{}", line);
+            }
+        } catch (Exception e) {
+            LOGGER.error("", e.getMessage(), e);
+        }
+    }
 }

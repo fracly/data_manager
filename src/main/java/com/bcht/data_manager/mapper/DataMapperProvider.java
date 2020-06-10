@@ -12,6 +12,8 @@ public class DataMapperProvider {
 
     private static final String DATA_TABLE_NAME = "t_data_manager_data";
 
+    public static final String USER_TABLE_NAME = "t_data_manager_user";
+
     private static final String DATASOURCE_TABLE_NAME = "t_data_manager_datasource";
 
     private static final String DATASOURCE_DATA_RELATION_TABLE_NAME = "t_data_manager_relation_datasource_data";
@@ -248,9 +250,10 @@ public class DataMapperProvider {
     public String list(Map<String, Object> parameter) {
         return new SQL() {
             {
-                SELECT("a.*");
+                SELECT("a.*, c.username as owner");
                 FROM(DATA_TABLE_NAME + " a ");
                 INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id ");
+                INNER_JOIN(USER_TABLE_NAME + " c on a.creatorId = c.id");
                 Object dataSourceId = parameter.get("dataSourceId");
                 if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
                     WHERE(" b.datasource_id = #{dataSourceId} ");

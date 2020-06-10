@@ -54,7 +54,7 @@ public class DataService extends BaseService {
         try{
             HiveUtils.createTable(dataSource, createSql, tableName);
         } catch (SQLException e) {
-            putMsg(result, Status.HIVE_CREATE_TABLE_FAILED);
+            putMsg(result, Status.CUSTOM_FAILED, "表名冲突！");
             logger.error("Hive创建表失败\n" + e.getMessage());
             return result;
         } catch (ClassNotFoundException e) {
@@ -167,20 +167,39 @@ public class DataService extends BaseService {
             List<Map> list = JSON.parseArray(columns, Map.class);
             try{
                 HiveUtils.addTableColumn(dataSource, data.getDataName(), list);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 putMsg(result, Status.HIVE_TABLE_ADD_COLUMN_FAILED);
                 logger.error("Hive表添加字段失败！" + e.getMessage());
                 return result;
-            } catch (ClassNotFoundException e) {
-                putMsg(result, Status.HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT);
-                logger.error("Hive驱动类加载失败！" + e.getMessage());
-                return result;
             }
-
             data.setUpdateTime(new Date());
             dataMapper.update(data);
         }
         putMsg(result, Status.CUSTOM_SUCESSS, "添加字段成功");
+        return result;
+    }
+
+    public Result modifyColumn(int dataId, String type, String oldName, String newName, String comment) {
+        Result result = new Result();
+
+        Data data = dataMapper.queryById(dataId);
+        DataSource dataSource = dataMapper.queryDataSourceByDataId(dataId);
+
+        if(data.getType() != DbType.HIVE.getIndex()) {
+            putMsg(result, Status.CUSTOM_FAILED, "目前只支持Hive表进行字段的操作");
+            return result;
+        } else{
+            try{
+                HiveUtils.modifyTableColumn(dataSource, data.getDataName(), type, oldName, newName, comment);
+            } catch (Exception e) {
+                putMsg(result, Status.HIVE_TABLE_ADD_COLUMN_FAILED);
+                logger.error("Hive表修改字段失败！" + e.getMessage());
+                return result;
+            }
+            data.setUpdateTime(new Date());
+            dataMapper.update(data);
+        }
+        putMsg(result, Status.CUSTOM_SUCESSS, "修改字段成功");
         return result;
     }
 

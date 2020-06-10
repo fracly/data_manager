@@ -109,6 +109,7 @@ public interface DataMapper {
             @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "owner", column = "owner", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
             @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
             @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),

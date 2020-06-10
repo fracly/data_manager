@@ -46,6 +46,7 @@ public class CollectionMapperProvider {
                 VALUES("`input_parameter`", "#{job.inputParameter}");
                 VALUES("`output_type`", "#{job.outputType}");
                 VALUES("`output_id`", "#{job.outputId}");
+                VALUES("`output_name`", "#{job.outputName}");
                 VALUES("`start_time`", "#{job.startTime}");
                 VALUES("`end_time`", "#{job.endTime}");
                 VALUES("`status`", "#{job.status}");

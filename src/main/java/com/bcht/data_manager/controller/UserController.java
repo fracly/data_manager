@@ -29,6 +29,7 @@ public class UserController extends BaseController{
      */
     @GetMapping("/info")
     public Result info(@RequestAttribute(value = Constants.SESSION_USER) User loginUser){
+
         return userService.queryById(loginUser.getId());
     }
 
