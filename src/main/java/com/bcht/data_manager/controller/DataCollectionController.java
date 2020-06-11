@@ -54,19 +54,19 @@ public class DataCollectionController extends BaseController {
             switch (type) {
                 case 1:
                     Class.forName(COM_MYSQL_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + database;
+                    jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
                     break;
                 case 2:
                     Class.forName(COM_ORACLE_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:oracle:thin:@" + ip + ":" + port + "/" + database;
+                    jdbcUrl = "jdbc:oracle:thin:@" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
                     break;
                 case 3:
                     Class.forName(COM_DB2_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:db2://" + ip + ":" + port + "/" + database;
+                    jdbcUrl = "jdbc:db2://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
                     break;
                 case 4:
                     Class.forName(COM_SQLSERVER_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:sqlserver://" + ip + ":" + port + "/" + database;
+                    jdbcUrl = "jdbc:sqlserver://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
                     break;
             }
             Set<String> tableSet = new HashSet<>();
