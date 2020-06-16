@@ -203,10 +203,16 @@ public class HiveUtils {
         return resultList;
     }
 
-    public static void loadDataFromLocalFile(DataSource dataSource, String tableName, String localFilePath) throws SQLException, ClassNotFoundException {
+    public static void loadDataFromLocalFile(DataSource dataSource, String tableName, String localFilePath, boolean overwrite) throws SQLException, ClassNotFoundException {
         Connection connection = getHiveConnection(dataSource);
         Statement stmt = connection.createStatement();
-        stmt.execute("load data local inpath '" + localFilePath +"'");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("load data local inpath '" + localFilePath + "'");
+        if(overwrite) {
+            stringBuilder.append(" overwrite ");
+        }
+        stringBuilder.append(" into table " + dataSource.getCategory1() + "." + tableName);
+        stmt.execute(stringBuilder.toString());
         close(connection, stmt);
     }
 
