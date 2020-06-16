@@ -74,6 +74,14 @@ public class LoginController extends BaseController{
         }
 
         //verify name/password
+        User userE = userService.auth(user.getUsername(), user.getPassword());
+        if(userE == null) {
+            result.setMsg("账号或密码错误");
+            result.setCode(-1);
+            return result;
+        }
+
+
         int errorCount = userService.queryErrorCount(user.getUsername());
         if (errorCount >= 5) {
             result.setCode(-1);
@@ -85,12 +93,7 @@ public class LoginController extends BaseController{
 
             return result;
         }
-        User userE = userService.auth(user.getUsername(), user.getPassword());
-        if(userE == null) {
-            result.setMsg("账号或密码错误");
-            result.setCode(-1);
-            return result;
-        }
+
 
         // create session
         String sessionId = sessionService.createSession(userE, ip);
@@ -110,7 +113,6 @@ public class LoginController extends BaseController{
         result.setCode(0);
         result.setMsg("登录成功");
         Cookie cookie = new Cookie(Constants.SESSION_ID, sessionId);
-        cookie.setMaxAge(60 * 60 * 2); //单位秒
         cookie.setPath("/api");
         response.addCookie(cookie);
         logger.info("sessionId = " + sessionId);
