@@ -82,7 +82,6 @@ public class DataSourceMapperProvider {
             {
                 SELECT("id, name, type, ip, port, category1, description, creatorId");
                 FROM(DATASOURCE_TABLE_NAME);
-                WHERE("`creatorId` = #{userId}");
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if(type != 0) {
                     WHERE("`type` = #{type}");
@@ -96,14 +95,13 @@ public class DataSourceMapperProvider {
     }
 
     /**
-     * statistic
+     *
      */
     public String statistic(Map<String, Object> parameter) {
         return new SQL() {{
             SELECT("type, count(1) as total");
             FROM(DATASOURCE_TABLE_NAME);
             GROUP_BY("type");
-            WHERE("creatorId = ${creatorId}");
         }}.toString();
     }
 

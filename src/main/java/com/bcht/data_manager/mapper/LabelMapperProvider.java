@@ -31,7 +31,6 @@ public class LabelMapperProvider {
             {
                 SELECT("*");
                 FROM(LABEL_TABLE_NAME );
-                WHERE("creatorId=#{creatorId}");
                 Object searchVal = parameter.get("searchVal");
                 if(searchVal != null && StringUtils.isNotEmpty(searchVal.toString())){
                     WHERE( " name like concat('%', #{searchVal}, '%') ");

@@ -99,6 +99,10 @@ public class DataSourceController extends BaseController {
         Result result = new Result();
 
         DataSource dataSource = dataSourceService.queryById(id);
+        if(dataSource.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据源哦~");
+            return result;
+        }
         if (!category1.equals(dataSource.getCategory1())) {
             // 先删表，再建新表
             if (type == DbType.HIVE.getIndex()) {
@@ -183,7 +187,7 @@ public class DataSourceController extends BaseController {
     public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int type, String name) {
         Result result = new Result();
         int userId = loginUser.getId();
-        List<DataSource> dataSourceList = dataSourceService.query(userId, type, name);
+        List<DataSource> dataSourceList = dataSourceService.query(type, name);
         for(DataSource dataSource: dataSourceList) {
                 dataSource.setKey(dataSource.getId());
         }
@@ -204,9 +208,13 @@ public class DataSourceController extends BaseController {
      * 删除数据源
      */
     @GetMapping("/delete")
-    public Result delete(int id){
+    public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id){
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(id);
+        if(dataSource.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的数据源哦~");
+            return result;
+        }
         if (dataSource.getType() == DbType.HIVE.getIndex()) {
             try{
                 HiveUtils.dropDatabase(dataSource);
@@ -273,7 +281,7 @@ public class DataSourceController extends BaseController {
             map.put("key", "key-0" + dbType.getIndex());
             map.put("title", dbType.getName());
             map.put("value", 1);
-            List<DataSource> hiveList = dataSourceService.query(loginUser.getId(), dbType.getIndex(), null);
+            List<DataSource> hiveList = dataSourceService.query(dbType.getIndex(), null);
             List<Map> hiveChildren = new ArrayList<>();
             for (DataSource dataSource : hiveList) {
                 Map<String, Object> tmp = new HashMap();

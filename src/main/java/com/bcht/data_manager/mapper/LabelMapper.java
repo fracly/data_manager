@@ -19,7 +19,7 @@ public interface LabelMapper {
             @Result(property = "total", column = "total", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
     })
     @SelectProvider(type = LabelMapperProvider.class, method = "list")
-    List<Label> list(@Param("creatorId")int creatorId, @Param("searchVal") String searchVal);
+    List<Label> list(@Param("searchVal") String searchVal);
 
     @Results(value = {@Result(property = "id", column = "id", id = true, javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),

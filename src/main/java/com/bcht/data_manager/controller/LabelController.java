@@ -49,9 +49,14 @@ public class LabelController extends BaseController {
      * 删除标签
      */
     @GetMapping("/delete")
-    public Result delete(int labelId) {
+    public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int labelId) {
         logger.info("deleting label using id {}", labelId);
         Result result = new Result();
+        Label label = labelService.queryById(labelId);
+        if(label.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的标签哦~");
+            return result;
+        }
         int count = labelService.queryDataCountById(labelId);
         if(count > 0) {
             putMsg(result, Status.CUSTOM_FAILED, "不可删除正在使用的标签");
@@ -71,9 +76,14 @@ public class LabelController extends BaseController {
      * 更新标签
      */
     @PostMapping("/update")
-    public Result update(int id, String name) {
+    public Result update(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id, String name) {
         logger.info("updating label using name {} and id {}", name, id);
         Result result = new Result();
+        Label label = labelService.queryById(id);
+        if(label.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的标签哦~");
+            return result;
+        }
         boolean isSuccess = labelService.update(id, name);
         if(isSuccess) {
             putMsg(result, Status.CUSTOM_SUCESSS, "更新数据标签成功");
@@ -103,7 +113,7 @@ public class LabelController extends BaseController {
     public Result listTree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String searchVal) {
         logger.info("user {}, query label tree list using name {}", loginUser.getUsername(), searchVal);
         Result result = new Result();
-        List<Label> labelList = labelService.list(loginUser.getId(), searchVal);
+        List<Label> labelList = labelService.list(searchVal);
         Map<String, List> resultMap = new HashMap();
         for(Label label : labelList) {
             String firstChar = label.getName().substring(0, 1);
@@ -127,7 +137,7 @@ public class LabelController extends BaseController {
     public Result listFlat(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
         logger.info("user {}, query flat label list ", loginUser.getUsername());
         Result result = new Result();
-        List<Label> labelList = labelService.list(loginUser.getId(), null);
+        List<Label> labelList = labelService.list(null);
         result.setData(labelList);
         putMsg(result, Status.SUCCESS);
         return result;

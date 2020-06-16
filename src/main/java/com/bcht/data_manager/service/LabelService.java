@@ -13,8 +13,8 @@ public class LabelService extends BaseService {
     @Autowired
     private LabelMapper labelMapper;
 
-    public List<Label> list(int loginUserId, String searchVal) {
-        List<Label>  labelList = labelMapper.list(loginUserId, searchVal);
+    public List<Label> list(String searchVal) {
+        List<Label>  labelList = labelMapper.list(searchVal);
         for(Label label : labelList) {
             label.setTotal(labelMapper.countData(label.getId()));
         }

@@ -64,8 +64,8 @@ public class DataSourceService extends BaseService {
         return result;
     }
 
-    public List<DataSource> query(int userId, int type, String name) {
-        return dataSourceMapper.query(userId, type, name);
+    public List<DataSource> query(int type, String name) {
+        return dataSourceMapper.query(type, name);
     }
 
     public Result testConnection(int type, String ip, int port, String category1) {
