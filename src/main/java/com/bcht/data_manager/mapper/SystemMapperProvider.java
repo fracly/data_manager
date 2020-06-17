@@ -164,7 +164,7 @@ public class SystemMapperProvider {
     public String disableRole(Map<String, Object> parameter) {
         return new SQL(){{
             UPDATE(ROLE_TABLE_NAME);
-            SET("`status` = 1");
+            SET("`status` = 9");
             WHERE("`id` = #{id}");
         }}.toString();
     }
@@ -172,7 +172,7 @@ public class SystemMapperProvider {
     public String enableRole(Map<String, Object> parameter) {
         return new SQL(){{
             UPDATE(ROLE_TABLE_NAME);
-            SET("`status` = 0");
+            SET("`status` = 1");
             WHERE("`id` = #{id}");
         }}.toString();
     }
@@ -210,7 +210,7 @@ public class SystemMapperProvider {
             SET("`name` = #{name}");
             SET("`username` = #{username}");
             Object passw = parameter.get("password");
-            if (passw == null || StringUtils.isEmpty(passw.toString())) {
+            if (passw != null && StringUtils.isNotEmpty(passw.toString())) {
                 SET("`password` = #{password}");
             }
             SET("`phone` = #{phone}");

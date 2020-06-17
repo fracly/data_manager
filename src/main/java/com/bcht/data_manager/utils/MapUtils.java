@@ -76,4 +76,17 @@ public class MapUtils {
         }
         return resultList;
     }
+
+    public static final List<Map<String, Object>> formatMapList(List<Map<String, Object>> inputMapList, String loginY, String searchY, String downloadY) {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for(Map<String, Object> map : inputMapList) {
+            Map<String, Object> newMap = new HashMap<>();
+            newMap.put("x", map.get("dayStr").toString());
+            newMap.put(loginY, Long.parseLong(map.get("loginCount").toString()));
+            newMap.put(searchY, Long.parseLong(map.get("searchCount").toString()));
+            newMap.put(downloadY, Long.parseLong(map.get("downloadCount").toString()));
+            resultList.add(newMap);
+        }
+        return resultList;
+    }
 }

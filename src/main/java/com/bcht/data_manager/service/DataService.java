@@ -44,7 +44,7 @@ public class DataService extends BaseService {
      *      方式1:直接通过SQL的方式执行
      *      方式2: 拼接字段的方式，生成SQL再执行
      */
-    public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels, Integer status) {
+    public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels, Integer status, Integer zPublic) {
         Result result = new Result();
         if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
             tableName = getTableName(createSql);
@@ -63,7 +63,7 @@ public class DataService extends BaseService {
             return result;
         }
 
-        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status, zPublic);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建Hive表成功");
         return result;
@@ -72,7 +72,7 @@ public class DataService extends BaseService {
     /**
      * 创建Hbase表
      */
-    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels, Integer status) {
+    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels, Integer status, Integer zPublic) {
         Result result = new Result();
         try{
             HBaseUtils.createTable(dataSource, tableName, columns);
@@ -82,7 +82,7 @@ public class DataService extends BaseService {
             return result;
         }
 
-        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status);
+        Long newID = store2Mysql(dataSource, loginUser, name, tableName, description, labels, status, zPublic);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HBase表成功");
         return result;
@@ -91,15 +91,15 @@ public class DataService extends BaseService {
     /**
      * 创建HDFS文件，并上传
      */
-    public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels, Integer status) {
+    public Result createHDFSData(DataSource dataSource, User loginUser, String fileName, String name, String description, String labels, Integer status, Integer zPublic) {
         Result result = new Result();
-        long newID = store2Mysql(dataSource, loginUser, name, fileName, description, labels, status);
+        long newID = store2Mysql(dataSource, loginUser, name, fileName, description, labels, status, zPublic);
         result.setData(newID);
         putMsg(result, Status.CUSTOM_SUCESSS, "创建HDFS文件成功");
         return result;
     }
 
-    private Long store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels, Integer status) {
+    private Long store2Mysql(DataSource dataSource, User loginUser, String name, String tableName, String description, String labels, Integer status, Integer zPublic) {
         if(status == null) status = 0;
         Long currentMaxId = queryMaxId();
         Long nextId = (currentMaxId == null ? 0: currentMaxId) + 1;
@@ -113,6 +113,7 @@ public class DataService extends BaseService {
         data.setType(dataSource.getType());
         data.setDataName(tableName);
         data.setDescription(description);
+        data.setZzPublic(zPublic);
         try{
             insert(data);
             insertDataSourceDataRelation(nextId, dataSource.getId());
@@ -216,12 +217,23 @@ public class DataService extends BaseService {
     public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         int offset = 0;
         if (pageNo > 1) { offset = (pageNo - 1) * 10; }
-
-        return dataMapper.search(creatorId, name, type, queryDataIdsByLabelId(labels), offset, pageSize, startDate, endDate);
+        if (labels == null || StringUtils.isEmpty(labels)) {
+            return dataMapper.search(creatorId, name, type, null , offset, pageSize, startDate, endDate);
+        } else {
+            String dataIds = queryDataIdsByLabelId(labels);
+            if(StringUtils.isEmpty(dataIds)) {
+                return new ArrayList<>();
+            }
+            return dataMapper.search(creatorId, name, type, dataIds , offset, pageSize, startDate, endDate);
+        }
     }
 
     public Integer searchTotal(int creatorId, String name, int type, String labels, String startDate, String endDate) {
-        return dataMapper.searchTotal(creatorId, name, type, queryDataIdsByLabelId(labels), startDate, endDate);
+        String dataIds = queryDataIdsByLabelId(labels);
+        if(StringUtils.isEmpty(dataIds)) {
+            return 0;
+        }
+        return dataMapper.searchTotal(creatorId, name, type, dataIds, startDate, endDate);
     }
 
     /**
@@ -453,6 +465,7 @@ public class DataService extends BaseService {
                } else {
                    int labelId = Integer.parseInt(label);
                    List<Integer> ids = dataMapper.queryDataIdsByLabel(labelId);
+                   if(ids.size() == 0) { return null; }
                    targetDataIdSet.addAll(ids);
                }
            }

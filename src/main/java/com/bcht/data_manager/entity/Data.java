@@ -40,6 +40,8 @@ public class Data {
 
     private String dataSourceName;
 
+    private Integer zzPublic;
+
     private List<Label> labelList;
 
     public long getId() {
@@ -170,4 +172,11 @@ public class Data {
         this.dataSourceName = dataSourceName;
     }
 
+    public Integer getZzPublic() {
+        return zzPublic;
+    }
+
+    public void setZzPublic(Integer zzPublic) {
+        this.zzPublic = zzPublic;
+    }
 }

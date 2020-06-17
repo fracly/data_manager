@@ -36,11 +36,11 @@ public class HBaseUtils {
     public static void createNameSpace(DataSource dataSource, String namespace) throws IOException {
         Connection conn = null;
         Admin admin = null;
-            conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
-            NamespaceDescriptor mkNameSpace = NamespaceDescriptor.create(namespace).build();
-            admin.createNamespace(mkNameSpace);
-            close(conn, admin);
+        conn = getHBaseConnection(dataSource);
+        admin = conn.getAdmin();
+        NamespaceDescriptor mkNameSpace = NamespaceDescriptor.create(namespace).build();
+        admin.createNamespace(mkNameSpace);
+        close(conn, admin);
     }
 
     public static void createNameSpace(DataSource dataSource) throws IOException {
@@ -50,10 +50,10 @@ public class HBaseUtils {
     public static void dropNameSpace(DataSource dataSource, String namespace) throws IOException {
         Connection conn = null;
         Admin admin = null;
-            conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
-            admin.deleteNamespace(namespace);
-            close(conn, admin);
+        conn = getHBaseConnection(dataSource);
+        admin = conn.getAdmin();
+        admin.deleteNamespace(namespace);
+        close(conn, admin);
     }
 
     public static void dropNameSpace(DataSource dataSource) throws IOException {
@@ -63,44 +63,44 @@ public class HBaseUtils {
     public static void createTable(DataSource dataSource, String tableName, String columnFamilies) throws IOException {
         Connection conn = null;
         Admin admin = null;
-            conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
-            TableDescriptorBuilder mk = TableDescriptorBuilder.newBuilder(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
-            String[] columnFamilyArray = columnFamilies.split(",");
-            List<ColumnFamilyDescriptor> columnFamilyDescriptors=new ArrayList<>();
-            for(int i = 0;  i < columnFamilyArray.length; i ++) {
-                ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(columnFamilyArray[i]));
-                columnFamilyDescriptors.add(columnBuilder.build());
-            }
-            mk.setColumnFamilies(columnFamilyDescriptors);
-            admin.createTable(mk.build());
-            close(conn, admin);
+        conn = getHBaseConnection(dataSource);
+        admin = conn.getAdmin();
+        TableDescriptorBuilder mk = TableDescriptorBuilder.newBuilder(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
+        String[] columnFamilyArray = columnFamilies.split(",");
+        List<ColumnFamilyDescriptor> columnFamilyDescriptors=new ArrayList<>();
+        for(int i = 0;  i < columnFamilyArray.length; i ++) {
+            ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(columnFamilyArray[i]));
+            columnFamilyDescriptors.add(columnBuilder.build());
+        }
+        mk.setColumnFamilies(columnFamilyDescriptors);
+        admin.createTable(mk.build());
+        close(conn, admin);
     }
 
     public static void disableTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
         Admin admin = null;
-            conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
-            TableName tb = TableName.valueOf(tableName);
-            if(admin.tableExists(tb)) {
-                admin.disableTable(tb);
-            }
-            close(conn, admin);
+        conn = getHBaseConnection(dataSource);
+        admin = conn.getAdmin();
+        TableName tb = TableName.valueOf(tableName);
+        if(admin.tableExists(tb)) {
+            admin.disableTable(tb);
+        }
+        close(conn, admin);
 
     }
 
     public static void dropTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
         Admin admin = null;
-            conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
-            TableName tb = TableName.valueOf(tableName);
-            if(admin.tableExists(tb)) {
-                admin.disableTable(tb);
-                admin.deleteTable(tb);
-            }
-            close(conn, admin);
+        conn = getHBaseConnection(dataSource);
+        admin = conn.getAdmin();
+        TableName tb = TableName.valueOf(tableName);
+        if(admin.tableExists(tb)) {
+            admin.disableTable(tb);
+            admin.deleteTable(tb);
+        }
+        close(conn, admin);
 
     }
 
@@ -108,7 +108,7 @@ public class HBaseUtils {
         Connection conn = null;
         Admin admin = null;
             conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
+            admin = conn.getAdmin();
             TableName tb = TableName.valueOf(tableName);
             if(admin.tableExists(tb)) {
                 ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(columnFamily));
@@ -122,7 +122,7 @@ public class HBaseUtils {
         Connection conn = null;
         Table table = null;
             conn = getHBaseConnection(dataSource);
-            conn.getAdmin();
+            Admin admin = conn.getAdmin();
             table = conn.getTable(TableName.valueOf(tableName));
             HTableDescriptor hTableDescriptor=table.getTableDescriptor();
             for(HColumnDescriptor fdescriptor : hTableDescriptor.getColumnFamilies()){

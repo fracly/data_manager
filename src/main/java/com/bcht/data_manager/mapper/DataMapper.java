@@ -61,6 +61,7 @@ public interface DataMapper {
             @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "zzPublic", column = "zz_public", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
     })
     @SelectProvider(type = DataMapperProvider.class, method = "queryById")
     Data queryById(@Param("dataId") long dataId);
@@ -93,6 +94,7 @@ public interface DataMapper {
             @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "zzPublic", column = "zz_public", javaType = Integer.class, jdbcType = JdbcType.INTEGER)
     })
     @SelectProvider(type = DataMapperProvider.class, method = "search")
     List<Data> search(@Param("creatorId") int creatorId, @Param("name") String name, @Param("type") int type, @Param("dataIds") String dataIds,
@@ -115,6 +117,7 @@ public interface DataMapper {
             @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "zzPublic", column = "zz_public", javaType = Integer.class, jdbcType = JdbcType.INTEGER)
     })
     @SelectProvider(type = DataMapperProvider.class, method = "list")
     List<Data> list(@Param("creatorId") int creatorId, @Param("dataSourceId") int dataSourceId, @Param("offset") int offset, @Param("pageSize") int pageSize, @Param("searchVal") String searchVal);
@@ -137,7 +140,7 @@ public interface DataMapper {
     List<Map<String, Object>> countIncreaseByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @Select("select a.name, count(b.data_id) as total from t_data_manager_label a inner join t_data_manager_relation_label_data b on a.id =b.label_id  " +
-            "inner join t_data_manager_data c on b.data_id =c.id where c.create_time>= #{startDate} and c.create_time <= #{endDate} group by a.name order by count(b.data_id) desc limit 7")
+            "inner join t_data_manager_data c on b.data_id =c.id where c.create_time>= #{startDate} and c.create_time <= #{endDate} group by a.name order by count(b.data_id) desc")
     List<Map<String, Object>> countByLabel(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @SelectProvider(type = DataMapperProvider.class, method = "groupByType")

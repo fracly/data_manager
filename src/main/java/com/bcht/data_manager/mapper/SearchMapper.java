@@ -20,6 +20,9 @@ public interface SearchMapper {
     @InsertProvider(type = SearchMapperProvider.class, method = "insert")
     int insert(@Param("userId") int userId, @Param("name") String name);
 
+    @SelectProvider(type = SearchMapperProvider.class, method = "userActive")
+    List<Map<String, Object>> userActive(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
     @SelectProvider(type = SearchMapperProvider.class, method = "searchKeyword")
     List<Map<String, Object>> searchKeyword(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
@@ -32,4 +35,6 @@ public interface SearchMapper {
     @SelectProvider(type = SearchMapperProvider.class, method = "searchUserTotal")
     Integer searchUserTotal(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    @SelectProvider(type = SearchMapperProvider.class, method = "loginCountByDay")
+    List<Map<String, Object>> loginCountByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

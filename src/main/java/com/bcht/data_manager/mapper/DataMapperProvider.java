@@ -41,6 +41,7 @@ public class DataMapperProvider {
                 VALUES("`status`", "#{data.status}");
                 VALUES("`destroy_method`", "#{data.destroyMethod}");
                 VALUES("`destroy_time`", "#{data.destroyTime}");
+                VALUES("`zz_public`", "#{data.zzPublic}");
             }
         }.toString();
     }
@@ -123,6 +124,7 @@ public class DataMapperProvider {
                 SET("`update_time` = #{data.updateTime}");
                 SET("`description` = #{data.description}");
                 SET("`status` = #{data.status}");
+                SET("`zz_public` = #{data.zzPublic}");
                 WHERE("`id` = #{data.id}");
             }
         }.toString();
@@ -169,7 +171,7 @@ public class DataMapperProvider {
             {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = " + parameter.get("creatorId").toString());
+                WHERE("(creatorId = " + parameter.get("creatorId").toString() + " or zz_public = 1)");
                 Object name = parameter.get("name");
                 if(name != null && StringUtils.isNotEmpty(name.toString())) {
                     WHERE("name like concat('%', '" + parameter.get("name").toString() + "', '%')");
@@ -199,7 +201,7 @@ public class DataMapperProvider {
             {
                 SELECT("count(1)");
                 FROM(DATA_TABLE_NAME);
-                WHERE("creatorId = #{creatorId}");
+                WHERE("(creatorId = #{creatorId} or zz_public = 1)");
                 WHERE("name like concat('%', #{name}, '%')");
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if (type != 0) {
@@ -262,7 +264,7 @@ public class DataMapperProvider {
                 if(searchVal != null && StringUtils.isNotEmpty(searchVal.toString())) {
                     WHERE("a.name like concat('%', '" + parameter.get("searchVal").toString() + "', '%')");
                 }
-                WHERE(" a.creatorId = #{creatorId}");
+                WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
                 ORDER_BY(" a.id desc limit #{offset}, #{pageSize}");
             }
         }.toString();
@@ -278,7 +280,7 @@ public class DataMapperProvider {
                 if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
                     WHERE(" b.datasource_id = #{dataSourceId} ");
                 }
-                WHERE(" a.creatorId = #{creatorId}");
+                WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
             }
         }.toString();
     }

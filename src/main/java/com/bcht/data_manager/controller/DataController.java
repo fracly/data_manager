@@ -59,17 +59,17 @@ public class DataController extends BaseController {
      */
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
-                         String columns, String tableName, String createSql, String description, String labels, String fileName, Integer status) {
+                         String columns, String tableName, String createSql, String description, String labels, String fileName, Integer status, Integer zzPublic) {
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(dataSourceId);
 
         // 数据的创建根据数据源的不同，创建方式也不同
         if (type == DbType.HIVE.getIndex()) {
-            return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels, status);
+            return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels, status, zzPublic);
         } else if (type == DbType.HBASE.getIndex()) {
-            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels, status);
+            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels, status, zzPublic);
         } else if (type == DbType.HDFS.getIndex()) {
-            return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels, status);
+            return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels, status, zzPublic);
         }
         putMsg(result, Status.UNKOWN_DATASOURCE_TYPE);
         return result;
@@ -79,10 +79,14 @@ public class DataController extends BaseController {
      * 数据删除
      */
     @GetMapping("/delete")
-    public Result delete(int id){
+    public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id){
         Result result = new Result();
-        DataSource dataSource = dataService.queryDataSourceByDataId(id);
         Data data = dataService.queryById(id);
+        if(data.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的数据哦~");
+            return result;
+        }
+        DataSource dataSource = dataService.queryDataSourceByDataId(id);
         if(data.getType() == DbType.HIVE.getIndex()) {
             try{
                 HiveUtils.dropTable(dataSource, data.getDataName());
@@ -119,13 +123,18 @@ public class DataController extends BaseController {
      * 数据修改
      */
     @PostMapping("/update")
-    public Result update(@RequestBody Map<String, Object> parameter) {
+    public Result update(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         Result result = new Result();
 
         Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
+        if(data.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
+            return result;
+        }
         data.setName(MapUtils.getString(parameter, "name"));
         String labels = MapUtils.getString(parameter, "labels");
         Integer status = MapUtils.getInt(parameter, "status");
+        Integer zzPublic = MapUtils.getInt(parameter, "zzPublic");
         String[] ids = labels.replace("[", "").replace("]", "").split(",");
         List<Label> labelList = labelService.queryByDataId(data.getId());
         for(Label label : labelList) {
@@ -139,6 +148,7 @@ public class DataController extends BaseController {
         data.setDescription(MapUtils.getString(parameter, "description"));
         data.setUpdateTime(new Date());
         data.setStatus(status);
+        data.setZzPublic(zzPublic);
         dataService.update(data);
         putMsg(result, Status.CUSTOM_SUCESSS, "更新数据成功");
         return result;
@@ -148,8 +158,15 @@ public class DataController extends BaseController {
      * 数据修改-Hive表增加列
      */
     @PostMapping("/add-column")
-    public Result addColumn(@RequestBody Map<String, Object> parameter) {
+    public Result addColumn(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+        Result result = new Result();
         int dataId = MapUtils.getInt(parameter, "dataId");
+        Data data = dataService.queryById(dataId);
+        if(data.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
+            return result;
+        }
+
         String columns = MapUtils.getString(parameter, "columns");
         return dataService.addColumn(dataId, columns);
     }
@@ -158,8 +175,15 @@ public class DataController extends BaseController {
      * 数据修改-Hive表增加列
      */
     @PostMapping("/modify-column")
-    public Result modifyColumn(@RequestBody Map<String, Object> parameter) {
+    public Result modifyColumn(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
         int dataId = MapUtils.getInt(parameter, "dataId");
+        Result result = new Result();
+        Data data = dataService.queryById(dataId);
+        if(data.getCreatorId() != loginUser.getId()) {
+            putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
+            return result;
+        }
+
         String type = MapUtils.getString(parameter, "type");
         String oldName = MapUtils.getString(parameter, "key");
         String newName = MapUtils.getString(parameter, "name");

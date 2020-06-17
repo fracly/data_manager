@@ -137,7 +137,7 @@ public class SystemService extends BaseService {
     public Result disableRole(int id) {
         Result result = new Result();
         systemMapper.disableRole(id);
-        putMsg(result, Status.CUSTOM_SUCESSS, "禁用用户成功");
+        putMsg(result, Status.CUSTOM_SUCESSS, "禁用角色成功");
         return result;
     }
 
