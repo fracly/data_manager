@@ -7,24 +7,27 @@ import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.CollectionMapper;
+import com.bcht.data_manager.service.CollectionService;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.utils.*;
 
+import io.netty.util.internal.StringUtil;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
 
 import static com.bcht.data_manager.consts.Constants.*;
+import static com.bcht.data_manager.service.CollectionService.saveAsFileWriter;
+import static com.bcht.data_manager.utils.HiveUtils.getTableColumnNameList;
 
 @RestController
 @RequestMapping("/api/data-collection")
@@ -154,42 +157,75 @@ public class DataCollectionController extends BaseController {
         return result;
     }
 
+
     @PostMapping("/file")
-    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, String hdfsPath, Long dataId, boolean overwrite, Integer inputType) {
+    public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestParam("file") MultipartFile file, Long dataId, boolean overwrite) {
         Result result = new Result();
-
-
-        Data data = dataService.queryById(dataId);
-        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-
-        Job job = new Job();
-        job.setCreatorId(loginUser.getId());
-        job.setInputType(FILE);
-        job.setOutputId(dataId);
-        job.setOutputType(DbType.HIVE.getIndex());
-        job.setStartTime(new Date());
-        job.setType(FILE2HIVE);
-        job.setOutputName(data.getDataName());
-
-
-        if(data.getType() == DbType.HIVE.getIndex()) {
+        if(!file.isEmpty()){
             try{
-                HiveUtils.loadDataFromHdfsFile(dataSource, data.getDataName(), overwrite, hdfsPath);
-            } catch (Exception e) {
-                putMsg(result, Status.LOAD_HDFS_FILE_TO_HIVE_TABLE_FAILED);
-                logger.error("load data hdfs 到Hive表失败，请查询原因" + e.getMessage());
-                job.setStatus(FAILED);
-                collectionMapper.insert(job);
-                return result;
+                /**
+                 *根据dataId查找data,数据库,表
+                 */
+                Data data = dataService.queryById(dataId);
+                DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+                String fileName = file.getName();
+                String tableName = data.getDataName(); //通过data拿到表名
+                logger.info("上传的文件名为: " + fileName);
+                /**
+                 *将上传的文件复制到本地:先拿到上传文件名称再拿到上传文件路径,通过一个getUploadFilename函数就可以完成功能
+                 */
+                String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
+                File localfile = new File(localFileName);
+                try {
+                    FileUtils.copyFile(file, localFileName);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                /**
+                 *开始对文件进行操作
+                 */
+                try{
+                    List<String> commentNameList = getTableColumnNameList(dataSource, tableName);//拿到字段备注
+                    System.out.println(commentNameList);
+                    /**
+                     *拿到对应参数,通过相应参数,建立Map映射表,执行数据转换操作
+                     */
+                    StringBuilder fileResult = new StringBuilder();//用作输出数据
+                    HashMap<String, Integer> realMap = CollectionService.getRealMap(commentNameList);
+                    HashMap<Integer, Integer> alterMap = new HashMap();
+                    String txt = CollectionService.txt2String(fileResult, localfile, realMap, alterMap); //作为最终转换后的txt内容
+                    /**
+                     *数据转换完成,将内容写入至新的txt文件,并保存在tmp目录
+                     */
+
+                    File dest = new File(localFileName);
+                    if(!dest.getParentFile().exists()) {
+                        dest.getParentFile().mkdirs(); //新建文件夹
+                    }
+                    saveAsFileWriter(txt, localFileName);
+                    String hdfsPath = "/tmp/" + fileName;
+                    HDFSUtils.copyLocalToHdfs(localFileName,hdfsPath,true, overwrite);
+                    HiveUtils.loadDataFromHdfsFile(dataSource,tableName,overwrite,hdfsPath);
+                    Job job = new Job();
+                    job.setCreatorId(loginUser.getId());
+                    job.setInputType(FILE);
+                    job.setOutputId(dataId);
+                    job.setOutputType(DbType.HIVE.getIndex());
+                    job.setStartTime(new Date());
+                    job.setType(FILE2HIVE);
+                    job.setOutputName(data.getDataName());
+                    job.setStatus(FINISHED);
+                    collectionMapper.insert(job);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-        } else {
-            putMsg(result, Status.CUSTOM_FAILED, "暂不支持除Hive表之外的数据导入！");
         }
-        job.setStatus(FINISHED);
-        job.setEndTime(new Date());
-        collectionMapper.insert(job);
-        putMsg(result, Status.CUSTOM_SUCESSS, "导入数据成功");
+        putMsg(result,Status.SUCCESS);
         return result;
+
     }
 
     @GetMapping("/job-list")
