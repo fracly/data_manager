@@ -64,12 +64,18 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
     // 基于Cookie，进行会话验证
+
+    String path = request.getRequestURI();
+    if(path.startsWith("/api/analysis/")) {
+      return true;
+    }
     Session session = sessionService.getSession(request);
     if (session == null) {
       response.setStatus(403);
       logger.info("session info is null ");
       return false;
     }
+
 
     //get user object from session
     User user = userMapper.findById(session.getUserId());

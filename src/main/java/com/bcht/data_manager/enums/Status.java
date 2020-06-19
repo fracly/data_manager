@@ -29,7 +29,7 @@ public enum Status {
     // Hive 错误码
     HIVE_JDBC_DRIVER_CLASS_NOT_FOUNT(10001, "Hive的驱动类没有找到"),
     HIVE_DROP_DATABASE_FAILED(10002, "删除Hive数据库失败，删库要保证该库为空"),
-    HIVE_CREATE_DATABASE_FAILED(10003, "创建Hive数据库失败"),
+    HIVE_CREATE_DATABASE_FAILED(10003, "创建Hive数据库失败, 该库已存在"),
     HIVE_PREVIEW_TABLE_DATA_FAILED(10004, "预览Hive表数据失败"),
     HIVE_CONNECTION_TEST_FAILED(10005, "Hive连接测试失败"),
     HIVE_CREATE_TABLE_FAILED(10006, "Hive创建表失败"),
@@ -48,8 +48,8 @@ public enum Status {
     HBASE_PREVIEW_TABLE_DATA_FAILED(20008, "预览HBase表数据失败"),
 
     //HDFS 错误码
-    HDFS_REMOVE_DIRECTORY_FAILED(30001, "HDFS删除目录失败"),
-    HDFS_CREATE_DIRECTORY_FAILED(30002, "HDFS创建目录失败"),
+    HDFS_REMOVE_DIRECTORY_FAILED(30001, "HDFS删除目录失败, 请检查该目录是否为空目录"),
+    HDFS_CREATE_DIRECTORY_FAILED(30002, "HDFS创建目录失败，该目录已存在"),
     HDFS_CONNECTION_TEST_FAILED(30004, "HDFS连接测试失败"),
     HDFS_COPY_UPLOAD_TO_LOCAL_FAILED(30005, "上传文件到本地出错"),
     HDFS_COPY_LOCAL_TO_HDFS_FAILED(30006, "本地文件复制到HDFS上出错"),

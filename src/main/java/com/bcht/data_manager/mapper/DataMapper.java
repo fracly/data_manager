@@ -104,6 +104,39 @@ public interface DataMapper {
     Integer searchTotal(@Param("creatorId") int creatorId, @Param("name") String name, @Param("type") int type, @Param("dataIds") String dataIds,
                         @Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "dataName", column = "data_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "type", column = "type", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "size", column = "size", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "status", column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyMethod", column = "destroy_method", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "destroyTime", column = "destroy_time", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "zzPublic", column = "zz_public", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "zzEncrypt", column = "zz_encrypt", javaType = Integer.class, jdbcType = JdbcType.INTEGER)
+    })
+    @SelectProvider(type = DataMapperProvider.class, method="encryptSearch")
+    List<Data> encryptSearch(@Param("dataSourceId") int dataSourceId, @Param("searchVal") String searchVal, @Param("offset") int offset, @Param("pageSize") int pageSize);
+
+    @SelectProvider(type = DataMapperProvider.class, method = "encryptSearchTotal")
+    Integer encryptSearchTotal(@Param("dataSourceId") int dataSourceId, @Param("searchVal") String searchVal);
+
+    @Update("update  t_data_manager_data set zz_encrypt = 1 where id = #{dataId}")
+    Integer encryptData(@Param("dataId") Long dataId);
+
+    @Update("update  t_data_manager_data set zz_encrypt = 0 where id = #{dataId}")
+    Integer decryptData(@Param("dataId") Long dataId);
+
+    @Update("update  t_data_manager_data set zz_encrypt = 1")
+    Integer batchEncryptData();
+
+    @Update("update  t_data_manager_data set zz_encrypt = 0")
+    Integer batchDecryptData();
+
+
 
     @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
             @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
@@ -146,5 +179,16 @@ public interface DataMapper {
     @SelectProvider(type = DataMapperProvider.class, method = "groupByType")
     List<Map<String, Object>> dateTypePercentage(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    /**
+     * for data lineage
+     */
+    @Select("select count(1) from t_data_manager_download_log where data_id = #{dataId}")
+    Long dataDownloadCount(@Param("dataId") long dataId);
+
+    @Select("select count(1) from t_data_manager_import_log where output_id = #{dataId}")
+    Long dataImportCount(@Param("dataId") long dataId);
+
+    @Select("select count(1) from t_data_manager_relation_label_data where data_id = #{dataId}")
+    Long dataLabelCount(@Param("dataId") long dataId);
 
 }

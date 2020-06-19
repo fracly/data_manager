@@ -184,9 +184,8 @@ public class DataSourceController extends BaseController {
      * 查询数据源-通过类型和名称匹配
      */
     @GetMapping("/query")
-    public Result queryByUser(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int type, String name) {
+    public Result queryByUser(int type, String name) {
         Result result = new Result();
-        int userId = loginUser.getId();
         List<DataSource> dataSourceList = dataSourceService.query(type, name);
         for(DataSource dataSource: dataSourceList) {
                 dataSource.setKey(dataSource.getId());

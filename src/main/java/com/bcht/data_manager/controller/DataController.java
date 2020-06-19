@@ -10,7 +10,9 @@ import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.service.LabelService;
+import com.bcht.data_manager.service.UserService;
 import com.bcht.data_manager.utils.*;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -47,6 +46,9 @@ public class DataController extends BaseController {
 
     @Autowired
     private DataService dataService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private LabelService labelService;
@@ -194,6 +196,57 @@ public class DataController extends BaseController {
     }
 
     /**
+     * 数据加密
+     */
+    @GetMapping("/encrypt")
+    public Result encrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @Param("dataId") Long dataId) {
+        Result result = new Result();
+        int count = dataService.encryptData(dataId);
+        if(count > 0) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    @GetMapping("/decrypt")
+    public Result decrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @Param("dataId") Long dataId) {
+        Result result = new Result();
+        int count = dataService.decryptData(dataId);
+        if(count > 0) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    @GetMapping("/batch-decrypt")
+    public Result batchDecrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        Result result = new Result();
+        int count = dataService.batchDecryptData();
+        if(count > 0) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    @GetMapping("/batch-encrypt")
+    public Result batchEncrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
+        Result result = new Result();
+        int count = dataService.batchEncryptData();
+        if(count > 0) {
+            putMsg(result, Status.SUCCESS);
+        } else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    /**
      * 数据查询-根据ID查询
      */
     @GetMapping("/queryById")
@@ -231,6 +284,70 @@ public class DataController extends BaseController {
                 logger.error("记录查询日志失败！");
             }
         }
+        return result;
+    }
+
+    /**
+     * 数据加密-获取数据列表
+     * @param dataSourceId
+     * @param searchVal
+     * @return
+     */
+    @GetMapping("/encrypt-search")
+    public Result encryptSearch(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, String searchVal, int pageNo, int pageSize) {
+        Result result = new Result();
+
+        List<Data> reslitList = dataService.encryptSearch(dataSourceId, searchVal, pageNo, pageSize);
+        int total = dataService.encryptSearchTotal(dataSourceId, searchVal);
+
+        result.setData(reslitList);
+        Map resultMap = new HashMap();
+        resultMap.put("total", total);
+        result.setDataMap(resultMap);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/lineage")
+    public Result lineage(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId) {
+        Result result = new Result();
+        Data data = dataService.queryById(dataId);
+        User user = userService.queryById2(data.getCreatorId());
+
+        Map<String, Object> tmpMap1 = new HashMap<>();
+        Map<String, Object> tmpMap2 = new HashMap<>();
+
+        Map<String, Object> map = dataService.lineage(dataId);
+        List<Map> keyList = new ArrayList<>();
+        List<Map> relationList = new ArrayList<>();
+        tmpMap1.put("from", user.getName());
+        tmpMap1.put("to", data.getDataName());
+        relationList.add(tmpMap1);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            tmpMap1 = new HashMap<>();
+            tmpMap1.put("from", data.getDataName());
+            tmpMap1.put("to", entry.getKey() + "(" + entry.getValue() + ")");
+            relationList.add(tmpMap1);
+        }
+
+        tmpMap2.put("key", user.getName());
+        tmpMap2.put("color", "lightblue");
+        keyList.add(tmpMap2);
+        tmpMap2 = new HashMap<>();
+        tmpMap2.put("key", data.getDataName());
+        tmpMap2.put("color", "orange");
+        keyList.add(tmpMap2);
+        for(Map.Entry<String, Object> entry : map.entrySet()) {
+            tmpMap2 = new HashMap<>();
+            tmpMap2.put("key", entry.getKey() + "(" + entry.getValue() + ")");
+            tmpMap2.put("color", "pink");
+            keyList.add(tmpMap2);
+        }
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("keyList", keyList);
+        resultMap.put("relationList", relationList);
+        result.setData(resultMap);
+        putMsg(result, Status.SUCCESS);
         return result;
     }
 

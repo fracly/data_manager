@@ -6,6 +6,7 @@ import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.DateUtils;
 import com.bcht.data_manager.utils.Result;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,13 @@ public class AnalysisController extends BaseController {
         return result;
     }
 
+    @GetMapping("/load")
+    public Result load() {
+        logger.info("querying data manager system load");
+        Result result = new Result();
+        return result;
+    }
+
     /**
      * 数据数量统计
      */
@@ -79,6 +87,20 @@ public class AnalysisController extends BaseController {
         logger.info("querying download data count");
         return dataService.countDownloadByDay();
     }
+
+    /**
+     * 每日活跃情况
+     */
+    @GetMapping("/user-active")
+    public Result userActive(@Param("startDate") String startDate, @Param("endDate") String endDate) {
+        logger.info("querying user active statistic");
+        List<Map<String, Object>> resultList = analysisService.userActive(startDate, endDate);
+        Result result = new Result();
+        result.setData(resultList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
 
     /**
      * 数据每日新增数量
@@ -183,4 +205,17 @@ public class AnalysisController extends BaseController {
         return result;
     }
 
+    /**
+     * 每日登录用户量
+     */
+    @GetMapping("/login-user-by-day")
+    public Result loginUserByDay() {
+        Result result = new Result();
+        String endDateTime = DateUtils.getDateTime();
+        Date date = DateUtils.nextDay(-30);
+        String startDateTime = DateUtils.formatDate(date, DateUtils.DATETIME_FORMAT);
+        List<Map<String, Object>> resultList = analysisService.loginCountByDay(startDateTime, endDateTime);
+        result.setData(resultList);
+        return result;
+    }
 }

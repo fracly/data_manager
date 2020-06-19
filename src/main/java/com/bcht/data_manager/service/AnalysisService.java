@@ -61,6 +61,11 @@ public class AnalysisService extends BaseService {
         return resultList;
     }
 
+    public List<Map<String, Object>> userActive(String startDate, String endDate) {
+        List<Map<String, Object>> userActiveList = searchMapper.userActive(startDate, endDate);
+        return MapUtils.formatMapList(userActiveList, "loginY", "searchY", "downloadY");
+    }
+
     public List<Map<String, Object>> searchCountByDay(String startDate, String endDate) {
         List<Map<String, Object>> tmpList = searchMapper.searchCountByDay(startDate, endDate);
         return MapUtils.formatMapList(tmpList, "y");
@@ -68,6 +73,11 @@ public class AnalysisService extends BaseService {
 
     public List<Map<String, Object>> searchUserByDay(String startDate, String endDate) {
         List<Map<String, Object>> tmpList = searchMapper.searchUserByDay(startDate, endDate);
+        return MapUtils.formatMapList(tmpList, "y");
+    }
+
+    public List<Map<String, Object>> loginCountByDay(String startDate, String endDate) {
+        List<Map<String, Object>> tmpList = searchMapper.loginCountByDay(startDate, endDate);
         return MapUtils.formatMapList(tmpList, "y");
     }
 

@@ -83,6 +83,10 @@ public class UserService extends BaseService{
         return userMapper.findByName(name);
     }
 
+    public User queryById2(Integer userId) {
+        return userMapper.findById(userId);
+    }
+
     public void signOut(String ip, User loginUser) {
         Session session = sessionMapper.queryByUserIdAndIp(loginUser.getId(), ip);
         sessionMapper.deleteById(session.getId());

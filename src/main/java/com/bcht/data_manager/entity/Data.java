@@ -42,6 +42,8 @@ public class Data {
 
     private Integer zzPublic;
 
+    private Integer zzEncrypt;
+
     private List<Label> labelList;
 
     public long getId() {
@@ -178,5 +180,13 @@ public class Data {
 
     public void setZzPublic(Integer zzPublic) {
         this.zzPublic = zzPublic;
+    }
+
+    public Integer getZzEncrypt() {
+        return zzEncrypt;
+    }
+
+    public void setZzEncrypt(Integer zzEncrypt) {
+        this.zzEncrypt = zzEncrypt;
     }
 }

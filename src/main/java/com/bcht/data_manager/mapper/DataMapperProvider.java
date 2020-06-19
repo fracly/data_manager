@@ -221,6 +221,44 @@ public class DataMapperProvider {
         }.toString();
     }
 
+    public String encryptSearch(Map<String, Object> parameter) {
+        String sql = new SQL() {
+            {
+                SELECT("a.*");
+                FROM(DATA_TABLE_NAME + " a ");
+                INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id");
+                Object name = parameter.get("searchVal");
+                if(name != null && StringUtils.isNotEmpty(name.toString())) {
+                    WHERE("a.name like concat('%', '" + parameter.get("searchVal").toString() + "', '%')");
+                }
+                int dataSourceId = Integer.parseInt(parameter.get("dataSourceId").toString());
+                if (dataSourceId != 0) {
+                    WHERE(" b.datasource_id =" + dataSourceId);
+                }
+                ORDER_BY("a.update_time limit " + parameter.get("offset").toString() + ", " + parameter.get("pageSize"));
+            }
+        }.toString();
+        return sql;
+    }
+
+    public String encryptSearchTotal(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("count(1)");
+                FROM(DATA_TABLE_NAME + " a ");
+                INNER_JOIN(DATASOURCE_DATA_RELATION_TABLE_NAME + " b on a.id = b.data_id");
+                Object name = parameter.get("searchVal");
+                if(name != null && StringUtils.isNotEmpty(name.toString())) {
+                    WHERE("a.name like concat('%', '" + parameter.get("searchVal").toString() + "', '%')");
+                }
+                int dataSourceId = Integer.parseInt(parameter.get("dataSourceId").toString());
+                if (dataSourceId != 0) {
+                    WHERE(" b.datasource_id =" + dataSourceId);
+                }
+            }
+        }.toString();
+    }
+
     /**
      * query data list by user id
      */

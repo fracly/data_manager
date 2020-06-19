@@ -114,6 +114,7 @@ public class DataService extends BaseService {
         data.setDataName(tableName);
         data.setDescription(description);
         data.setZzPublic(zPublic);
+        data.setZzEncrypt(0);
         try{
             insert(data);
             insertDataSourceDataRelation(nextId, dataSource.getId());
@@ -216,7 +217,7 @@ public class DataService extends BaseService {
      */
     public List<Data> search(int creatorId, String name, int type, String labels, int pageNo, int pageSize, String startDate, String endDate) {
         int offset = 0;
-        if (pageNo > 1) { offset = (pageNo - 1) * 10; }
+        if (pageNo > 1) { offset = (pageNo - 1) * pageSize; }
         if (labels == null || StringUtils.isEmpty(labels)) {
             return dataMapper.search(creatorId, name, type, null , offset, pageSize, startDate, endDate);
         } else {
@@ -227,7 +228,6 @@ public class DataService extends BaseService {
             return dataMapper.search(creatorId, name, type, dataIds , offset, pageSize, startDate, endDate);
         }
     }
-
     public Integer searchTotal(int creatorId, String name, int type, String labels, String startDate, String endDate) {
         String dataIds = queryDataIdsByLabelId(labels);
         if(StringUtils.isEmpty(dataIds)) {
@@ -235,6 +235,39 @@ public class DataService extends BaseService {
         }
         return dataMapper.searchTotal(creatorId, name, type, dataIds, startDate, endDate);
     }
+
+    /**
+     * 数据查询 - 加密列表
+     */
+    public List<Data> encryptSearch(int dataSourceId, String searchVal, int pageNo, int pageSize) {
+        int offset = 0;
+        if (pageNo > 1) {
+            offset = (pageNo - 1) * pageSize;
+        }
+        return dataMapper.encryptSearch(dataSourceId, searchVal, pageNo, pageSize);
+    }
+
+    public Integer encryptSearchTotal(int dataSourceId, String searchVal) {
+        return dataMapper.encryptSearchTotal(dataSourceId, searchVal);
+    }
+
+    public Integer encryptData(long dataId) {
+        return dataMapper.encryptData(dataId);
+    }
+
+    public Integer decryptData(long dataId) {
+        return dataMapper.decryptData(dataId);
+    }
+
+    public Integer batchEncryptData() {
+        return dataMapper.batchEncryptData();
+    }
+
+    public Integer batchDecryptData() {
+        return dataMapper.batchDecryptData();
+    }
+
+
 
     /**
      * 记录用户的查询动作
@@ -270,6 +303,17 @@ public class DataService extends BaseService {
      */
     public Data queryById(long dataId) {
         return dataMapper.queryById(dataId);
+    }
+
+    /**
+     * 血缘关系
+     */
+    public Map<String, Object> lineage(long dataId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("下载量", dataMapper.dataDownloadCount(dataId));
+        map.put("导入量", dataMapper.dataImportCount(dataId));
+        map.put("标签数", dataMapper.dataLabelCount(dataId));
+        return map;
     }
 
     public DataSource queryDataSourceByDataId(long dataId) {
