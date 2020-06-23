@@ -53,7 +53,7 @@ public class LabelController extends BaseController {
         logger.info("deleting label using id {}", labelId);
         Result result = new Result();
         Label label = labelService.queryById(labelId);
-        if(label.getCreatorId() != loginUser.getId()) {
+        if(label.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的标签哦~");
             return result;
         }
@@ -80,7 +80,7 @@ public class LabelController extends BaseController {
         logger.info("updating label using name {} and id {}", name, id);
         Result result = new Result();
         Label label = labelService.queryById(id);
-        if(label.getCreatorId() != loginUser.getId()) {
+        if(label.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的标签哦~");
             return result;
         }
