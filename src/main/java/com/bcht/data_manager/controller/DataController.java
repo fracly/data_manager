@@ -13,6 +13,7 @@ import com.bcht.data_manager.service.LabelService;
 import com.bcht.data_manager.service.UserService;
 import com.bcht.data_manager.utils.*;
 import org.apache.ibatis.annotations.Param;
+import org.apache.tomcat.util.bcel.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class DataController extends BaseController {
     public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id){
         Result result = new Result();
         Data data = dataService.queryById(id);
-        if(data.getCreatorId() != loginUser.getId()) {
+        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的数据哦~");
             return result;
         }
@@ -129,7 +130,7 @@ public class DataController extends BaseController {
         Result result = new Result();
 
         Data data = dataService.queryById(MapUtils.getInt(parameter, "id"));
-        if(data.getCreatorId() != loginUser.getId()) {
+        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
             return result;
         }
@@ -164,7 +165,7 @@ public class DataController extends BaseController {
         Result result = new Result();
         int dataId = MapUtils.getInt(parameter, "dataId");
         Data data = dataService.queryById(dataId);
-        if(data.getCreatorId() != loginUser.getId()) {
+        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
             return result;
         }
@@ -181,7 +182,7 @@ public class DataController extends BaseController {
         int dataId = MapUtils.getInt(parameter, "dataId");
         Result result = new Result();
         Data data = dataService.queryById(dataId);
-        if(data.getCreatorId() != loginUser.getId()) {
+        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据哦~");
             return result;
         }
@@ -264,12 +265,19 @@ public class DataController extends BaseController {
     @GetMapping("/search")
     public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startTime, String endTime) {
         Result result = new Result();
-        List<Data> targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startTime, endTime);
+        List<Data> targetDataList = null;
+        int total;
+        if(loginUser.getUsername().equals(Constants.ADMIN)) {
+            targetDataList = dataService.search(0, name, type, labels, pageNo, pageSize, startTime, endTime);
+            total = dataService.searchTotal(0, name, type, labels, startTime, endTime);
+        } else {
+            targetDataList = dataService.search(loginUser.getId(), name, type, labels, pageNo, pageSize, startTime, endTime);
+            total = dataService.searchTotal(loginUser.getId(), name, type, labels, startTime, endTime);
+        }
         for(Data data : targetDataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
         }
-        int total = dataService.searchTotal(loginUser.getId(), name, type, labels, startTime, endTime);
         result.setData(targetDataList);
         Map resultMap = new HashMap();
         resultMap.put("total", total);
@@ -388,11 +396,18 @@ public class DataController extends BaseController {
     @GetMapping("/listByDataSource")
     public Result listByDataSource(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, Integer pageNo, Integer pageSize, String searchVal) {
         Result result = new Result();
+        List<Data> dataList = null;
+        int total;
         if(pageNo == null || pageNo == 0) { pageNo = 1; }
         if(pageSize == null || pageSize == 0) { pageSize = 10; }
         if(dataSourceId == null) { dataSourceId = 0; }
-
-        List<Data> dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize, searchVal);
+        if (loginUser.getUsername().equals(Constants.ADMIN)) {
+            dataList = dataService.list(0, dataSourceId, pageNo, pageSize, searchVal);
+            total = dataService.listTotal(0, dataSourceId);
+        } else {
+            dataList = dataService.list(loginUser.getId(), dataSourceId, pageNo, pageSize, searchVal);
+            total = dataService.listTotal(loginUser.getId(), dataSourceId);
+        }
         for(Data data : dataList) {
             List<Label> labelList = labelService.queryByDataId(data.getId());
             data.setLabelList(labelList);
@@ -401,9 +416,8 @@ public class DataController extends BaseController {
             data.setDataSourceName(dataSource.getName());
         }
         result.setData(dataList);
-
         Map<String, Object> map = new HashMap<>();
-        int total = dataService.listTotal(loginUser.getId(), dataSourceId);
+
         map.put("pageNo", pageNo);
         map.put("total", total);
         result.setDataMap(map);

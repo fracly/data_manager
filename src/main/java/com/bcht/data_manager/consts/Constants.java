@@ -145,4 +145,6 @@ public final class Constants {
     public static final Integer DB2HIVE = 1;
 
     public static final Integer FILE2HIVE = 2;
+
+    public static final String ADMIN = "admin";
 }

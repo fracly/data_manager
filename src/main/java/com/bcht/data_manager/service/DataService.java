@@ -230,7 +230,7 @@ public class DataService extends BaseService {
     }
     public Integer searchTotal(int creatorId, String name, int type, String labels, String startDate, String endDate) {
         String dataIds = queryDataIdsByLabelId(labels);
-        if(StringUtils.isEmpty(dataIds)) {
+        if(StringUtils.isEmpty(dataIds) && StringUtils.isNotEmpty(labels)) {
             return 0;
         }
         return dataMapper.searchTotal(creatorId, name, type, dataIds, startDate, endDate);

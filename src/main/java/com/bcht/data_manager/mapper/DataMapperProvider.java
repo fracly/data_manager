@@ -172,7 +172,10 @@ public class DataMapperProvider {
             {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
-                WHERE("(creatorId = " + parameter.get("creatorId").toString() + " or zz_public = 1)");
+                Object creatorId = parameter.get("creatorId");
+                if(creatorId != null && Integer.parseInt(creatorId.toString()) != 0) {
+                    WHERE("(creatorId = #{creatorId} or zz_public = 1)");
+                }
                 Object name = parameter.get("name");
                 if(name != null && StringUtils.isNotEmpty(name.toString())) {
                     WHERE("name like concat('%', '" + parameter.get("name").toString() + "', '%')");
@@ -198,12 +201,18 @@ public class DataMapperProvider {
     }
 
     public String searchTotal(Map<String, Object> parameter) {
-        return new SQL() {
+        String sql = new SQL() {
             {
                 SELECT("count(1)");
                 FROM(DATA_TABLE_NAME);
-                WHERE("(creatorId = #{creatorId} or zz_public = 1)");
-                WHERE("name like concat('%', #{name}, '%')");
+                Object creatorId = parameter.get("creatorId");
+                if(creatorId != null && Integer.parseInt(creatorId.toString()) != 0) {
+                    WHERE("(creatorId = #{creatorId} or zz_public = 1)");
+                }
+                Object name = parameter.get("name");
+                if(name != null && StringUtils.isNotEmpty(name.toString())) {
+                    WHERE("name like concat('%', #{name}, '%')");
+                }
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if (type != 0) {
                     WHERE(" type = #{type}" );
@@ -220,6 +229,7 @@ public class DataMapperProvider {
                 }
             }
         }.toString();
+        return sql;
     }
 
     public String encryptSearch(Map<String, Object> parameter) {
@@ -303,7 +313,10 @@ public class DataMapperProvider {
                 if(searchVal != null && StringUtils.isNotEmpty(searchVal.toString())) {
                     WHERE("a.name like concat('%', '" + parameter.get("searchVal").toString() + "', '%')");
                 }
-                WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
+                Object creatorId = parameter.get("creatorId");
+                if(creatorId != null && Integer.parseInt(creatorId.toString()) != 0) {
+                    WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
+                }
                 ORDER_BY(" a.id desc limit #{offset}, #{pageSize}");
             }
         }.toString();
@@ -319,7 +332,10 @@ public class DataMapperProvider {
                 if(dataSourceId != null && StringUtils.isNotEmpty(dataSourceId.toString()) && !dataSourceId.toString().equals("0")){
                     WHERE(" b.datasource_id = #{dataSourceId} ");
                 }
-                WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
+                Object creatorId = parameter.get("creatorId");
+                if(creatorId != null && Integer.parseInt(creatorId.toString()) != 0) {
+                    WHERE(" (a.creatorId = #{creatorId} or a.zz_public = 1) ");
+                }
             }
         }.toString();
     }
