@@ -99,7 +99,7 @@ public class DataSourceController extends BaseController {
         Result result = new Result();
 
         DataSource dataSource = dataSourceService.queryById(id);
-        if(dataSource.getCreatorId() != loginUser.getId()) {
+        if(dataSource.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要修改他人的数据源哦~");
             return result;
         }
@@ -210,7 +210,7 @@ public class DataSourceController extends BaseController {
     public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id){
         Result result = new Result();
         DataSource dataSource = dataSourceService.queryById(id);
-        if(dataSource.getCreatorId() != loginUser.getId()) {
+        if(dataSource.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
             putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的数据源哦~");
             return result;
         }
