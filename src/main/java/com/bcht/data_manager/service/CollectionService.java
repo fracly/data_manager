@@ -1,23 +1,13 @@
 package com.bcht.data_manager.service;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.bcht.data_manager.consts.Constants;
-import com.bcht.data_manager.mapper.SearchMapper;
-import com.bcht.data_manager.utils.HttpClient;
-import com.bcht.data_manager.utils.MapUtils;
-import com.bcht.data_manager.utils.PropertyUtils;
-import com.bcht.data_manager.utils.StringUtils;
-import io.netty.util.internal.StringUtil;
+import com.bcht.data_manager.entity.Job;
+import com.bcht.data_manager.mapper.CollectionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,66 +15,40 @@ import java.util.Map;
 
 @Service
 public class CollectionService extends BaseService {
-    public static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
-    public static String txt2String(StringBuilder fileResult, File file, HashMap<String, Integer> realMap, HashMap<Integer, Integer> alterMap){
-        try{
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(file),"GBK");
-            BufferedReader br = new BufferedReader(isr);
-            String s = "";
-            int i = 0; //行数
-            alterMap = null;
-            while((s = br.readLine()) != null) {
-                byte[] bytes = s.getBytes("UTF-8");
-                s = new String(bytes, 0, bytes.length);
-                int num = numsCount(s, ' '); //上传文件第一行的字段数量
-                if(i == 0) { //i=0(第一行)并且s非空
-//                    s = alterAction(alterMap, s, num);
-                    alterMap = getAlterMap(realMap, s, num);
-                    i++;
-                    continue;
-                }
-                else {                                      // i!=0 开始读取数据部分
-                    s = alterAction(alterMap, s, num);
-                }
-                fileResult.append(s + System.lineSeparator());
-                i++;
+
+    @Autowired
+    private CollectionMapper collectionMapper;
+
+    public final Logger logger = LoggerFactory.getLogger(CollectionService.class);
+
+    public String transformFile2String(File file, HashMap<String, Integer> realMap) throws IOException {
+        Map<Integer, Integer> alterMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        InputStreamReader isr = new InputStreamReader(new FileInputStream(file),"GBK");
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        int i = 0; //行数
+        while((line = br.readLine()) != null) {
+            byte[] bytes = line.getBytes("UTF-8");
+            line = new String(bytes, 0, bytes.length);
+            int columnSize = numsCount(line, ' '); //上传文件第一行的字段数量
+            if(i == 0) {
+                alterMap = getAlterMap(realMap, line, columnSize);
+                if(alterMap == null) { return null; }
+                i ++;
+                continue;
             }
-            br.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            else {                                      // i!=0 开始读取数据部分
+                line = alterAction(alterMap, line, columnSize);
+            }
+            stringBuilder.append(line + System.lineSeparator());
+            i++;
         }
-       return  fileResult.toString();
+        br.close();
+        return  stringBuilder.toString();
     }
-//    public static String txt2String(StringBuilder fileResult, File file, HashMap<String, Integer> realMap, HashMap<Integer, Integer> alterMap){
-//        try{
-//            BufferedReader br = new BufferedReader(new FileReader(file));
-//            String s = null;
-//            int i = 0; //行数
-//            while((s = br.readLine()) != null) {
-////                s= s.getBytes("UTF-8");
-//                int num = numsCount(s, ' '); //上传文件第一行的字段数量
-//                alterMap = alterIndex(realMap, s, num);
-//                if(i == 0 && !StringUtil.isNullOrEmpty(s)) { //i=0(第一行)并且s非空
-////                    s = alterAction(alterMap, s, num);
-//                    continue;
-//                }
-//                else {                                      // i!=0 开始读取数据部分
-//                    s = alterAction(alterMap, s, num);
-//                }
-//                fileResult.append(s + System.lineSeparator());
-//                i++;
-//            }
-//            br.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return  fileResult.toString();
-//    }
-    public static Integer numsCount(String line, char searchChar){
+
+    public Integer numsCount(String line, char searchChar){
         int len = line.length();
         int count = 0;
         for(int i = 0; i < len; i++){
@@ -93,37 +57,35 @@ public class CollectionService extends BaseService {
         }
         return count + 1;
     }
-    public static HashMap<Integer, Integer> getAlterMap(HashMap<String, Integer> hashMap, String string , int num){
-        HashMap<Integer,Integer> alterMap = new HashMap();
-        int i = 0, realIndex =0;
-        String name = null;
-//            List l = new ArrayList<String>();
-        while(i < num) //属性个数
+
+    public Map<Integer, Integer> getAlterMap(HashMap<String, Integer> realMap, String line , int columnSize){
+        Map<Integer, Integer> alterMap = new HashMap();
+        Integer currentIndex = 0, originalIndex = 0;
+        String name;
+        String[] columnValues = line.split(" ");
+        while(currentIndex < columnSize)
         {
-            try{
-                name = string.split(" ")[i];
-//                l.add(i, name);
-                realIndex = hashMap.get(name);
-                alterMap.put(i, realIndex);
-                i++;
-            }catch (Exception e){
-                System.out.println("表中没有注释为 '" + name + "'的属性");
-                break;
+            name = columnValues[currentIndex];
+            originalIndex = realMap.get(name);
+            if(originalIndex == null) {
+                return null;
             }
+            alterMap.put(currentIndex, originalIndex);
+            currentIndex ++;
         }
 
         return alterMap;
     }
 
-    public static HashMap<String, Integer> getRealMap(List<String> list){
+    public HashMap<String, Integer> getRealMap(List<String> list){
         HashMap<String, Integer> realMap = new HashMap();
         for (int i = 0; i < list.size(); i++){
-            realMap.put(list.get(i), i);  //为什么这里报错?
+            realMap.put(list.get(i), i);
         }
         return realMap;
     }
 
-    public static void saveAsFileWriter(String content, String path){
+    public void saveAsFileWriter(String content, String path){
         FileWriter fw = null;
         try{
             fw = new FileWriter(path);
@@ -139,18 +101,8 @@ public class CollectionService extends BaseService {
             }
         }
     }
-    public static String[] listToArray(List<String> list){
-        String[] array = {};
-        if(list == null || list.size() ==0){
-            return null;
-        }
-        else{
-            array = (String[]) list.toArray();
-        }
-        return array;
-    }
 
-    public static String  alterAction(HashMap<Integer, Integer> hashmap, String string,  int num){
+    public String  alterAction(Map<Integer, Integer> hashmap, String string,  int num){
         ArrayList<String> arrayList = new ArrayList(num);
         int i = 0;
         while(i < num){
@@ -168,5 +120,17 @@ public class CollectionService extends BaseService {
         String s = arrayList.toString().replace("[","").replace("]","").replace(", ", " ");
         s = s.replace(" ", "|");
         return s;
+    }
+
+    public int insert(Job job) {
+        return collectionMapper.insert(job);
+    }
+
+    public List<Job> jobList(Integer creatorId, Integer status) {
+        return collectionMapper.jobList(creatorId, status);
+    }
+
+    public int jobDelete(Integer jobId) {
+        return collectionMapper.jobDelete(jobId);
     }
 }

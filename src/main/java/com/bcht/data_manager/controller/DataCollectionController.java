@@ -1,5 +1,6 @@
 package com.bcht.data_manager.controller;
 
+import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Data;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.Job;
@@ -11,8 +12,6 @@ import com.bcht.data_manager.service.CollectionService;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.utils.*;
 
-import io.netty.util.internal.StringUtil;
-import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
-
 import static com.bcht.data_manager.consts.Constants.*;
-import static com.bcht.data_manager.service.CollectionService.saveAsFileWriter;
-import static com.bcht.data_manager.utils.HiveUtils.getTableColumnNameList;
 
 @RestController
 @RequestMapping("/api/data-collection")
@@ -38,7 +34,7 @@ public class DataCollectionController extends BaseController {
     private DataService dataService;
 
     @Autowired
-    private CollectionMapper collectionMapper;
+    private CollectionService collectionService;
 
     @PostMapping("/test")
     public Result test(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
@@ -149,81 +145,100 @@ public class DataCollectionController extends BaseController {
             putMsg(result, Status.EXECUTE_SHELL_FAILED);
             logger.error("sqoop 脚本执行失败！");
             job.setStatus(FAILED);
-            collectionMapper.insert(job);
+            collectionService.insert(job);
             return result;
         }
-        collectionMapper.insert(job);
+        collectionService.insert(job);
         putMsg(result, Status.CUSTOM_SUCESSS, "sqoop 脚本执行成功");
         return result;
     }
 
-
     @PostMapping("/file")
     public Result file(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestParam("file") MultipartFile file, Long dataId, boolean overwrite) {
         Result result = new Result();
-        if(!file.isEmpty()){
-            try{
-                /**
-                 *根据dataId查找data,数据库,表
-                 */
-                Data data = dataService.queryById(dataId);
-                DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
-                String fileName = file.getName();
-                String tableName = data.getDataName(); //通过data拿到表名
-                logger.info("上传的文件名为: " + fileName);
-                /**
-                 *将上传的文件复制到本地:先拿到上传文件名称再拿到上传文件路径,通过一个getUploadFilename函数就可以完成功能
-                 */
-                String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
-                File localfile = new File(localFileName);
-                try {
-                    FileUtils.copyFile(file, localFileName);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                /**
-                 *开始对文件进行操作
-                 */
-                try{
-                    List<String> commentNameList = getTableColumnNameList(dataSource, tableName);//拿到字段备注
-                    System.out.println(commentNameList);
-                    /**
-                     *拿到对应参数,通过相应参数,建立Map映射表,执行数据转换操作
-                     */
-                    StringBuilder fileResult = new StringBuilder();//用作输出数据
-                    HashMap<String, Integer> realMap = CollectionService.getRealMap(commentNameList);
-                    HashMap<Integer, Integer> alterMap = new HashMap();
-                    String txt = CollectionService.txt2String(fileResult, localfile, realMap, alterMap); //作为最终转换后的txt内容
-                    /**
-                     *数据转换完成,将内容写入至新的txt文件,并保存在tmp目录
-                     */
-
-                    File dest = new File(localFileName);
-                    if(!dest.getParentFile().exists()) {
-                        dest.getParentFile().mkdirs(); //新建文件夹
-                    }
-                    saveAsFileWriter(txt, localFileName);
-                    String hdfsPath = "/tmp/" + fileName;
-                    HDFSUtils.copyLocalToHdfs(localFileName,hdfsPath,true, overwrite);
-                    HiveUtils.loadDataFromHdfsFile(dataSource,tableName,overwrite,hdfsPath);
-                    Job job = new Job();
-                    job.setCreatorId(loginUser.getId());
-                    job.setInputType(FILE);
-                    job.setOutputId(dataId);
-                    job.setOutputType(DbType.HIVE.getIndex());
-                    job.setStartTime(new Date());
-                    job.setType(FILE2HIVE);
-                    job.setOutputName(data.getDataName());
-                    job.setStatus(FINISHED);
-                    collectionMapper.insert(job);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+        if (file == null ) {
+            putMsg(result, Status.FAILED);
+            return result;
         }
-        putMsg(result,Status.SUCCESS);
+
+        Data data = dataService.queryById(dataId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+
+        String fileName = file.getOriginalFilename();
+        String localFileName = FileUtils.getUploadFilename(file.getOriginalFilename());
+        String tableName = data.getDataName();
+
+        Job job = new Job();
+        job.setCreatorId(loginUser.getId());
+        job.setInputType(FILE);
+        job.setOutputId(dataId);
+        job.setOutputType(DbType.HIVE.getIndex());
+        job.setStartTime(new Date());
+        job.setType(FILE2HIVE);
+        job.setOutputName(data.getDataName());
+
+        try {
+            FileUtils.copyFile(file, localFileName);
+        } catch (IOException e) {
+            logger.error("文件拷贝失败,从MultipleFile到Local" + e.getMessage());
+            putMsg(result, Status.CUSTOM_FAILED, "写入本地出错");
+            return result;
+        }
+
+        List<String> commentNameList = null;
+        try {
+            commentNameList = HiveUtils.getTableColumnNameList(dataSource, tableName);
+        } catch (Exception e) {
+            logger.error("获取数据的字段列表失败:" + e.getMessage());
+            putMsg(result, Status.CUSTOM_FAILED, "获取数据的字段列表失败");
+            job.setStatus(Constants.FAILED);
+            return result;
+        }
+
+        if (commentNameList != null) {
+            HashMap<String, Integer> realMap = collectionService.getRealMap(commentNameList);
+            String alteredContent;
+            try{
+                alteredContent = collectionService.transformFile2String(new File(localFileName), realMap);
+            }catch (IOException e) {
+                logger.error("转化出错:" + e.getMessage());
+                putMsg(result, Status.CUSTOM_FAILED, "转化出错");
+                job.setStatus(Constants.FAILED);
+                return result;
+            }
+
+
+            if(alteredContent != null) {
+                //
+                collectionService.saveAsFileWriter(alteredContent, localFileName);
+                File dest = new File(localFileName);
+                if(!dest.getParentFile().exists()) {
+                    dest.getParentFile().mkdirs();
+                }
+                try{
+                    HDFSUtils.copyLocalToHdfs(localFileName, "/tmp/" + fileName,true, overwrite);
+                    HiveUtils.loadDataFromHdfsFile(dataSource, tableName, overwrite, "/tmp/" + fileName);
+                } catch (Exception e) {
+                    logger.error("hdfs上传加载文件失败:" + e.getMessage());
+                    putMsg(result, Status.CUSTOM_FAILED, "hdfs上传加载文件失败");
+                    job.setStatus(Constants.FAILED);
+                    return result;
+                }
+
+            }else {
+                putMsg(result, Status.CUSTOM_FAILED, "转化内容为空");
+                job.setStatus(Constants.FAILED);
+                return result;
+            }
+        } else{
+            putMsg(result, Status.CUSTOM_FAILED, "获取列名集合失败");
+            job.setStatus(Constants.FAILED);
+            return result;
+        }
+
+        job.setStatus(FINISHED);
+        collectionService.insert(job);
+        putMsg(result, Status.CUSTOM_SUCESSS, "文件导入成功");
         return result;
 
     }
@@ -231,7 +246,7 @@ public class DataCollectionController extends BaseController {
     @GetMapping("/job-list")
     public Result jobList(@RequestAttribute(value = SESSION_USER) User loginUser, int status) {
         Result result = new Result();
-        List<Job> list = collectionMapper.jobList(loginUser.getId(), status);
+        List<Job> list = collectionService.jobList(loginUser.getId(), status);
         result.setData(list);
         putMsg(result, Status.SUCCESS);
         return result;
@@ -240,7 +255,7 @@ public class DataCollectionController extends BaseController {
     @GetMapping("/job-delete")
     public Result jobDelete(@RequestAttribute(value = SESSION_USER) User loginUser, int id) {
         Result result = new Result();
-        int count = collectionMapper.jobDelete(id);
+        int count = collectionService.jobDelete(id);
         if(count > 0) {
             putMsg(result, Status.CUSTOM_SUCESSS, "删除成功");
         } else {
