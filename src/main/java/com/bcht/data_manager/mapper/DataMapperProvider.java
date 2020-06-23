@@ -198,12 +198,15 @@ public class DataMapperProvider {
     }
 
     public String searchTotal(Map<String, Object> parameter) {
-        return new SQL() {
+        String sql = new SQL() {
             {
                 SELECT("count(1)");
                 FROM(DATA_TABLE_NAME);
                 WHERE("(creatorId = #{creatorId} or zz_public = 1)");
-                WHERE("name like concat('%', #{name}, '%')");
+                Object name = parameter.get("name");
+                if(name != null && StringUtils.isNotEmpty(name.toString())) {
+                    WHERE("name like concat('%', #{name}, '%')");
+                }
                 int type = Integer.parseInt(parameter.get("type").toString());
                 if (type != 0) {
                     WHERE(" type = #{type}" );
@@ -220,6 +223,7 @@ public class DataMapperProvider {
                 }
             }
         }.toString();
+        return sql;
     }
 
     public String encryptSearch(Map<String, Object> parameter) {
