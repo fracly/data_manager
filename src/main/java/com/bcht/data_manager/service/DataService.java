@@ -244,7 +244,7 @@ public class DataService extends BaseService {
         if (pageNo > 1) {
             offset = (pageNo - 1) * pageSize;
         }
-        return dataMapper.encryptSearch(dataSourceId, searchVal, pageNo, pageSize);
+        return dataMapper.encryptSearch(dataSourceId, searchVal, offset, pageSize);
     }
 
     public Integer encryptSearchTotal(int dataSourceId, String searchVal) {
@@ -483,10 +483,10 @@ public class DataService extends BaseService {
         return result;
     }
 
-    public Result countByLabel(String startDate, String endDate) {
+    public Result countByLabel(String startDate, String endDate, Integer limit) {
         Result result  = new Result();
         List<Map<String, Object>> resultList = new ArrayList<>();
-        List<Map<String, Object>> tmpList = dataMapper.countByLabel(startDate + " 00:00:00", endDate + " 23:59:59");
+        List<Map<String, Object>> tmpList = dataMapper.countByLabel(startDate + " 00:00:00", endDate + " 23:59:59", limit);
         for(Map<String, Object> map : tmpList) {
             Map<String, Object> newMap = new HashMap<>();
             newMap.put("name", map.get("name").toString());

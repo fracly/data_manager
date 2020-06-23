@@ -42,6 +42,7 @@ public class DataMapperProvider {
                 VALUES("`destroy_method`", "#{data.destroyMethod}");
                 VALUES("`destroy_time`", "#{data.destroyTime}");
                 VALUES("`zz_public`", "#{data.zzPublic}");
+                VALUES("`zz_encrypt`", "#{data.zzEncrypt}");
             }
         }.toString();
     }

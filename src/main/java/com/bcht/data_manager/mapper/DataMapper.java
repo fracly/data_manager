@@ -173,8 +173,8 @@ public interface DataMapper {
     List<Map<String, Object>> countIncreaseByDay(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
     @Select("select a.name, count(b.data_id) as total from t_data_manager_label a inner join t_data_manager_relation_label_data b on a.id =b.label_id  " +
-            "inner join t_data_manager_data c on b.data_id =c.id where c.create_time>= #{startDate} and c.create_time <= #{endDate} group by a.name order by count(b.data_id) desc")
-    List<Map<String, Object>> countByLabel(@Param("startDate") String startDate, @Param("endDate") String endDate);
+            "inner join t_data_manager_data c on b.data_id =c.id where c.create_time>= #{startDate} and c.create_time <= #{endDate} group by a.name order by count(b.data_id) desc limit #{limit}")
+    List<Map<String, Object>> countByLabel(@Param("startDate") String startDate, @Param("endDate") String endDate, @Param("limit") Integer limit);
 
     @SelectProvider(type = DataMapperProvider.class, method = "groupByType")
     List<Map<String, Object>> dateTypePercentage(@Param("startDate") String startDate, @Param("endDate") String endDate);

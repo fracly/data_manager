@@ -26,8 +26,9 @@ public class SqoopUtils {
         sb.append(" --hive-import ");
         sb.append(" --hive-database " + targetDB);
         sb.append(" --hive-table " + targetTable);
-        sb.append(" --fields-terminated-by '|'");
+        sb.append(" --fields-terminated-by |");
         sb.append(" --hive-delims-replacement '#'");
+        sb.append(" -m 1");
         return sb.toString();
     }
 }

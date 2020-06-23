@@ -115,9 +115,12 @@ public class AnalysisController extends BaseController {
      * 数据标签分布量
      */
     @GetMapping("/count-by-label")
-    public Result countByLabel(String startDate, String endDate) {
-        logger.info("querying label's data count between {} and {}", startDate, endDate);
-        return dataService.countByLabel(startDate, endDate);
+    public Result countByLabel(String startDate, String endDate, Integer limit) {
+        logger.info("querying label's data count between {} and {} limit {}", startDate, endDate, limit);
+        if(limit  == null) {
+            limit = 10;
+        }
+        return dataService.countByLabel(startDate, endDate, limit);
     }
 
     /**
