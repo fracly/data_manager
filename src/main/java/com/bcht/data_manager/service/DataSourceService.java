@@ -119,7 +119,7 @@ public class DataSourceService extends BaseService {
         return result;
     }
 
-    public List<Map<String, Integer>> statistic(int creatorId) {
+    public List<Map<String, Long>> statistic(int creatorId) {
         return dataSourceMapper.statistic(creatorId);
     }
 }

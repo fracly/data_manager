@@ -71,6 +71,6 @@ public interface DataSourceMapper {
     List<Map<String, Object>> groupByType();
 
     @SelectProvider(type = DataSourceMapperProvider.class, method = "statistic")
-    List<Map<String, Integer>> statistic(@Param("creatorId") int creatorId);
+    List<Map<String, Long>> statistic(@Param("creatorId") int creatorId);
 
 }

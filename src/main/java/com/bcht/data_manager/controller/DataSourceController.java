@@ -250,9 +250,9 @@ public class DataSourceController extends BaseController {
     @GetMapping("/statistic")
     public Result statistic(@RequestAttribute(value = Constants.SESSION_USER) User loginUser){
         Result result = new Result();
-        List<Map<String, Integer>> mapList = dataSourceService.statistic(loginUser.getId());
-        Map<String, Integer> resultMap = new HashMap();
-        for(Map<String, Integer> map : mapList) {
+        List<Map<String, Long>> mapList = dataSourceService.statistic(loginUser.getId());
+        Map<String, Long> resultMap = new HashMap();
+        for(Map<String, Long> map : mapList) {
             resultMap.put("type" + map.get("type"), map.get("total"));
         }
         result.setData(resultMap);

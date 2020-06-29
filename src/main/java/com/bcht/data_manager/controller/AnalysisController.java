@@ -1,7 +1,9 @@
 package com.bcht.data_manager.controller;
 
+import com.bcht.data_manager.entity.ClouderaEntity;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.AnalysisService;
+import com.bcht.data_manager.service.ClouderaManagerMetricsService;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.DateUtils;
@@ -219,6 +221,27 @@ public class AnalysisController extends BaseController {
         String startDateTime = DateUtils.formatDate(date, DateUtils.DATETIME_FORMAT);
         List<Map<String, Object>> resultList = analysisService.loginCountByDay(startDateTime, endDateTime);
         result.setData(resultList);
+        return result;
+    }
+
+    /** cloudera manager api **/
+    @GetMapping("/load/trend")
+    public Result getLoadTrendFromClouderaApi(Integer type) {
+        logger.info("statistic data from cloudera manager api ...");
+        Result result = new Result();
+        List<ClouderaEntity> list = ClouderaManagerMetricsService.getClusterLoadInfo(type);
+        result.setData(list);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/load/realtime")
+    public Result getLoadRealTimeFromClouderaApi() {
+        logger.info("get realtime data from cloudera manager api ...");
+        Result result = new Result();
+        Map<String, Object> realTimeMap = ClouderaManagerMetricsService.getClusterRealTimeInfo();
+        result.setData(realTimeMap);
+        putMsg(result, Status.SUCCESS);
         return result;
     }
 }
