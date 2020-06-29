@@ -41,7 +41,10 @@ public class StringUtils {
     public static String byteFormat(long bytes) {
         String[] units = new String[]{" B", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB"};
         int unit = 1024;
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        int exp = 0;
+        if(bytes != 0 ) {
+            exp = (int) (Math.log(bytes) / Math.log(unit));
+        }
         double pre = 0;
         if (bytes > 1024) {
             pre = bytes / Math.pow(unit, exp);

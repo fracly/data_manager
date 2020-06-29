@@ -2,6 +2,7 @@ package com.bcht.data_manager.service;
 
 import com.bcht.data_manager.entity.ClouderaEntity;
 import com.bcht.data_manager.utils.PropertyUtils;
+import com.bcht.data_manager.utils.StringUtils;
 import com.cloudera.api.ClouderaManagerClientBuilder;
 import com.cloudera.api.model.ApiTimeSeries;
 import com.cloudera.api.model.ApiTimeSeriesData;
@@ -56,8 +57,15 @@ public class ClouderaManagerMetricsService {
                 ClouderaEntity clouderaEntity = new ClouderaEntity();
                 clouderaEntity.setType(writtenTimeSeries.get(i).getType());
                 clouderaEntity.setxAxis(writtenTimeSeries.get(i).getTimestamp());
-                clouderaEntity.setyAxis1(writtenTimeSeries.get(i).getValue());
-                clouderaEntity.setyAxis2(readTimeSeries.get(i).getValue());
+                if(type != 4) {
+                    Long inputByte = (long) writtenTimeSeries.get(i).getValue();
+                    Long outputByte = (long) readTimeSeries.get(i).getValue();
+                    clouderaEntity.setyAxis1(StringUtils.byteFormat(inputByte));
+                    clouderaEntity.setyAxis2(StringUtils.byteFormat(outputByte));
+                } else {
+                    clouderaEntity.setyAxis1(writtenTimeSeries.get(i).getValue());
+                    clouderaEntity.setyAxis2(readTimeSeries.get(i).getValue());
+                }
                 clouderaEntities.add(clouderaEntity);
             }
         }
