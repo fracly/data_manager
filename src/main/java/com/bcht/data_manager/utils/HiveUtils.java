@@ -138,15 +138,15 @@ public class HiveUtils {
         List<String> result = new ArrayList<>();
 
         Connection connection = getHiveConnection(dataSource);
-        List<String> columnList = getTableColumnCommentList(dataSource, tableName);
 
+        List<String> commentList = getTableColumnNameList(dataSource, tableName);
         StringBuilder firstLine = new StringBuilder();
-        for(int j = 0; j < columnList.size(); j ++) {
-            firstLine.append(columnList.get(j));
-            if(j == (columnList.size() - 1)) {
+        for(int j = 0; j < commentList.size(); j ++) {
+            firstLine.append(commentList.get(j));
+            if(j == (commentList.size() - 1)) {
                 firstLine.append("\n");
             } else {
-                firstLine.append(",");
+                firstLine.append(" ");
             }
         }
         result.add(firstLine.toString());
@@ -162,6 +162,7 @@ public class HiveUtils {
             sql.append( " " + condition);
         }
 
+        List<String> columnList = getTableColumnCommentList(dataSource, tableName);
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(sql.toString());
         while(rs.next()) {
@@ -171,7 +172,7 @@ public class HiveUtils {
                 if(i == (columnList.size() - 1)) {
                     row.append("\n");
                 } else {
-                    row.append(",");
+                    row.append(" ");
                 }
             }
             result.add(row.toString());
@@ -226,6 +227,7 @@ public class HiveUtils {
             stringBuilder.append(" overwrite ");
         }
         stringBuilder.append(" into table " + dataSource.getCategory1() + "." + tableName);
+        System.out.println(stringBuilder.toString());
         stmt.execute(stringBuilder.toString());
         close(connection, stmt);
     }
