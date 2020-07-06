@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.bcht.data_manager.utils.StringUtils.*;
 
 @Service
 public class DataService extends BaseService {
@@ -47,9 +46,9 @@ public class DataService extends BaseService {
     public Result createHiveData(DataSource dataSource, User loginUser, Integer createWay, String createSql, String tableName, String columns, String name, String description, String labels, Integer status, Integer zPublic) {
         Result result = new Result();
         if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
-            tableName = getTableName(createSql);
+            tableName = com.bcht.data_manager.utils.StringUtils.getTableName(createSql);
         } else if (createWay == Constants.CREATE_TABLE_METHOD_OF_COLUMN_COMPOSE){
-            createSql = composeCreateSql(dataSource.getCategory1(), tableName, columns);
+            createSql = com.bcht.data_manager.utils.StringUtils.composeCreateSql(dataSource.getCategory1(), tableName, columns);
         }
         try{
             HiveUtils.createTable(dataSource, createSql, tableName);

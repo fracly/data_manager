@@ -6,6 +6,7 @@ import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.Label;
 import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.DbType;
+import com.bcht.data_manager.enums.DownloadType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
@@ -431,7 +432,7 @@ public class DataController extends BaseController {
      */
     @GetMapping("/download")
     @ResponseBody
-    public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition) {
+    public ResponseEntity download(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataId, String condition, Integer downloadType) {
         // 根据文件类型判断处理逻辑：
         //  HBase/Hive数据，下载成cvs文件，返回生成 ResponseEntity
         Data data = dataService.queryById(dataId);
@@ -439,13 +440,25 @@ public class DataController extends BaseController {
         DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
         List<String> lineList = null;
         if(data.getType() == DbType.HIVE.getIndex()) {
-            try{
-                lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0);
-            } catch (Exception e) {
-                logger.error("下载Hive表数据失败\n" + e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
+            if(downloadType == DownloadType.CSV.getIndex()) //如果下载CSV格式
+            {
+                try{
+                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0, ",");
+                } catch (Exception e) {
+                    logger.error("下载Hive表数据失败\n" + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
+                }
             }
-        } else if(data.getType() == DbType.HBASE.getIndex()){
+            if(downloadType == DownloadType.TXT.getIndex()){ //如果下载TXT格式
+                try{
+                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0, " ");
+                } catch (Exception e) {
+                    logger.error("下载Hive表数据失败\n" + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
+                }
+            }
+            }
+        else if(data.getType() == DbType.HBASE.getIndex()){
             try{
                 lineList = HBaseUtils.downloadTableData(dataSource, data.getDataName(), Constants.maxDownloadRecord);
             } catch (IOException e) {
@@ -455,7 +468,9 @@ public class DataController extends BaseController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("文件类型错误！");
         }
-        String localFileName = FileUtils.getDownloadFilename(data.getName()) + ".csv";
+
+        String localFileName = null;
+        localFileName = FileUtils.getDownloadFilename(data.getName()) + "." + DownloadType.valueOf(downloadType).toString().toLowerCase();
         File localFile =  new File(localFileName);
         if(!localFile.exists()) {
             localFile.getParentFile().mkdirs();

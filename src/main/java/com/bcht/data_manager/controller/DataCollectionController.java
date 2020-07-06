@@ -195,26 +195,27 @@ public class DataCollectionController extends BaseController {
             return result;
         }
 
-        if (commentNameList != null) {
+        if (commentNameList != null ) {
             HashMap<String, Integer> realMap = collectionService.getRealMap(commentNameList);
             String alteredContent;
+            File tmpFile = new File(localFileName);
             try{
-                alteredContent = collectionService.transformFile2String(new File(localFileName), realMap);
+                alteredContent = collectionService.transformFile2String(tmpFile, realMap);
             }catch (IOException e) {
                 logger.error("转化出错:" + e.getMessage());
-                putMsg(result, Status.CUSTOM_FAILED, "转化出错");
+                putMsg(result, Status.CUSTOM_FAILED, "备注名不匹配");
                 job.setStatus(Constants.FAILED);
                 return result;
             }
 
-
             if(alteredContent != null) {
-                //
-                collectionService.saveAsFileWriter(alteredContent, localFileName);
                 File dest = new File(localFileName);
                 if(!dest.getParentFile().exists()) {
                     dest.getParentFile().mkdirs();
                 }
+
+                collectionService.saveAsFileWriter(alteredContent, localFileName);
+
                 try{
                     HDFSUtils.copyLocalToHdfs(localFileName, "/tmp/" + fileName,true, overwrite);
                     HiveUtils.loadDataFromHdfsFile(dataSource, tableName, overwrite, "/tmp/" + fileName);
@@ -226,7 +227,7 @@ public class DataCollectionController extends BaseController {
                 }
 
             }else {
-                putMsg(result, Status.CUSTOM_FAILED, "转化内容为空");
+                putMsg(result, Status.CUSTOM_FAILED, "字段备注与表名不匹配");
                 job.setStatus(Constants.FAILED);
                 return result;
             }

@@ -24,7 +24,7 @@ public class CollectionService extends BaseService {
     public String transformFile2String(File file, HashMap<String, Integer> realMap) throws IOException {
         Map<Integer, Integer> alterMap = new HashMap();
         StringBuilder stringBuilder = new StringBuilder();
-        InputStreamReader isr = new InputStreamReader(new FileInputStream(file),"GBK");
+        InputStreamReader isr = new InputStreamReader(new FileInputStream(file),"UTF-8");
         BufferedReader br = new BufferedReader(isr);
         String line;
         int i = 0; //行数
@@ -112,13 +112,10 @@ public class CollectionService extends BaseService {
         i = 0;
         while (i < num)
         {
-//             System.out.println("真实索引值: " + hashmap.get(i) + " 名称 :" + string.split(" ")[i] );
             arrayList.set(hashmap.get(i), string.split(" ")[i]);
             i++;
         }
-        System.out.println(arrayList.toString());
-        String s = arrayList.toString().replace("[","").replace("]","").replace(", ", " ");
-        s = s.replace(" ", "|");
+        String s = arrayList.toString().replace("[","").replace("]","").replace(", ", "|");
         return s;
     }
 
