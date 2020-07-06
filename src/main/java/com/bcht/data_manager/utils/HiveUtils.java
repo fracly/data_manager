@@ -5,6 +5,7 @@ import com.bcht.data_manager.entity.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,13 +129,13 @@ public class HiveUtils {
         List<String> columnList = new ArrayList<>();
         List<Map<String, String>> mapList = getTableColumnMapList(dataSource, tableName);
         for(Map<String, String> map : mapList) {
-           columnList.add(map.get("name"));
+          columnList.add(map.get("name"));
         }
         return columnList;
     }
 
     //DML
-    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition, int limit) throws SQLException, ClassNotFoundException {
+    public static List<String> downloadTableData(DataSource dataSource, String tableName, String condition, int limit, String seperator) throws SQLException, ClassNotFoundException {
         List<String> result = new ArrayList<>();
 
         Connection connection = getHiveConnection(dataSource);
@@ -146,10 +147,16 @@ public class HiveUtils {
             if(j == (commentList.size() - 1)) {
                 firstLine.append("\n");
             } else {
-                firstLine.append(" ");
+                firstLine.append(seperator);
             }
         }
-        result.add(firstLine.toString());
+
+        try {
+            result.add(new String(firstLine.toString().getBytes("UTF-8"),"UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            logger.error("编码格式转化失败" +e.getMessage());
+            result.add(firstLine.toString());
+        }
 
         StringBuilder sql = new StringBuilder();
         if (limit == 0) {
@@ -172,7 +179,7 @@ public class HiveUtils {
                 if(i == (columnList.size() - 1)) {
                     row.append("\n");
                 } else {
-                    row.append(" ");
+                    row.append(seperator);
                 }
             }
             result.add(row.toString());
