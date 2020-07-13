@@ -57,15 +57,8 @@ public class ClouderaManagerMetricsService {
                 ClouderaEntity clouderaEntity = new ClouderaEntity();
                 clouderaEntity.setType(writtenTimeSeries.get(i).getType());
                 clouderaEntity.setxAxis(writtenTimeSeries.get(i).getTimestamp());
-                if(type != 4) {
-                    Long inputByte = (long) writtenTimeSeries.get(i).getValue();
-                    Long outputByte = (long) readTimeSeries.get(i).getValue();
-                    clouderaEntity.setyAxis1(StringUtils.byteFormat(inputByte));
-                    clouderaEntity.setyAxis2(StringUtils.byteFormat(outputByte));
-                } else {
-                    clouderaEntity.setyAxis1(writtenTimeSeries.get(i).getValue());
-                    clouderaEntity.setyAxis2(readTimeSeries.get(i).getValue());
-                }
+                clouderaEntity.setyAxis1(writtenTimeSeries.get(i).getValue());
+                clouderaEntity.setyAxis2(readTimeSeries.get(i).getValue());
                 clouderaEntities.add(clouderaEntity);
             }
         }

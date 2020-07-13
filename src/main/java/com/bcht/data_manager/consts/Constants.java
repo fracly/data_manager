@@ -147,4 +147,9 @@ public final class Constants {
     public static final Integer FILE2HIVE = 2;
 
     public static final String ADMIN = "admin";
+
+    /**
+     * Hbase
+     */
+    public static final String HBASE_DEFAULT_COLUMN_FAMILY = "default_column_family";
 }

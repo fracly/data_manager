@@ -4,6 +4,9 @@ import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,6 +139,17 @@ public class HDFSUtils {
         close(fs);
         return result;
     }
+
+//    public static boolean saveUDPPacket(String hiveTableName, String key, byte[] data) throws IOException {
+//        Configuration configuration = new Configuration();
+//        configuration.set("fs.defaultFS", PropertyUtils.getString("fs.defaultFS"));
+//        FileSystem fs = getDefaultFileSystem();
+//        Path path = new Path(hiveTableName + ".seq");
+//        SequenceFile.Writer writer = new SequenceFile.Writer(fs, configuration, path, Text.class, byte[].class);
+//        writer.append(key, data);
+//        IOUtils.closeStream(writer);
+//        return true;
+//    }
 
     // 关闭资源
     private static void close(FileSystem fs) {

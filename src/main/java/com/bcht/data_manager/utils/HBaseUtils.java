@@ -2,6 +2,7 @@ package com.bcht.data_manager.utils;
 
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
+import com.bcht.data_manager.entity.Rule;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -11,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.DatagramPacket;
+import java.util.*;
 
 public class HBaseUtils {
     public static final Logger logger = LoggerFactory.getLogger(HBaseUtils.class);
@@ -60,19 +59,14 @@ public class HBaseUtils {
         dropNameSpace(dataSource, dataSource.getCategory1());
     }
 
-    public static void createTable(DataSource dataSource, String tableName, String columnFamilies) throws IOException {
+    public static void createTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
         Admin admin = null;
         conn = getHBaseConnection(dataSource);
         admin = conn.getAdmin();
         TableDescriptorBuilder mk = TableDescriptorBuilder.newBuilder(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
-        String[] columnFamilyArray = columnFamilies.split(",");
-        List<ColumnFamilyDescriptor> columnFamilyDescriptors=new ArrayList<>();
-        for(int i = 0;  i < columnFamilyArray.length; i ++) {
-            ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(columnFamilyArray[i]));
-            columnFamilyDescriptors.add(columnBuilder.build());
-        }
-        mk.setColumnFamilies(columnFamilyDescriptors);
+        ColumnFamilyDescriptorBuilder columnBuilder = ColumnFamilyDescriptorBuilder.newBuilder(Bytes.toBytes(Constants.HBASE_DEFAULT_COLUMN_FAMILY));
+        mk.setColumnFamily(columnBuilder.build());
         admin.createTable(mk.build());
         close(conn, admin);
     }
@@ -119,26 +113,36 @@ public class HBaseUtils {
 
     public static List<String> getTableColumnFamilyList(DataSource dataSource, String tableName) throws IOException {
         List<String> list = new ArrayList<>();
-        Connection conn = null;
-        Table table = null;
-            conn = getHBaseConnection(dataSource);
-            Admin admin = conn.getAdmin();
-            table = conn.getTable(TableName.valueOf(tableName));
-            HTableDescriptor hTableDescriptor=table.getTableDescriptor();
-            for(HColumnDescriptor fdescriptor : hTableDescriptor.getColumnFamilies()){
-                list.add(fdescriptor.getNameAsString());
-            }
-            close(conn, null, table);
+        Connection conn = getHBaseConnection(dataSource);
+        Table table = conn.getTable(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
+        HTableDescriptor hTableDescriptor=table.getTableDescriptor();
+        for(HColumnDescriptor fdescriptor : hTableDescriptor.getColumnFamilies()){
+            list.add(fdescriptor.getNameAsString());
+        }
+        close(conn, null, table);
         return list;
     }
 
     // DML
+    public static void insertUDPPacket(DataSource dataSource, String tableName, DatagramPacket packet, Rule rule) throws IOException {
+        Connection connection = getHBaseConnection(dataSource);
+        Table table = connection.getTable(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
+        // rowkey = 时间戳反转+ 数据长度 + 偏移量 + 偏移长度 + 功能号
+        Date now = new Date();
+        Long timestamp = now.getTime();
+        String rowKey = StringUtils.reverse(String.valueOf(timestamp)) + rule.getLength() + rule.getOffset() + rule.getValue();
+        Put put = new Put(rowKey.getBytes());
+        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "length".getBytes(), String.valueOf(rule.getLength()).getBytes()) ;
+        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "offset".getBytes(), String.valueOf(rule.getOffset()).getBytes() ) ;
+        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "data".getBytes(), packet.getData()) ;
+        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "value".getBytes(), rule.getValue().getBytes());
+        table.put(put);
+    }
+
     public static List<String> downloadTableData(DataSource dataSource, String tableName, int limit) throws IOException {
         List<String> resultList = new ArrayList<>();
-        Connection connection =  null;
-        Table table = null;
-        connection = getHBaseConnection(dataSource);
-        table = connection.getTable(TableName.valueOf(tableName));
+        Connection connection =  getHBaseConnection(dataSource);
+        Table table = connection.getTable(TableName.valueOf(tableName));
         Scan scan = new Scan();
         ResultScanner resultScanner = table.getScanner(scan);
         if (limit == 0) { limit  = Constants.maxDownloadRecord; }

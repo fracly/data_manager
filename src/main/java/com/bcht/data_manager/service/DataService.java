@@ -71,10 +71,10 @@ public class DataService extends BaseService {
     /**
      * 创建Hbase表
      */
-    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String columns, String name, String description, String labels, Integer status, Integer zPublic) {
+    public Result createHBaseData(DataSource dataSource, User loginUser, String tableName, String name, String description, String labels, Integer status, Integer zPublic) {
         Result result = new Result();
         try{
-            HBaseUtils.createTable(dataSource, tableName, columns);
+            HBaseUtils.createTable(dataSource, tableName);
         } catch (IOException e) {
             putMsg(result, Status.HBASE_CREATE_TABLE_FAILED);
             logger.error("删除Hbase表\n" + e.getMessage());
@@ -304,6 +304,9 @@ public class DataService extends BaseService {
         return dataMapper.queryById(dataId);
     }
 
+    public List<Data> queryByType(int creatorId, int type) {
+        return dataMapper.queryByType(creatorId, type);
+    }
     /**
      * 血缘关系
      */

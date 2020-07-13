@@ -71,7 +71,7 @@ public class DataController extends BaseController {
         if (type == DbType.HIVE.getIndex()) {
             return dataService.createHiveData(dataSource, loginUser, createMethod, createSql, tableName, columns, name, description, labels, status, zzPublic);
         } else if (type == DbType.HBASE.getIndex()) {
-            return dataService.createHBaseData(dataSource, loginUser, tableName, columns, name, description, labels, status, zzPublic);
+            return dataService.createHBaseData(dataSource, loginUser, tableName, name, description, labels, status, zzPublic);
         } else if (type == DbType.HDFS.getIndex()) {
             return dataService.createHDFSData(dataSource, loginUser, fileName, name, description, labels, status, zzPublic);
         }
@@ -306,10 +306,10 @@ public class DataController extends BaseController {
     public Result encryptSearch(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer dataSourceId, String searchVal, int pageNo, int pageSize) {
         Result result = new Result();
 
-        List<Data> reslitList = dataService.encryptSearch(dataSourceId, searchVal, pageNo, pageSize);
+        List<Data> resultList = dataService.encryptSearch(dataSourceId, searchVal, pageNo, pageSize);
         int total = dataService.encryptSearchTotal(dataSourceId, searchVal);
 
-        result.setData(reslitList);
+        result.setData(resultList);
         Map resultMap = new HashMap();
         resultMap.put("total", total);
         result.setDataMap(resultMap);

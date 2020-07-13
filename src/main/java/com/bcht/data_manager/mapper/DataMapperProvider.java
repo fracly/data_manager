@@ -144,6 +144,16 @@ public class DataMapperProvider {
         }.toString();
     }
 
+    public String queryByType(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM(DATA_TABLE_NAME);
+                WHERE("`type` = #{type} and `creatorId` = #{creatorId}");
+            }
+        }.toString();
+    }
+
     public String queryDataSourceByDataId(Map<String, Object> parameter) {
         return new SQL() {
             {

@@ -1,15 +1,14 @@
 package com.bcht.data_manager.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.bcht.data_manager.consts.Constants;
-import com.bcht.data_manager.entity.Data;
-import com.bcht.data_manager.entity.DataSource;
-import com.bcht.data_manager.entity.Job;
-import com.bcht.data_manager.entity.User;
+import com.bcht.data_manager.entity.*;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.CollectionMapper;
 import com.bcht.data_manager.service.CollectionService;
 import com.bcht.data_manager.service.DataService;
+import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.*;
 
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -35,6 +35,14 @@ public class DataCollectionController extends BaseController {
 
     @Autowired
     private CollectionService collectionService;
+
+    private static DatagramSocket serverSocket = null;
+
+    private static String cacheIp = "";
+
+    private static Integer cachePort = 0;
+
+    private static List<Rule> cacheRules = new ArrayList<>();
 
     @PostMapping("/test")
     public Result test(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
@@ -265,6 +273,90 @@ public class DataCollectionController extends BaseController {
         return result;
     }
 
+    @PostMapping("/start-auto")
+    public Result startAutoJob(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+        Result result = new Result();
+        Integer port = MapUtils.getInt(parameter, "port");
+        String ip = MapUtils.getString(parameter, "ip");
+        String rulesJson = MapUtils.getString(parameter, "rulesJson");
+        DatagramPacket packet;
+        byte[] data = new byte[1024 * 64]; // 一次最多传输64KB的数据
+        try{
+            serverSocket = new DatagramSocket(port);
+            // 先将服务的配置信息保存起来
+            cacheIp = ip;
+            cachePort = port;
+            List<Rule> ruleList = JSON.parseArray(rulesJson, Rule.class);
+            cacheRules = ruleList;
+            // 开始接受数据
+            while(true) {
+                packet = new DatagramPacket(data, data.length);
+                serverSocket.receive(packet);
+                // 针对接受到packet做存储,每天规则进行解析
+                byte[] dataBytes = packet.getData();
+                for(Rule rule: cacheRules) {
+                    int offset = rule.getOffset();
+                    int length = rule.getLength();
+                    String value = rule.getValue();
+                    Date date = new Date();
+                    byte[] potentialFunctionValue = Arrays.copyOfRange(dataBytes, offset, offset + length);
+                    String potentalHexValue = StringUtils.byteToHex(potentialFunctionValue);
+                    if(potentalHexValue.equals(value)) {
+                        Data dataObj = dataService.queryById(rule.getTarget());
+                        DataSource dataSourceObj = dataService.queryDataSourceByDataId(rule.getTarget());
+                        byte[] realData = Arrays.copyOfRange(dataBytes, offset, dataBytes.length - 1);
+                        // 将数据直接写入HBase中
+                    }else {
+                        continue;
+                    }
+                }
+                System.out.println(packet.getLength());
+                System.out.println(new String(packet.getData(), 0, packet.getLength()));
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            putMsg(result, Status.CUSTOM_FAILED, "端口已被占用！请重新输入");
+            return result;
+        }
+    }
+
+    @GetMapping("/stop-auto")
+    public Result stopAutoJob() {
+        Result result = new Result();
+        serverSocket.close();
+        putMsg(result, Status.CUSTOM_SUCESSS, "停止UDPServer成功");
+        return result;
+    }
+
+    @GetMapping("/init-auto")
+    public Result initAutoJob() {
+        Result result = new Result();
+        Map map = new HashMap();
+        if(serverSocket == null || serverSocket.isClosed()) {
+            try {
+                InetAddress addr = InetAddress.getLocalHost();
+                cacheIp = addr.getHostAddress();
+                cachePort = null;
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        map.put("ip", cacheIp);
+        map.put("port", cachePort);
+        result.setData(cacheRules);
+        result.setDataMap(map);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    @GetMapping("/target-list")
+    public Result targets(@RequestAttribute(value = SESSION_USER) User loginUser) {
+        Result result = new Result();
+        List<Data> list = dataService.queryByType(loginUser.getId(), DbType.HIVE.getIndex());
+        result.setData(list);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
 }
 
 class OutputProcessor extends Thread {
