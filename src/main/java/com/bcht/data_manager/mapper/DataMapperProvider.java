@@ -149,7 +149,11 @@ public class DataMapperProvider {
             {
                 SELECT("*");
                 FROM(DATA_TABLE_NAME);
-                WHERE("`type` = #{type} and `creatorId` = #{creatorId}");
+                WHERE("`type` = #{type} ");
+                Object creatorId = parameter.get("creatorId");
+                if(creatorId != null && Integer.parseInt(creatorId.toString()) != 0) {
+                    WHERE("`creatorId` = #{creatorId} ");
+                }
             }
         }.toString();
     }

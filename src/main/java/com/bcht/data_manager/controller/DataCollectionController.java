@@ -300,7 +300,7 @@ public class DataCollectionController extends BaseController {
                     String value = rule.getValue();
                     byte[] potentialFunctionValue = Arrays.copyOfRange(dataBytes, offset, offset + length);
                     String potentalHexValue = StringUtils.byteToHex(potentialFunctionValue);
-                    System.out.println(potentalHexValue);
+                    logger.info("该数据按照规则" + rule.getName() + "得出的功能号为:" + potentalHexValue);
                     if(potentalHexValue.equals(value)) {
                         Data dataObj = dataService.queryById(rule.getTarget());
                         DataSource dataSourceObj = dataService.queryDataSourceByDataId(rule.getTarget());
@@ -310,9 +310,9 @@ public class DataCollectionController extends BaseController {
                     }else {
                         continue;
                     }
+                    logger.info("UDP数据包的长度为：" + packet.getLength());
+                    logger.info("UDP数据包的内容为：" + new String(packet.getData()));
                 }
-                System.out.println(packet.getLength());
-                System.out.println(new String(packet.getData(), 0, packet.getLength()));
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -353,7 +353,12 @@ public class DataCollectionController extends BaseController {
     @GetMapping("/target-list")
     public Result targets(@RequestAttribute(value = SESSION_USER) User loginUser) {
         Result result = new Result();
-        List<Data> list = dataService.queryByType(loginUser.getId(), DbType.HBASE.getIndex());
+        List<Data> list = null;
+        if(loginUser.getUsername().equals(Constants.ADMIN)) {
+             list = dataService.queryByType(0, DbType.HBASE.getIndex());
+        } else {
+            list = dataService.queryByType(loginUser.getId(), DbType.HBASE.getIndex());
+        }
         result.setData(list);
         putMsg(result, Status.SUCCESS);
         return result;
