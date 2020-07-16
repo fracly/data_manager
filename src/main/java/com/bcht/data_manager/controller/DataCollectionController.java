@@ -298,14 +298,15 @@ public class DataCollectionController extends BaseController {
                     int offset = rule.getOffset();
                     int length = rule.getLength();
                     String value = rule.getValue();
-                    Date date = new Date();
                     byte[] potentialFunctionValue = Arrays.copyOfRange(dataBytes, offset, offset + length);
                     String potentalHexValue = StringUtils.byteToHex(potentialFunctionValue);
+                    System.out.println(potentalHexValue);
                     if(potentalHexValue.equals(value)) {
                         Data dataObj = dataService.queryById(rule.getTarget());
                         DataSource dataSourceObj = dataService.queryDataSourceByDataId(rule.getTarget());
-                        byte[] realData = Arrays.copyOfRange(dataBytes, offset, dataBytes.length - 1);
+                        byte[] realData = Arrays.copyOfRange(dataBytes, 0, packet.getLength());
                         // 将数据直接写入HBase中
+                        HBaseUtils.insertUDPPacket(dataSourceObj, dataObj.getDataName(), rule, realData);
                     }else {
                         continue;
                     }
@@ -352,7 +353,7 @@ public class DataCollectionController extends BaseController {
     @GetMapping("/target-list")
     public Result targets(@RequestAttribute(value = SESSION_USER) User loginUser) {
         Result result = new Result();
-        List<Data> list = dataService.queryByType(loginUser.getId(), DbType.HIVE.getIndex());
+        List<Data> list = dataService.queryByType(loginUser.getId(), DbType.HBASE.getIndex());
         result.setData(list);
         putMsg(result, Status.SUCCESS);
         return result;

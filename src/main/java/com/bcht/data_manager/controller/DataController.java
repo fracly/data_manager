@@ -1,10 +1,7 @@
 package com.bcht.data_manager.controller;
 
 import com.bcht.data_manager.consts.Constants;
-import com.bcht.data_manager.entity.Data;
-import com.bcht.data_manager.entity.DataSource;
-import com.bcht.data_manager.entity.Label;
-import com.bcht.data_manager.entity.User;
+import com.bcht.data_manager.entity.*;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.DownloadType;
 import com.bcht.data_manager.enums.Status;
@@ -24,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
 
 
@@ -389,6 +383,68 @@ public class DataController extends BaseController {
         } else {
             return dataService.tablePreview(dataId);
         }
+    }
+
+    /**
+     * 数据发送请求
+     */
+    @GetMapping("/send")
+    public Result send(int dataId, Long minStamp, Long maxStamp, String ip, Integer port) {
+        Result result  = new Result();
+        Data data = dataService.queryById(dataId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+        String tableName = dataSource.getCategory1() + ":" + data.getDataName();
+        List<UDPPacket> packets = null;
+        try {
+            packets = HBaseUtils.queryUDPPacket(dataSource, tableName, minStamp, maxStamp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(packets != null) {
+            InetSocketAddress inetSocketAddress = new InetSocketAddress(ip, port);
+            DatagramSocket datagramSocket = null;
+            try {
+                datagramSocket = new DatagramSocket();
+                for(UDPPacket udpPacket : packets) {
+                    byte[] byteArray = udpPacket.getData();
+                    DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, inetSocketAddress);
+                    datagramSocket.send(packet);
+                }
+
+            } catch (SocketException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                datagramSocket.close();
+            }
+            putMsg(result, Status.CUSTOM_SUCESSS, "UDP数据发送成功");
+            return result;
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "对应的数据没有任何记录");
+            return result;
+        }
+    }
+
+    /**
+     * 数据发送前的统计
+     */
+    @GetMapping("/count")
+    public Result count(Integer dataId, Long minStamp, Long maxStamp) {
+        Result result = new Result();
+        Data data = dataService.queryById(dataId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
+        String tableName = dataSource.getCategory1() + ":" + data.getDataName();
+        long count = 0;
+        try{
+            count = HBaseUtils.countTableRecord(dataSource, tableName, minStamp, maxStamp);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        result.setData(count);
+        putMsg(result, Status.SUCCESS);
+        return result;
     }
 
     /**

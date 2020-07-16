@@ -152,4 +152,6 @@ public final class Constants {
      * Hbase
      */
     public static final String HBASE_DEFAULT_COLUMN_FAMILY = "default_column_family";
+
+    public static final String HBASE_DATA_COLUMN = "data";
 }

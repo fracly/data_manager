@@ -3,10 +3,15 @@ package com.bcht.data_manager.utils;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.DataSource;
 import com.bcht.data_manager.entity.Rule;
+import com.bcht.data_manager.entity.UDPPacket;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,19 +129,52 @@ public class HBaseUtils {
     }
 
     // DML
-    public static void insertUDPPacket(DataSource dataSource, String tableName, DatagramPacket packet, Rule rule) throws IOException {
+    public static void insertUDPPacket(DataSource dataSource, String tableName, Rule rule, byte[] data) throws IOException {
         Connection connection = getHBaseConnection(dataSource);
         Table table = connection.getTable(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
         // rowkey = 时间戳反转+ 数据长度 + 偏移量 + 偏移长度 + 功能号
         Date now = new Date();
         Long timestamp = now.getTime();
-        String rowKey = StringUtils.reverse(String.valueOf(timestamp)) + rule.getLength() + rule.getOffset() + rule.getValue();
+        String timeStamp = String.valueOf(timestamp);
+        String rowKey = timeStamp.substring(timeStamp.length()-1) +  "-" + timestamp + "-" + rule.getLength() + "-" + rule.getOffset() + "-" + rule.getValue();
         Put put = new Put(rowKey.getBytes());
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "length".getBytes(), String.valueOf(rule.getLength()).getBytes()) ;
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "offset".getBytes(), String.valueOf(rule.getOffset()).getBytes() ) ;
-        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "data".getBytes(), packet.getData()) ;
+        put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "data".getBytes(), data) ;
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "value".getBytes(), rule.getValue().getBytes());
         table.put(put);
+    }
+
+    public static List<UDPPacket> queryUDPPacket(DataSource dataSource, String tableName, Long minStamp, Long maxStamp) throws IOException {
+        Connection connection = getHBaseConnection(dataSource);
+        List list = new ArrayList();
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        Scan scan = new Scan();
+        if (minStamp != null && maxStamp != null) {
+            scan.setTimeRange(minStamp, maxStamp);
+        }
+        ResultScanner resultScanner = table.getScanner(scan);
+        for(Result row : resultScanner){
+            UDPPacket packet = new UDPPacket();
+            packet.setData(row.getValue(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), Constants.HBASE_DATA_COLUMN.getBytes()));
+            list.add(packet);
+        }
+        return list;
+    }
+
+    public static long countTableRecord(DataSource dataSource, String tableName, Long minStamp, Long maxStamp) throws IOException {
+        long total = 0;
+        Connection connection = getHBaseConnection(dataSource);
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        Scan scan = new Scan();
+        if(minStamp != null && maxStamp != null) {
+            scan.setTimeRange(minStamp, maxStamp);
+        }
+        ResultScanner resultScanner = table.getScanner(scan);
+        for(Result row : resultScanner){
+            total ++;
+        }
+        return total;
     }
 
     public static List<String> downloadTableData(DataSource dataSource, String tableName, int limit) throws IOException {
