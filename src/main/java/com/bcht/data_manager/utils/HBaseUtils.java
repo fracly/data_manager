@@ -90,11 +90,9 @@ public class HBaseUtils {
     }
 
     public static void dropTable(DataSource dataSource, String tableName) throws IOException {
-        Connection conn = null;
-        Admin admin = null;
-        conn = getHBaseConnection(dataSource);
-        admin = conn.getAdmin();
-        TableName tb = TableName.valueOf(tableName);
+        Connection conn = getHBaseConnection(dataSource);
+        Admin admin = conn.getAdmin();
+        TableName tb = TableName.valueOf(dataSource.getCategory1() + ":" + tableName);
         if(admin.tableExists(tb)) {
             admin.disableTable(tb);
             admin.deleteTable(tb);
