@@ -6,19 +6,17 @@ import com.bcht.data_manager.entity.Rule;
 import com.bcht.data_manager.entity.UDPPacket;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
-import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.filter.BinaryComparator;
-import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class HBaseUtils {
     public static final Logger logger = LoggerFactory.getLogger(HBaseUtils.class);
@@ -52,17 +50,12 @@ public class HBaseUtils {
     }
 
     public static void dropNameSpace(DataSource dataSource, String namespace) throws IOException {
-        Connection conn = null;
-        Admin admin = null;
-        conn = getHBaseConnection(dataSource);
-        admin = conn.getAdmin();
+        Connection conn = getHBaseConnection(dataSource);
+        Admin admin = conn.getAdmin();
         admin.deleteNamespace(namespace);
         close(conn, admin);
     }
 
-    public static void dropNameSpace(DataSource dataSource) throws IOException {
-        dropNameSpace(dataSource, dataSource.getCategory1());
-    }
 
     public static void createTable(DataSource dataSource, String tableName) throws IOException {
         Connection conn = null;
@@ -98,7 +91,15 @@ public class HBaseUtils {
             admin.deleteTable(tb);
         }
         close(conn, admin);
+    }
 
+    public static void truncateTable(DataSource dataSource, String tableName) throws IOException {
+        Connection conn = getHBaseConnection(dataSource);
+        Admin admin = conn.getAdmin();
+        TableName tb = TableName.valueOf(dataSource.getCategory1() + ":" + tableName);
+        admin.disableTable(tb);
+        admin.truncateTable(tb, true);
+        admin.enableTable(tb);
     }
 
     public static void addColumnFamily(DataSource dataSource, String tableName, String columnFamily) throws IOException {
@@ -140,6 +141,17 @@ public class HBaseUtils {
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "offset".getBytes(), String.valueOf(rule.getOffset()).getBytes() ) ;
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "data".getBytes(), data) ;
         put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), "value".getBytes(), rule.getValue().getBytes());
+        table.put(put);
+    }
+
+    public static void insertOneRow(DataSource dataSource, String tableName, String rowKey, Map<String, Object> map) throws IOException {
+        Connection connection = getHBaseConnection(dataSource);
+        Table table = connection.getTable(TableName.valueOf(dataSource.getCategory1() + ":" + tableName));
+        Put put = new Put(rowKey.getBytes());
+        for(Map.Entry<String, Object> entry : map.entrySet()) {
+            if(entry.getKey().equals("_id")) continue;
+            put.addColumn(Constants.HBASE_DEFAULT_COLUMN_FAMILY.getBytes(), entry.getKey().getBytes(), entry.getValue().toString().getBytes());
+        }
         table.put(put);
     }
 

@@ -264,7 +264,7 @@ public class DataSourceController extends BaseController {
      * 数据源查询-返回树形结构
      */
     @GetMapping("/tree")
-    public Result tree(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer type) {
+    public Result tree(Integer type) {
         Result result = new Result();
         List<Map<String, Object>> resultList = new ArrayList();
         List<DbType> dbTypeList = new ArrayList<>();
@@ -294,6 +294,23 @@ public class DataSourceController extends BaseController {
             resultList.add(map);
         }
         result.setData(resultList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 数据源查询-返回flat结构
+     */
+    @GetMapping("/list")
+    public Result list(Integer type) {
+        Result result = new Result();
+        List<DataSource> dataSourceList;
+        if(type == null || type == 0) {
+            dataSourceList = dataSourceService.query(0, null);
+        } else {
+            dataSourceList = dataSourceService.query(type, null);
+        }
+        result.setData(dataSourceList);
         putMsg(result, Status.SUCCESS);
         return result;
     }

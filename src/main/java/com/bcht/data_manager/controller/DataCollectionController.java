@@ -5,12 +5,14 @@ import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.*;
 import com.bcht.data_manager.enums.DbType;
 import com.bcht.data_manager.enums.Status;
-import com.bcht.data_manager.mapper.CollectionMapper;
 import com.bcht.data_manager.service.CollectionService;
 import com.bcht.data_manager.service.DataService;
-import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.*;
-
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +20,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 
 import static com.bcht.data_manager.consts.Constants.*;
 
@@ -54,49 +59,48 @@ public class DataCollectionController extends BaseController {
         String password = MapUtils.getString(parameter, "password");
         String database = MapUtils.getString(parameter, "database");
         String table = MapUtils.getString(parameter, "table");
-
-        String jdbcUrl = null;
-        Connection connection ;
-        try{
-            switch (type) {
-                case 1:
-                    Class.forName(COM_MYSQL_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
-                    break;
-                case 2:
-                    Class.forName(COM_ORACLE_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:oracle:thin:@" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
-                    break;
-                case 3:
-                    Class.forName(COM_DB2_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:db2://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
-                    break;
-                case 4:
-                    Class.forName(COM_SQLSERVER_JDBC_DRIVER);
-                    jdbcUrl = "jdbc:sqlserver://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
-                    break;
-            }
-            Set<String> tableSet = new HashSet<>();
-            connection = DriverManager.getConnection(jdbcUrl, username, password);
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("show tables");
-            while(rs.next()) {
-                tableSet.add(rs.getString(1));
-            }
-            if(tableSet.contains(table)) {
-                putMsg(result, Status.CUSTOM_SUCESSS, "连接测试成功");
+        if (type == 1) {
+            String jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + database + "?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
+            try {
+                Class.forName(COM_MYSQL_JDBC_DRIVER);
+                Set<String> tableSet = new HashSet<>();
+                Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+                Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery("show tables");
+                while(rs.next()) {
+                    tableSet.add(rs.getString(1));
+                }
+                if(tableSet.contains(table)) {
+                    putMsg(result, Status.CUSTOM_SUCESSS, "连接测试成功");
+                    return result;
+                } else {
+                    putMsg(result, Status.NOT_FOUND_TABLE_IN_THIS_DATABASE);
+                    return result;
+                }
+            } catch (ClassNotFoundException e) {
+                putMsg(result, Status.MYSQL_JDBC_DRIVER_CLASS_NOT_FOUNT);
+                logger.error("连接测试失败" + e.getMessage());
                 return result;
-            } else {
-                putMsg(result, Status.NOT_FOUND_TABLE_IN_THIS_DATABASE);
+            } catch (SQLException e) {
+                putMsg(result, Status.GET_INPUT_DATASOURCE_FAILED);
+                logger.error("获取JDBC连接失败" + e.getMessage());
                 return result;
             }
-        } catch (ClassNotFoundException e) {
-            putMsg(result, Status.MYSQL_JDBC_DRIVER_CLASS_NOT_FOUNT);
-            logger.error("连接测试失败" + e.getMessage());
+        } else if (type == 2) {
+            MongoDatabase database1 = MongoDBUtils.getMongoDBDatabase(ip, port, database, username,password);
+            MongoCollection mongoCollection =database1.getCollection(table);
+            try{
+                mongoCollection.find().first();
+            }catch (Exception e) {
+                e.printStackTrace();
+                putMsg(result, Status.CUSTOM_FAILED, "MongoDB链接测试失败！" + e.getMessage());
+            }
+            if(result.getCode() == null) {
+                putMsg(result, Status.CUSTOM_SUCESSS, "MongoDB测试成功！");
+            }
             return result;
-        } catch (SQLException e) {
-            putMsg(result, Status.GET_INPUT_DATASOURCE_FAILED);
-            logger.error("获取JDBC连接失败" + e.getMessage());
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "输入源的类型无法识别！");
             return result;
         }
     }
@@ -252,6 +256,54 @@ public class DataCollectionController extends BaseController {
 
     }
 
+    @PostMapping("/mongodb")
+    public Result mongodb(@RequestAttribute(value = SESSION_USER) User loginUser, @RequestBody Map<String, Object> parameter) {
+        Result result = new Result();
+
+        // 参数获取
+        Integer port = MapUtils.getInt(parameter, "port");
+        String ip = MapUtils.getString(parameter, "ip");
+
+        String username = MapUtils.getString(parameter, "username");
+        String password = MapUtils.getString(parameter, "password");
+
+        Long targetId = MapUtils.getLong(parameter, "outputId");
+        Boolean overwrite = MapUtils.getBoolean(parameter, "overwrite");
+
+        String databaseP = MapUtils.getString(parameter, "database");
+        String tableP = MapUtils.getString(parameter, "table");
+
+        // deal with mongdb
+        Data data = dataService.queryById(targetId);
+        DataSource dataSource = dataService.queryDataSourceByDataId(targetId);
+
+        MongoDatabase database = MongoDBUtils.getMongoDBDatabase(ip, port, databaseP, username, password);
+        MongoCollection<Document> collection = database.getCollection(tableP);
+
+        if(overwrite) {
+            try{
+                HBaseUtils.truncateTable(dataSource, data.getDataName());
+            }catch (Exception e) {
+                logger.error("清空表失败！" + e.getMessage());
+            }
+        }
+
+        FindIterable<Document> findIterable = collection.find();
+        MongoCursor<Document> cursor = findIterable.iterator();
+        while (cursor.hasNext()) {
+            String json = cursor.next().toJson();
+            System.out.println(json);
+            Map<String, Object> map = JSON.parseObject(json, Map.class);
+            String rowKey = "mongodb-" + new Date().getTime() + "-" + dataSource.getCategory1() + "-" + data.getDataName() + new Random().nextLong();
+            try {
+                HBaseUtils.insertOneRow(dataSource, data.getDataName(), rowKey, map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
     @GetMapping("/job-list")
     public Result jobList(@RequestAttribute(value = SESSION_USER) User loginUser, int status) {
         Result result = new Result();
