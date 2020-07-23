@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -51,6 +52,8 @@ public class DataController extends BaseController {
 
     @Autowired
     private DataSourceService dataSourceService;
+
+    private DatagramSocket datagramSocket = null;
 
     /**
      * 数据新增
@@ -386,45 +389,90 @@ public class DataController extends BaseController {
     }
 
     /**
+     * 发送任务初始化
+     * @return
+     */
+    @GetMapping("/init-send")
+    public Result initDataSend() {
+        Result result = new Result();
+        if( datagramSocket == null || datagramSocket.isClosed()) {
+            putMsg(result, Status.SUCCESS);
+        }else {
+            putMsg(result, Status.FAILED);
+        }
+        return result;
+    }
+
+    /**
      * 数据发送请求
      */
     @GetMapping("/send")
-    public Result send(int dataId, Long minStamp, Long maxStamp, String ip, Integer port) {
+    public Result send(int dataId, Long minStamp, Long maxStamp, String ip, Integer port , Integer loop) {
         Result result  = new Result();
         Data data = dataService.queryById(dataId);
         DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
         String tableName = dataSource.getCategory1() + ":" + data.getDataName();
         List<UDPPacket> packets = null;
+
         try {
             packets = HBaseUtils.queryUDPPacket(dataSource, tableName, minStamp, maxStamp);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        if(packets != null) {
+        if (packets != null && loop == 1 ) {        //需要循环发送
             InetSocketAddress inetSocketAddress = new InetSocketAddress(ip, port);
-            DatagramSocket datagramSocket = null;
             try {
                 datagramSocket = new DatagramSocket();
-                for(UDPPacket udpPacket : packets) {
-                    byte[] byteArray = udpPacket.getData();
-                    DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, inetSocketAddress);
-                    datagramSocket.send(packet);
+                while( true ) {
+                    for (UDPPacket udpPacket : packets) {
+                        byte[] byteArray = udpPacket.getData();
+                        DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, inetSocketAddress);
+                        datagramSocket.send(packet);
+                    }
                 }
-
             } catch (SocketException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+            putMsg(result, Status.CUSTOM_SUCESSS, "UDP数据循环发送成功");
+            return result;
+        }
+        else if(packets != null && loop == 2) {   //不需要循环发送
+            InetSocketAddress inetSocketAddress = new InetSocketAddress(ip, port);
+
+            try{
+                datagramSocket = new DatagramSocket();
+                    for(UDPPacket udpPacket : packets){
+                        byte[] byteArray = udpPacket.getData();
+                        DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, inetSocketAddress);
+                        datagramSocket.send(packet);
+                    }
+            } catch (SocketException e){
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
             } finally {
                 datagramSocket.close();
             }
-            putMsg(result, Status.CUSTOM_SUCESSS, "UDP数据发送成功");
+            putMsg(result, Status.CUSTOM_SUCESSS, "UDP数据单次发送成功");
             return result;
-        } else {
+        }
+        else {
             putMsg(result, Status.CUSTOM_FAILED, "对应的数据没有任何记录");
             return result;
         }
+    }
+
+    /**
+     * 停止数据发送请求
+     */
+    @GetMapping("/stop-send")
+    public Result stopSend() {
+        Result result = new Result();
+        datagramSocket.close();
+        putMsg(result, Status.CUSTOM_SUCESSS, "停止UDP发送成功");
+        return result;
     }
 
     /**
