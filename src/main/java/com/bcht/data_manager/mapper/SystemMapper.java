@@ -127,4 +127,26 @@ public interface SystemMapper {
     @SelectProvider(type = SystemMapperProvider.class, method = "searchUser")
     List<User> searchUser(@Param("name") String name, @Param("status") int status);
 
+
+    @Results(value = {@Result(property = "id", column = "id", id=true, javaType = Integer.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "name", column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "code", column = "code", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "columnJson", column = "column_json", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Result(property = "createTime", column = "create_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "updateTime", column = "update_time", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
+            @Result(property = "creatorId", column = "creatorId", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
+            @Result(property = "creatorName", column = "creatorName", javaType = String.class, jdbcType = JdbcType.VARCHAR)
+    })
+    @SelectProvider(type = SystemMapperProvider.class, method = "dataTemplateList")
+    List<Template> dataTemplateList(@Param("name") String name, @Param("code") String code);
+
+    @InsertProvider(type = SystemMapperProvider.class, method = "insertTemplate")
+    int insertTemplate(@Param("template") Template template);
+
+    @UpdateProvider(type = SystemMapperProvider.class, method = "updateTemplate")
+    int updateTemplate(@Param("name") String name, @Param("code") String code, @Param("columnJson") String columnJson, @Param("updateTime") Date updateTime, @Param("id") Long id);
+
+    @DeleteProvider(type = SystemMapperProvider.class, method = "deleteTemplate")
+    int deleteTemplate(@Param("id") Long id);
+
 }

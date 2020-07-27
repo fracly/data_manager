@@ -3,15 +3,19 @@ package com.bcht.data_manager.controller;
 import com.bcht.data_manager.consts.Constants;
 import com.bcht.data_manager.entity.Permission;
 import com.bcht.data_manager.entity.Role;
+import com.bcht.data_manager.entity.Template;
 import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.service.SystemService;
+import com.bcht.data_manager.utils.MapUtils;
 import com.bcht.data_manager.utils.Result;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 
 
 /**
@@ -170,5 +174,29 @@ public class SystemController extends BaseController {
     @PostMapping("/user-role/update")
     public Result userRoleUpdate(Integer userId, String idArray){
         return systemService.userRoleUpdate(userId, idArray);
+    }
+
+    @GetMapping("/data-template/list")
+    public Result dataTemplateList(String name, String code) {
+        return systemService.dataTemplateList(name, code);
+    }
+
+    @PostMapping("/create-template")
+    public Result createTemplate(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @Param("name") String name, @Param("code") String code, @Param("columnJson") String columnJson) {
+        return systemService.dataTemplateCreate(name, code, columnJson, loginUser.getId());
+    }
+
+    @PostMapping("/update-template")
+    public Result updateTemplate(@RequestBody Map<String, Object> parameter) {
+        String name = MapUtils.getString(parameter, "name");
+        String code = MapUtils.getString(parameter, "code");
+        String columnJson = MapUtils.getString(parameter, "columnJson");
+        Long id = MapUtils.getLong(parameter, "id");
+        return systemService.dataTemplateUpdate(name, code, columnJson, id);
+    }
+
+    @GetMapping("/delete-template")
+    public Result deleteTemplate(Long id){
+        return systemService.dataTemplateDelete(id);
     }
 }

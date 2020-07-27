@@ -2,6 +2,7 @@ package com.bcht.data_manager.service;
 
 import com.bcht.data_manager.entity.Permission;
 import com.bcht.data_manager.entity.Role;
+import com.bcht.data_manager.entity.Template;
 import com.bcht.data_manager.entity.User;
 import com.bcht.data_manager.enums.Status;
 import com.bcht.data_manager.mapper.SystemMapper;
@@ -204,4 +205,51 @@ public class SystemService extends BaseService {
         return result;
     }
 
+    public Result dataTemplateList(String name, String code) {
+        Result result = new Result();
+        List<Template> templateList = systemMapper.dataTemplateList(name, code);
+        result.setData(templateList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
+    public Result dataTemplateCreate(String name, String code, String columnJson, Integer creatorId) {
+        Result result = new Result();
+        Template template = new Template();
+        template.setCode(code);
+        template.setName(name);
+        template.setColumnJson(columnJson);
+        template.setCreateTime(new Date());
+        template.setUpdateTime(new Date());
+        template.setCreatorId(creatorId);
+        int count = systemMapper.insertTemplate(template);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "新建模板成功！");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "新建模板失败！");
+        }
+        return result;
+    }
+
+    public Result dataTemplateUpdate(String name, String code, String columnJson, Long id) {
+        Result result = new Result();
+        int count = systemMapper.updateTemplate(name, code, columnJson, new Date(), id);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "更新模板成功！");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "更新模板失败！");
+        }
+        return result;
+    }
+
+    public Result dataTemplateDelete(Long id) {
+        Result result = new Result();
+        int count = systemMapper.deleteTemplate(id);
+        if(count > 0) {
+            putMsg(result, Status.CUSTOM_SUCESSS, "删除模板成功！");
+        } else {
+            putMsg(result, Status.CUSTOM_FAILED, "删除模板失败！");
+        }
+        return result;
+    }
 }

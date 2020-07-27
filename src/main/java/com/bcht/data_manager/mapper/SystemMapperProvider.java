@@ -18,7 +18,9 @@ public class SystemMapperProvider {
 
     private static final String ROLE_PERMISSION_RELATION_TABLE_NAME = "t_data_manager_relation_role_permission";
 
-    public  static final String USER_ROLE_RELATION_TABLE_NAME = "t_data_manager_relation_user_role";
+    private static final String USER_ROLE_RELATION_TABLE_NAME = "t_data_manager_relation_user_role";
+
+    private static final String TEMPLATE_TABLE_NAME = "t_data_manager_data_template";
 
     /**
      * insert data
@@ -315,4 +317,59 @@ public class SystemMapperProvider {
         }.toString();
         return sql;
     }
+
+    public String dataTemplateList(Map<String, Object> parameter) {
+        String sql = new SQL() {
+            {
+                SELECT("a.*, b.name as creatorName");
+                FROM(TEMPLATE_TABLE_NAME + " a");
+                INNER_JOIN(USER_TABLE_NAME + " b on a.creatorId = b.id");
+
+                Object name = parameter.get("name");
+                if (name != null && StringUtils.isNotEmpty(name.toString())) {
+                    WHERE("a.name like concat('%', '" + parameter.get("name").toString() + "', '%')");
+                }
+
+                Object code = parameter.get("code");
+                if (code != null && StringUtils.isNotEmpty(code.toString())) {
+                    WHERE("a.code like concat('%', '" + parameter.get("code").toString() + "', '%')");
+                }
+                ORDER_BY("a.update_time");
+            }
+        }.toString();
+        return sql;
+    }
+
+    public String insertTemplate(Map<String, Object> parameter) {
+        return new SQL() {
+            {
+                INSERT_INTO(TEMPLATE_TABLE_NAME);
+                VALUES("`name`", "#{template.name}");
+                VALUES("`code`", "#{template.code}");
+                VALUES("`column_json`", "#{template.columnJson}");
+                VALUES("`create_time`", "#{template.createTime}");
+                VALUES("`update_time`", "#{template.updateTime}");
+                VALUES("`creatorId`", "#{template.creatorId}");
+            }
+        }.toString();
+    }
+
+    public String updateTemplate(Map<String, Object> parameter) {
+        return new SQL(){{
+            UPDATE(TEMPLATE_TABLE_NAME);
+            SET("`name` = #{name}");
+            SET("`code` = #{code}");
+            SET("`column_json` = #{columnJson}");
+            SET("`update_time` = #{updateTime}");
+            WHERE("`id` = #{id}");
+        }}.toString();
+    }
+
+    public String deleteTemplate(Map<String, Object> parameter) {
+        return new SQL() {{
+            DELETE_FROM(TEMPLATE_TABLE_NAME);
+            WHERE("`id`=#{id}");
+        }}.toString();
+    }
+
 }
