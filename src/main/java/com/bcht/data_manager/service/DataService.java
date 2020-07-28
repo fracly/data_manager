@@ -47,7 +47,7 @@ public class DataService extends BaseService {
         Result result = new Result();
         if (createWay == Constants.CREATE_TABLE_METHOD_OF_CREATE_SQL){
             tableName = com.bcht.data_manager.utils.StringUtils.getTableName(createSql);
-        } else if (createWay == Constants.CREATE_TABLE_METHOD_OF_COLUMN_COMPOSE){
+        } else {
             createSql = com.bcht.data_manager.utils.StringUtils.composeCreateSql(dataSource.getCategory1(), tableName, columns);
         }
         try{

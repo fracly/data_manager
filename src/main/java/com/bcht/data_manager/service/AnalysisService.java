@@ -4,7 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bcht.data_manager.consts.Constants;
+import com.bcht.data_manager.mapper.DataMapper;
+import com.bcht.data_manager.mapper.LogMapper;
 import com.bcht.data_manager.mapper.SearchMapper;
+import com.bcht.data_manager.mapper.SystemMapper;
 import com.bcht.data_manager.utils.HttpClient;
 import com.bcht.data_manager.utils.MapUtils;
 import com.bcht.data_manager.utils.PropertyUtils;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,12 @@ public class AnalysisService extends BaseService {
 
     @Autowired
     private SearchMapper searchMapper;
+
+    @Autowired
+    private DataMapper dataMapper;
+
+    @Autowired
+    private LogMapper logMapper;
 
     public Map<String, String> capacity() {
         Map<String, String> result = new HashMap<>();
@@ -84,4 +94,54 @@ public class AnalysisService extends BaseService {
     public Integer searchUserTotal(String startDate, String endDate) {
         return searchMapper.searchUserTotal(startDate, endDate);
     }
+
+    public List<Map<String, Object>> report(String startDate, String endDate) {
+        List<Map<String, Object>> increaseByDay = dataMapper.countIncreaseByDay(startDate, endDate);
+        List<Map<String, Object>> loginByDay = logMapper.countLoginByDay(startDate, endDate);
+        List<Map<String, Object>> downloadByDay = logMapper.countDownloadByDay(startDate, endDate);
+        List<Map<String, Object>> searchByDay = logMapper.countSearchByDay(startDate, endDate);
+
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for(int i = 0; i < loginByDay.size(); i ++) {
+            Map<String, Object> first = new HashMap<>();
+            String dayStr = loginByDay.get(i).get("dayStr").toString();
+            first.put("day", dayStr);
+            first.put("login", loginByDay.get(i).get("total"));
+            boolean searchFound = false;
+            for(int j = 0; j < searchByDay.size(); j ++) {
+                if (searchByDay.get(j) != null && searchByDay.get(j).get("dayStr").equals(dayStr)) {
+                    first.put("search", searchByDay.get(j).get("total"));
+                    searchFound = true;
+                }
+            }
+            if(!searchFound) {
+                first.put("search", 0);
+            }
+
+            boolean downloadFound = false;
+            for(int j = 0; j < downloadByDay.size(); j ++) {
+                if (downloadByDay.get(j).get("dayStr").equals(dayStr)) {
+                    first.put("download", downloadByDay.get(j).get("total"));
+                    downloadFound = true;
+                }
+            }
+            if(!downloadFound) {
+                first.put("download", 0);
+            }
+
+            boolean increaseFound = false;
+            for(int j = 0; j < increaseByDay.size(); j ++) {
+                if (increaseByDay.get(j).get("dayStr").equals(dayStr)) {
+                    first.put("increase", increaseByDay.get(j).get("total"));
+                    increaseFound = true;
+                }
+            }
+            if(!increaseFound) {
+                first.put("increase", 0);
+            }
+            resultList.add(first);
+        }
+        return resultList;
+    }
+
 }

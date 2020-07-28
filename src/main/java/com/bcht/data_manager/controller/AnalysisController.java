@@ -7,8 +7,14 @@ import com.bcht.data_manager.service.ClouderaManagerMetricsService;
 import com.bcht.data_manager.service.DataService;
 import com.bcht.data_manager.service.DataSourceService;
 import com.bcht.data_manager.utils.DateUtils;
+import com.bcht.data_manager.utils.ExcelUtils;
+import com.bcht.data_manager.utils.FileUtils;
 import com.bcht.data_manager.utils.Result;
 import org.apache.ibatis.annotations.Param;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +22,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -119,7 +128,7 @@ public class AnalysisController extends BaseController {
     @GetMapping("/count-by-label")
     public Result countByLabel(String startDate, String endDate, Integer limit) {
         logger.info("querying label's data count between {} and {} limit {}", startDate, endDate, limit);
-        if(limit  == null) {
+        if (limit == null) {
             limit = 10;
         }
         return dataService.countByLabel(startDate, endDate, limit);
@@ -150,7 +159,7 @@ public class AnalysisController extends BaseController {
         Result result = new Result();
         String startDateTime = null;
         String endDateTime = DateUtils.getDateTime();
-        if( type == 1){
+        if (type == 1) {
             startDateTime = DateUtils.formatDate(DateUtils.nextDay(-1), DateUtils.DATETIME_FORMAT);
         } else if (type == 7) {
             startDateTime = DateUtils.formatDate(DateUtils.nextDay(-7), DateUtils.DATETIME_FORMAT);
@@ -180,7 +189,7 @@ public class AnalysisController extends BaseController {
         List<Map<String, Object>> resultList = analysisService.searchCountByDay(startDateTime, endDateTime);
         long total = 0L;
 
-        for(Map<String, Object> m : resultList) {
+        for (Map<String, Object> m : resultList) {
             total += Long.parseLong(m.get("y").toString());
         }
         map.put("total", total);
@@ -224,7 +233,9 @@ public class AnalysisController extends BaseController {
         return result;
     }
 
-    /** cloudera manager api **/
+    /**
+     * cloudera manager api
+     **/
     @GetMapping("/load/trend")
     public Result getLoadTrendFromClouderaApi(Integer type) {
         logger.info("statistic data from cloudera manager api ...");
@@ -243,5 +254,77 @@ public class AnalysisController extends BaseController {
         result.setData(realTimeMap);
         putMsg(result, Status.SUCCESS);
         return result;
+    }
+
+    /**
+     * 报表下载
+     */
+    @GetMapping("/report/download")
+    public void getReportDownload(HttpServletResponse response, String startDate, String endDate) {
+        Result result = new Result();
+        //首先获取新增数据
+        List<Map<String, Object>> resultList = analysisService.report(startDate + " 00:00:00", endDate + " 23:59:59");
+
+        // 将输出结果写入Excel
+        String path = FileUtils.getDownloadFilename("report-" + new Date().getTime() + ".xlsx");
+
+        HSSFWorkbook workbook = new HSSFWorkbook(); //创建HSSFWorkbook对象
+
+        // 1.生成字体对象
+        HSSFFont font = workbook.createFont();
+        font.setFontHeightInPoints((short) 10);
+        font.setFontName("新宋体");
+        font.setColor((short) 64);
+
+        // 2.生成样式对象
+        HSSFCellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.CENTER_SELECTION);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        cellStyle.setFont(font);
+
+        // 3.生成sheet
+        HSSFSheet sheet = workbook.createSheet("每日报表统计");
+        sheet.setColumnWidth((short) 0, 2500);
+        sheet.setColumnWidth((short) 1, 4000);
+        sheet.setColumnWidth((short) 2, 4500);
+        sheet.setColumnWidth((short) 3, 4500);
+        sheet.setColumnWidth((short) 4, 4500);
+        HSSFRow row0 = sheet.createRow(0);
+
+        ExcelUtils.getCell(row0, 0, "系统每日活跃情况统计", cellStyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
+
+        HSSFRow row2 = ExcelUtils.getRow(sheet, 1, cellStyle);
+        String[] cellList2 = new String[]{"日期", "数据新增数量", "每日用户登陆次数", "每日数据下载次数", "每日数据检索次数"};
+        //创建 第二行 cell
+        for(int i = 0; i < 5; i ++) {
+            HSSFCell cell = row2.createCell(i);
+            cell.setCellValue(cellList2[i]);
+        }
+
+        for (int i = 3; i < resultList.size() + 3 ; i++) {
+            Map<String, Object> report = resultList.get(i - 3);
+            HSSFRow row = ExcelUtils.getRow(sheet, i, null);
+
+            HSSFCell cell1 = row.createCell(0);
+            cell1.setCellValue(report.get("day").toString());
+            HSSFCell cell2 = row.createCell(1);
+            cell2.setCellValue(report.get("increase").toString());
+            HSSFCell cell3 = row.createCell(2);
+            cell3.setCellValue(report.get("login").toString());
+            HSSFCell cell4 = row.createCell(3);
+            cell4.setCellValue(report.get("download").toString());
+            HSSFCell cell5 = row.createCell(4);
+            cell5.setCellValue(report.get("search").toString());
+        }
+
+        try {
+            response.setHeader("Content-Disposition", "attachment;filename*= UTF-8''" + URLEncoder.encode("每日报表统计" + DateUtils.formatDate(new Date()) + ".xls", "UTF-8"));
+            workbook.write(response.getOutputStream());
+            workbook.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

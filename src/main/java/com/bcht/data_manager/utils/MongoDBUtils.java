@@ -34,10 +34,4 @@ public class MongoDBUtils {
         MongoDatabase database = client.getDatabase(databaseName);
         return database;
     }
-
-    // 获取某个表的文档集合
-    public static MongoCollection getTableCollection(MongoDatabase database, String tableName) {
-        return database.getCollection(tableName);
-    }
-
 }
