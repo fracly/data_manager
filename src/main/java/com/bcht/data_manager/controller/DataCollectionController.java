@@ -292,7 +292,6 @@ public class DataCollectionController extends BaseController {
         MongoCursor<Document> cursor = findIterable.iterator();
         while (cursor.hasNext()) {
             String json = cursor.next().toJson();
-            System.out.println(json);
             Map<String, Object> map = JSON.parseObject(json, Map.class);
             String rowKey = "mongodb-" + new Date().getTime() + "-" + dataSource.getCategory1() + "-" + data.getDataName() + new Random().nextLong();
             try {

@@ -265,9 +265,6 @@ public class AnalysisController extends BaseController {
         //首先获取新增数据
         List<Map<String, Object>> resultList = analysisService.report(startDate + " 00:00:00", endDate + " 23:59:59");
 
-        // 将输出结果写入Excel
-        String path = FileUtils.getDownloadFilename("report-" + new Date().getTime() + ".xlsx");
-
         HSSFWorkbook workbook = new HSSFWorkbook(); //创建HSSFWorkbook对象
 
         // 1.生成字体对象
