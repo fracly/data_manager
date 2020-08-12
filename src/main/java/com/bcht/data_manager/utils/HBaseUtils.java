@@ -13,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HBaseUtils {
     public static final Logger logger = LoggerFactory.getLogger(HBaseUtils.class);
@@ -170,6 +167,36 @@ public class HBaseUtils {
             list.add(packet);
         }
         return list;
+    }
+
+    public static Map<String, Object> getTableTimestampRange(DataSource dataSource, String tableName) throws IOException {
+        Long minStamp = 0L;
+        Long maxStamp = 0L;
+        Long total = 0L;
+        Map<String, Object> map = new HashMap<>();
+        Connection connection = getHBaseConnection(dataSource);
+        Table table = connection.getTable(TableName.valueOf(tableName));
+        Scan scan = new Scan();
+        ResultScanner resultScanner = table.getScanner(scan);
+        for(Result row : resultScanner) {
+            String rowKey = new String(row.getRow());
+            System.out.println(rowKey);
+            Long tmpStamp = Long.parseLong(rowKey.split("-")[1]);
+            if(tmpStamp > maxStamp) {
+                maxStamp = tmpStamp;
+            }
+            if(minStamp == 0) {
+                minStamp = tmpStamp;
+            }
+            if(tmpStamp < minStamp) {
+                minStamp = tmpStamp;
+            }
+            total ++;
+        }
+        map.put("min", minStamp);
+        map.put("max", maxStamp);
+        map.put("count", total);
+        return map;
     }
 
     public static long countTableRecord(DataSource dataSource, String tableName, Long minStamp, Long maxStamp) throws IOException {

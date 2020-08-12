@@ -141,7 +141,7 @@ public class SystemMapperProvider {
     public String disablePermission(Map<String, Object> parameter) {
         return new SQL(){{
             UPDATE(PERMISSION_TABLE_NAME);
-            SET("`status` = 1");
+            SET("`status` = 2");
             WHERE("`id` = #{id}");
         }}.toString();
     }
@@ -192,7 +192,7 @@ public class SystemMapperProvider {
     public String disableUser(Map<String, Object> parameter) {
         return new SQL(){{
             UPDATE(USER_TABLE_NAME);
-            SET("`status` = 8");
+            SET("`status` = 9");
             WHERE("`id` = #{id}");
         }}.toString();
     }
@@ -287,7 +287,7 @@ public class SystemMapperProvider {
                 FROM(ROLE_TABLE_NAME);
                 Object name = parameter.get("name");
                 if(name != null && StringUtils.isNotEmpty(name.toString())) {
-                    WHERE("name like concat('%', '" + parameter.get("name").toString() + "', '%')");
+                    WHERE("cn_name like concat('%', '" + parameter.get("name").toString() + "', '%')");
                 }
                 int status = Integer.parseInt(parameter.get("status").toString());
                 if (status != 0) {

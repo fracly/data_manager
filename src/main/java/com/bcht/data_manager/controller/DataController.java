@@ -478,20 +478,27 @@ public class DataController extends BaseController {
     /**
      * 数据发送前的统计
      */
-    @GetMapping("/count")
-    public Result count(Integer dataId, Long minStamp, Long maxStamp) {
+    @GetMapping("/send/init")
+    public Result sendInit(Integer dataId, Long minStamp, Long maxStamp) {
         Result result = new Result();
         Data data = dataService.queryById(dataId);
         DataSource dataSource = dataService.queryDataSourceByDataId(dataId);
         String tableName = dataSource.getCategory1() + ":" + data.getDataName();
-        long count = 0;
-        try{
-            count = HBaseUtils.countTableRecord(dataSource, tableName, minStamp, maxStamp);
-        }catch (IOException e) {
+        Map map = null;
+        try {
+            map = HBaseUtils.getTableTimestampRange(dataSource, tableName);
+            if(map!= null) {
+                result.setData(map);
+                putMsg(result, Status.SUCCESS);
+                return result;
+            } else {
+                putMsg(result, Status.FAILED);
+                return result;
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        result.setData(count);
-        putMsg(result, Status.SUCCESS);
+        putMsg(result, Status.FAILED);
         return result;
     }
 

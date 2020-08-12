@@ -72,25 +72,28 @@ public class LoginController extends BaseController{
             result.setCode(-1);
             return result;
         }
+        User user1 = userService.queryByName(user.getUsername());
+        if(user1 == null) {
+            putMsg(result, Status.CUSTOM_FAILED, "请输入正确的账号名");
+            return result;
+        }
+
+        if(user1.getStatus() == 8) {
+            putMsg(result, Status.CUSTOM_FAILED, "您的账号已被禁用，请联系管理员");
+            return result;
+        }
+
+        if(user1.getErrorCount() >= 5) {
+            systemService.disableUser(user1.getId());
+            putMsg(result, Status.CUSTOM_FAILED, "您的账号因密码输入次数过多，已被锁定，请联系管理员");
+            return result;
+        }
 
         //verify name/password
         User userE = userService.auth(user.getUsername(), user.getPassword());
         if(userE == null) {
-            result.setMsg("账号或密码错误");
-            result.setCode(-1);
-            return result;
-        }
-
-
-        int errorCount = userService.queryErrorCount(user.getUsername());
-        if (errorCount >= 5) {
-            result.setCode(-1);
-            result.setMsg("该账号已经被锁定，请联系管理员");
-            User user1 = userService.queryByName(user.getUsername());
-            if(user1 != null) {
-                systemService.disableUser(user1.getId());
-            }
-
+            int errorCount = userService.queryErrorCount(user.getUsername());
+            putMsg(result, Status.CUSTOM_FAILED, "账号密码错误，当前剩余错误次数: " +  (5 - errorCount));
             return result;
         }
 
