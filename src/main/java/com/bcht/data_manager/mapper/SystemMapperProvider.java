@@ -210,7 +210,6 @@ public class SystemMapperProvider {
         return new SQL(){{
             UPDATE(USER_TABLE_NAME);
             SET("`name` = #{name}");
-            SET("`username` = #{username}");
             Object passw = parameter.get("password");
             if (passw != null && StringUtils.isNotEmpty(passw.toString())) {
                 SET("`password` = #{password}");

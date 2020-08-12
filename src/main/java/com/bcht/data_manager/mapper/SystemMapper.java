@@ -83,8 +83,7 @@ public interface SystemMapper {
 
 
     @UpdateProvider(type = SystemMapperProvider.class, method = "updateUser")
-    int updateUser(@Param("id") Integer id, @Param("name") String name, @Param("username") String username,
-                   @Param("password") String password, @Param("phone") String phone, @Param("email") String email,  @Param("desc") String desc);
+    int updateUser(@Param("id") Integer id, @Param("name") String name, @Param("password") String password, @Param("phone") String phone, @Param("email") String email,  @Param("desc") String desc);
 
     @UpdateProvider(type = SystemMapperProvider.class, method = "updateUserLoginInfo")
     int updateUserLoginInfo(@Param("id") Integer id, @Param("lastLoginTime") Date lastLoginTime, @Param("lastLoginIp") String lastLoginIp);

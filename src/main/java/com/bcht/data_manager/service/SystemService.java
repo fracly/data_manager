@@ -184,9 +184,9 @@ public class SystemService extends BaseService {
         return result;
     }
 
-    public Result updateUser(int id, String name, String username, String password, String phone, String email, String desc) {
+    public Result updateUser(int id, String name, String password, String phone, String email, String desc) {
         Result result = new Result();
-        systemMapper.updateUser(id, name, username, password, phone, email, desc);
+        systemMapper.updateUser(id, name, password, phone, email, desc);
         putMsg(result, Status.CUSTOM_SUCESSS, "更新用户成功");
         return result;
     }

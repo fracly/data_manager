@@ -147,8 +147,8 @@ public class SystemController extends BaseController {
     }
 
     @PostMapping("/update-user")
-    public Result updateUser(int id, String name, String username, String password, String phone, String email, String desc) {
-        return systemService.updateUser(id, name, username, password, phone, email, desc);
+    public Result updateUser(int id, String name, String password, String phone, String email, String desc) {
+        return systemService.updateUser(id, name, password, phone, email, desc);
     }
 
     @PostMapping("/user/modify-password")
