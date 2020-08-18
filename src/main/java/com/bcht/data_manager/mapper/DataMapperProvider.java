@@ -260,6 +260,7 @@ public class DataMapperProvider {
                 if (dataSourceId != 0) {
                     WHERE(" b.datasource_id =" + dataSourceId);
                 }
+                WHERE("a.type = 3");
                 ORDER_BY("a.update_time limit " + parameter.get("offset").toString() + ", " + parameter.get("pageSize"));
             }
         }.toString();
@@ -280,6 +281,7 @@ public class DataMapperProvider {
                 if (dataSourceId != 0) {
                     WHERE(" b.datasource_id =" + dataSourceId);
                 }
+                WHERE("a.type = 3");
             }
         }.toString();
     }

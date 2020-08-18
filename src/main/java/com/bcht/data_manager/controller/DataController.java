@@ -200,6 +200,21 @@ public class DataController extends BaseController {
     @GetMapping("/encrypt")
     public Result encrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @Param("dataId") Long dataId) {
         Result result = new Result();
+        Data data = dataService.queryById(dataId);
+        try {
+            String abbrFileName = FileUtils.getFileName(data.getDataName());
+            String localPath =  FileUtils.getDownloadFilename(abbrFileName);
+            HDFSUtils.copyHdfsToLocal(data.getDataName(), localPath, true, true);
+            String encryptPath = FileUtils.getUploadFilename(abbrFileName);
+            FileUtils.encryptAndDecryptFile(localPath, encryptPath);
+            HDFSUtils.copyLocalToHdfs(encryptPath, data.getDataName(), true, true);
+        } catch (IOException e) {
+            logger.error("数据加密失败" + e.getMessage());
+            e.printStackTrace();
+            putMsg(result, Status.CUSTOM_FAILED, "数据加密失败");
+            return result;
+        }
+
         int count = dataService.encryptData(dataId);
         if(count > 0) {
             putMsg(result, Status.SUCCESS);
@@ -212,6 +227,22 @@ public class DataController extends BaseController {
     @GetMapping("/decrypt")
     public Result decrypt(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, @Param("dataId") Long dataId) {
         Result result = new Result();
+
+        Data data = dataService.queryById(dataId);
+        try {
+            String abbrFileName = FileUtils.getFileName(data.getDataName());
+            String localPath =  FileUtils.getDownloadFilename(abbrFileName);
+            HDFSUtils.copyHdfsToLocal(data.getDataName(), localPath, true, true);
+            String encryptPath = FileUtils.getUploadFilename(abbrFileName);
+            FileUtils.encryptAndDecryptFile(localPath, encryptPath);
+            HDFSUtils.copyLocalToHdfs(encryptPath, data.getDataName(), true, true);
+        } catch (IOException e) {
+            logger.error("数据解密失败" + e.getMessage());
+            e.printStackTrace();
+            putMsg(result, Status.CUSTOM_FAILED, "数据解密失败");
+            return result;
+        }
+
         int count = dataService.decryptData(dataId);
         if(count > 0) {
             putMsg(result, Status.SUCCESS);

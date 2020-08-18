@@ -140,17 +140,6 @@ public class HDFSUtils {
         return result;
     }
 
-//    public static boolean saveUDPPacket(String hiveTableName, String key, byte[] data) throws IOException {
-//        Configuration configuration = new Configuration();
-//        configuration.set("fs.defaultFS", PropertyUtils.getString("fs.defaultFS"));
-//        FileSystem fs = getDefaultFileSystem();
-//        Path path = new Path(hiveTableName + ".seq");
-//        SequenceFile.Writer writer = new SequenceFile.Writer(fs, configuration, path, Text.class, byte[].class);
-//        writer.append(key, data);
-//        IOUtils.closeStream(writer);
-//        return true;
-//    }
-
     // 关闭资源
     private static void close(FileSystem fs) {
         if(fs != null) {

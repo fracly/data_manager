@@ -3,6 +3,7 @@ package com.bcht.data_manager.utils;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.jasper.tagplugins.jstl.core.Out;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -74,6 +75,19 @@ public class FileUtils {
         }
         return fileSuffix;
     }
+
+    public static String getFileName(String filename) {
+
+        String fileSuffix = "";
+        if (StringUtils.isNotEmpty(filename)) {
+            int lastIndex = filename.lastIndexOf("/");
+            if (lastIndex > 0) {
+                fileSuffix = filename.substring(lastIndex + 1);
+            }
+        }
+        return fileSuffix;
+    }
+
 
     /**
      * get download file absolute path and name
@@ -382,5 +396,39 @@ public class FileUtils {
             logger.error(e.getMessage(),e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Encrypt Data
+     */
+    public static boolean encryptAndDecryptFile(String src, String target) throws IOException {
+        int dataOfFile = 0; // 字节内容
+        int numOfEncAndDec = 0x99; //加解密密钥
+
+        File srcFile = new File(src);
+        File targetFile = new File(target);
+        if(!srcFile.exists()) {
+            logger.error("需要加密/解密的源文件不存在");
+            return false;
+        }
+
+        if(!targetFile.exists()) {
+            if(!targetFile.getParentFile().exists()) {
+                targetFile.getParentFile().mkdirs();
+            }
+            logger.info("创建加密文件");
+            targetFile.createNewFile();
+        }
+
+        InputStream fis = new FileInputStream(srcFile);
+        OutputStream fos = new FileOutputStream(targetFile);
+
+        while((dataOfFile = fis.read()) > -1) {
+            fos.write(dataOfFile^numOfEncAndDec);
+        }
+        fis.close();
+        fos.flush();
+        fos.close();
+        return true;
     }
 }

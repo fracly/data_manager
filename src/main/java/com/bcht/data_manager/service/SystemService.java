@@ -152,7 +152,7 @@ public class SystemService extends BaseService {
     public Result enablePermission(int id) {
         Result result = new Result();
         systemMapper.enablePermission(id);
-        putMsg(result, Status.CUSTOM_SUCESSS, "禁用权限成功");
+        putMsg(result, Status.CUSTOM_SUCESSS, "启用权限成功");
         return result;
     }
 

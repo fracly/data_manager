@@ -149,7 +149,7 @@ public class SystemMapperProvider {
     public String enablePermission(Map<String, Object> parameter) {
         return new SQL(){{
             UPDATE(PERMISSION_TABLE_NAME);
-            SET("`status` = 0");
+            SET("`status` = 1");
             WHERE("`id` = #{id}");
         }}.toString();
     }
