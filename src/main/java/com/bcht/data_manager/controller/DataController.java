@@ -294,6 +294,7 @@ public class DataController extends BaseController {
     @GetMapping("/search")
     public Result search(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, String name, int type, String labels, int pageNo, int pageSize, String startTime, String endTime) {
         Result result = new Result();
+        name = name.replace("_", "\\_");
         List<Data> targetDataList = null;
         int total;
         if(loginUser.getUsername().equals(Constants.ADMIN)) {

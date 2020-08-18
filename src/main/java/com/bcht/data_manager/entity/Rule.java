@@ -1,6 +1,8 @@
 package com.bcht.data_manager.entity;
 
 public class Rule {
+    //唯一识别Key
+    private String key;
 
     private String name;
 
@@ -15,6 +17,14 @@ public class Rule {
 
     // 目标数据ID
     private int target;
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getName() {
         return name;
