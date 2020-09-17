@@ -30,7 +30,7 @@ import java.util.*;
  * 数据Controller
  * 对应数据的CRUD、下载等操作，以及花式查询，数据分为3类
  *      1、Hive表，对应表的增删改查，不加载数据。
- *      2、HBase表，暂无实现
+ *      2、HBase表，添加对应的HBase表
  *      3、HDFS文件，要上传相应数据。
  *
  *  @author fracly
@@ -57,6 +57,12 @@ public class DataController extends BaseController {
 
     /**
      * 数据新增
+     *  1、创建HIVE表
+     *  2、创建HBase表
+     *  3、创建HDFS目录
+     *  以上三种类型数据库的创建均可以通过dataService方法里面的create****Data进行创建
+     *  创建的时候根据不同数据类型，携带不同形参
+     *  如果创建的数据不隶属于以上三种类型数据，那么就提示错误：未知类型
      */
     @PostMapping("/create")
     public Result create(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, Integer createMethod, Integer type, Long dataSourceId, String name,
@@ -78,12 +84,13 @@ public class DataController extends BaseController {
 
     /**
      * 数据删除
+     *
      */
     @GetMapping("/delete")
     public Result delete(@RequestAttribute(value = Constants.SESSION_USER) User loginUser, int id){
         Result result = new Result();
-        Data data = dataService.queryById(id);
-        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) {
+        Data data = dataService.queryById(id); //根据id查找对应数据，并用Data类的data来存储数据对象
+        if(data.getCreatorId() != loginUser.getId() && !loginUser.getUsername().equals(Constants.ADMIN)) { //如果data对象的创建者ID不等于当前登陆用户的ID或者当前登录用户姓名不等于管理员的姓名
             putMsg(result, Status.CUSTOM_FAILED, "请不要删除他人的数据哦~");
             return result;
         }
@@ -594,7 +601,7 @@ public class DataController extends BaseController {
             }
             if(downloadType == DownloadType.TXT.getIndex()){ //如果下载TXT格式
                 try{
-                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0, " ");
+                    lineList = HiveUtils.downloadTableData(dataSource, data.getDataName(), condition, 0, "  ");
                 } catch (Exception e) {
                     logger.error("下载Hive表数据失败\n" + e.getMessage());
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("读取Hive表数据失败");
