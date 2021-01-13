@@ -1,0 +1,1005 @@
+//大数据通用布局样式
+
+.bigData-examples {
+    height: 100%;
+    padding: 0px 0px 12px 0px;
+    overflow: hidden;
+    // padding: 100px 25px 0 27px;
+    position: relative;
+    ::-webkit-scrollbar {
+    width: 10px; /*对垂直流动条有效*/
+    height: 10px; /*对水平流动条有效*/
+    }
+
+    /*定义滚动条的轨道颜色、内阴影及圆角*/
+    ::-webkit-scrollbar-track{
+    -webkit-box-shadow: inset 0 0 6px rgba(255,255,255,.3);
+    background: #c2c2c2;
+    border-radius: 3px;
+    }
+
+
+    /*定义滑块颜色、内阴影及圆角*/
+    ::-webkit-scrollbar-thumb{
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 0 6px rgba(255,255,255,.3);
+    background: rgba(255,255,255,0.3); 
+    }
+    ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
+    }
+    ::-webkit-scrollbar-thumb:active {
+    background: rgba(255,255,255,0.6);
+    }
+    /*定义两端按钮的样式*/
+    ::-webkit-scrollbar-button {
+     background: rgba(255,255,255,1);
+    }
+
+    /*定义右下角汇合处的样式*/
+    ::-webkit-scrollbar-corner {
+    background: #001a33;
+    }
+    /deep/ .condition-panel{
+        position: absolute;
+        z-index: 1;
+        left: 32px;
+        top: 167px;
+        width: 320px;
+        height: 700px;
+        background: rgba(0,20,38,1);
+        border: 1px solid rgba(0, 0, 0, 1);
+        box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.15);
+        .ant-row{
+            margin-left: 16px;
+            margin-top: 24px;
+            .ant-col-24{
+                span{
+                    font-size: 14px;
+                    font-family: Microsoft YaHei;
+                    font-weight: 400;
+                    color: rgba(64,96,128,1);
+                    
+                }
+                .title{
+                    line-height: 36px;
+                }
+                .ant-select{
+                    width: 288px;
+                    .ant-select-selection{
+                        background: rgba(0,26,51,1);
+                        border: 1px solid rgba(0, 0, 0, 0.25);
+                        color: rgba(64,96,128,0.5);
+                         .ant-select-selection__clear{
+                             background: transparent;
+                         }
+                    }
+                    .ant-select-selection:hover{
+                        .ant-select-selection__clear{
+                             background: rgba(0,26,51,1);
+                        }
+                    }
+                }
+                .ant-input{
+                    width: 288px;
+                    background: rgba(0,26,51,1);
+                    border: 1px solid rgba(0, 0, 0, 0.25);
+                    color: rgba(64,96,128,0.5);
+                }
+            }
+        }
+        .condition-button{
+            margin-top: 26px;
+            button{
+                width: 135px;
+                height: 34px;
+                margin-left: 16px;
+                background: linear-gradient(90deg, rgba(0, 64, 128, 0.5), rgba(0, 102, 153, 0.5));
+                border: 1px solid rgba(0, 0, 0, 0.15);
+                margin-left: 16px;
+                font-size: 14px;
+                font-family: Microsoft YaHei;
+                font-weight: 400;
+                color: #ffffff;
+                i{
+                    margin-right: 10px;
+                    float: none;
+                    vertical-align: middle;
+                }
+                span{
+                    vertical-align: middle;
+                }
+            }
+            .search{
+                background: linear-gradient(90deg, rgba(127, 0, 255, 0.5), rgba(0, 64, 128, 0.5));
+                border: 1px solid rgba(0, 0, 0, 0.25);
+            }
+        }
+
+    }
+    .filter-box{
+        top: 0;
+        width: 100%;
+        height: 188px;
+        padding-top: 98px;
+        background: RGBA(3, 35, 75, 1);
+        .filter-wrap{
+            background-image: url(/static/admin/filter-box-bg.png); 
+            background-position: bottom center; background-repeat: no-repeat; 
+            background-size: 100% auto; height: 100%; position: relative;
+            .filter-left{
+                position: absolute;
+                top: 50%;
+                margin-top: -17px;
+                margin-left: 33px;
+                /deep/ button{
+                    i{
+                        margin-right: 10px;
+                        float: none;
+                        vertical-align: middle;
+                    }
+                    span{
+                        vertical-align: middle;
+                    }
+                }
+                .condition{
+                    width: 120px;
+                    height: 34px;
+                    background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.15);
+                    font-size:14px;
+                    font-family:Microsoft YaHei;
+                    font-weight:400;
+                    color:rgba(255,255,255,1);
+
+                }
+            }
+            .filter-right{
+                position: absolute;
+                top: 50%;
+                margin-top: -17px;
+                margin-right: 33px;
+                right: 0;
+                /deep/ button{
+                    width: 120px;
+                    height: 34px;
+                    background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.15);
+                    margin-left: 16px;
+                    font-size:14px;
+                    font-family:Microsoft YaHei;
+                    font-weight:400;
+                    color:rgba(255,255,255,1);
+                    i{
+                        margin-right: 10px;
+                        float: none;
+                        vertical-align: middle;
+                    }
+                    span{
+                        vertical-align: middle;
+                    }
+                }
+                .download {
+                    background:linear-gradient(90deg,rgba(127,0,255,0.5),rgba(0,64,128,0.5));
+                    border:1px solid rgba(0, 0, 0, 0.25);
+                }
+            }
+            /deep/ .filter-conter{
+                text-align: center;
+                height: 82px;
+                .ant-calendar-picker{
+                    width: 121px !important;
+                    margin-top: 18px;
+                    .ant-calendar-picker-input{
+                        border: none;
+                        background: transparent;
+                        margin-left: 20px;
+                        color: rgba(127, 191, 255, 1) !important;
+                        font-size: 16px;
+                    }
+                    .ant-calendar-picker-icon{
+                        left: 10px;
+                        right: 0;
+                        color: rgba(127, 191, 255, 1) !important;
+                        margin-top: -6px;
+                    }
+                }
+            }
+        }
+    }
+    .data-box{
+        position: absolute;
+        top: 204px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: RGBA(0, 26, 51, 1);
+        overflow: auto;
+        .data-row{
+            height: 304px;
+            width: 100%;
+            margin-bottom: 16px;
+            display: flex;
+            padding: 0 16px 0 32px;
+            .data-col{
+                background: rgba(0,38,77,1);
+                margin-right: 16px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                .data-tit{
+                    flex: 0 0 38px;
+                    margin: 0 16px;
+                    border-bottom: 1px solid rgba(0,51,102,1);
+                    h5{
+                        display: inline-block;
+                        font-size: 16px;
+                        font-family: Microsoft YaHei;
+                        font-weight: 400;
+                        color: rgba(204,230,255,1);
+                        line-height: 38px;
+                        vertical-align: middle;
+                        margin-bottom: 0px;
+                    }
+                    i{
+                        margin-right: 8px;
+                        color: rgba(204,230,255,1);
+                        font-size: 16px;
+                        vertical-align: middle;
+                    }
+                    .data-tools{
+                        float: right;
+                        p{
+                            font-size: 14px;
+                            font-family: Microsoft YaHei;
+                            font-weight: 400;
+                            color: rgba(64,96,128,1);
+                            line-height: 38px;
+                            display: inline-block;
+                            vertical-align: middle;
+                            margin-bottom: 0;
+                        }
+                        i{
+                            color: rgba(64,96,128,1);
+                            font-size: 14px;
+                            vertical-align: middle;
+                            margin-right: 8px;
+                        }
+                    }
+                }
+                .data-cont{
+                    flex: 1;
+                    margin: 0 16px;
+                    .accident_line{
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .tableChart{
+                        margin: 16px 32px 0 32px;
+                        background: rgb(11,37,62);
+                        padding:20px;
+                        overflow-x: auto;
+                        table{
+                            width:100%;
+                            border: 1px solid #004385;
+                            tr{
+                                td{
+                                    padding:6px 12px;
+                                    text-align: center;
+                                    color: #0af;
+                                    border-bottom: 1px solid #004385;
+                                    border-right: 1px solid #004385;
+                                    vertical-align: middle;
+                                }
+                                th{
+                                    padding:4px 12px;
+                                    background: rgba(0,45,90,1);
+                                    text-align: center;
+                                    color: #0af;
+                                    border-bottom: 1px solid #004385;
+                                    border-right: 1px solid #004385;
+                                    min-width: 87px;
+                                    vertical-align: middle;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+html.mode-default .bigData-examples{
+    /*定义滚动条的轨道颜色、内阴影及圆角*/
+    ::-webkit-scrollbar-track{
+    -webkit-box-shadow: none;
+    background: #fff;
+    border-radius: 3px;
+    }
+
+    /*定义滑块颜色、内阴影及圆角*/
+    ::-webkit-scrollbar-thumb{
+    border-radius: 7px;
+    -webkit-box-shadow: none;
+    background: #aaa;
+    }
+
+    /*定义两端按钮的样式*/
+    ::-webkit-scrollbar-button {
+     background: #fff;
+    }
+
+    /*定义右下角汇合处的样式*/
+    ::-webkit-scrollbar-corner {
+    background: #fff;
+    }
+    /deep/.condition-panel{
+        top: 65px; 
+        background: #f2f2f2;
+        border: 0;
+        .ant-row{
+            .ant-col-24{
+                span{
+                    color: rgba(0,0,0,0.65);
+                }
+                                .ant-select{
+                width: 288px;
+                .ant-select-selection{
+                        background: #fff;
+                        border: 1px solid rgba(0, 0, 0, 0.25);
+                        color: rgba(64,96,128,0.5);
+                        .ant-select-selection__clear{
+                            background: transparent;
+                        }
+                    }
+                    .ant-select-selection:hover{
+                        .ant-select-selection__clear{
+                            background: #fff;
+                        }
+                    }
+                }
+                .ant-input{
+                    width: 288px;
+                    background: #fff;
+                    border: 1px solid rgba(0, 0, 0, 0.25);
+                    color: rgba(64,96,128,0.5);
+                }
+            } 
+        } 
+        .condition-button{
+            button{
+                background: linear-gradient(-90deg, #5f8cb8, #4975a2);
+                border: 0;
+            }
+            .search {
+                color: #ffffff;
+                background-image: linear-gradient(80deg, #00aeff, #3369e7);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                border: 0;
+            }
+        }
+    }
+    .filter-box{
+        padding: 0;
+        background: #f2f2f2;
+        height: 90px;
+        .filter-wrap{
+            .filter-left{
+                .condition{
+                        color: #ffffff;
+                        background-image: linear-gradient(80deg, #00aeff, #3369e7);
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                        border: 0;
+                }
+            }
+            .filter-right{
+                /deep/ button{
+                    background: linear-gradient(-90deg, #5f8cb8, #4975a2);
+                    border: 0;
+                }
+            }
+            /deep/.filter-conter .ant-calendar-picker .ant-calendar-picker-input{
+                color: #0af!important;
+                font-weight: bold;
+            }
+        }
+    }
+    .data-box{
+        top:106px;
+        background: #ffffff;
+        .data-row .data-col{
+            background: #f2f2f2;
+            .data-tit{
+                border-bottom: 1px solid #e8e8e8;
+                h5,i{
+                    color: rgba(0, 0, 0, 0.65);
+                }
+                .data-tools{
+                    i,p{
+                        color: rgba(27, 43, 60, 0.5);
+                    }
+                }
+            }
+             .data-cont {
+                .tableChart{
+                    background: none;
+                    table{
+                        border: 1px solid #e8e8e8;
+                        tr{
+                            th,td{
+                                background: #fafafa;
+                                text-align: center;
+                                color: rgba(0, 0, 0, 0.85);
+                                border-bottom: 1px solid #e8e8e8;
+                                border-right: 1px solid #e8e8e8;
+ 
+                            }
+                            th{
+                                background:#fff
+                            }
+                        }
+                    }
+                }
+             }
+        }
+    }
+}
+html.mode-default.dark{
+    .bigData-examples {
+        height: 100%;
+        padding: 0px 0px 12px 0px;
+        overflow: hidden;
+        // padding: 100px 25px 0 27px;
+        position: relative;
+        ::-webkit-scrollbar {
+        width: 10px; /*对垂直流动条有效*/
+        height: 10px; /*对水平流动条有效*/
+        }
+
+        /*定义滚动条的轨道颜色、内阴影及圆角*/
+        ::-webkit-scrollbar-track{
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background: #001a33;
+        border-radius: 3px;
+        }
+
+
+        /*定义滑块颜色、内阴影及圆角*/
+        ::-webkit-scrollbar-thumb{
+        border-radius: 7px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background: #085ba7;
+        }
+
+        /*定义两端按钮的样式*/
+        ::-webkit-scrollbar-button {
+        background: #001a33;
+        }
+
+        /*定义右下角汇合处的样式*/
+        ::-webkit-scrollbar-corner {
+        background: #001a33;
+        }
+        /deep/ .condition-panel{
+            position: absolute;
+            z-index: 1;
+            left: 32px;
+            top: 65px; 
+            width: 320px;
+            height: 700px;
+            background: rgba(0,20,38,1);
+            border: 1px solid rgba(0, 0, 0, 1);
+            box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.15);
+            .ant-row{
+                margin-left: 16px;
+                margin-top: 24px;
+                .ant-col-24{
+                    span{
+                        font-size: 14px;
+                        font-family: Microsoft YaHei;
+                        font-weight: 400;
+                        color: rgba(64,96,128,1);
+                        
+                    }
+                    .title{
+                        line-height: 36px;
+                    }
+                    .ant-select{
+                        width: 288px;
+                        .ant-select-selection{
+                            background: rgba(0,26,51,1);
+                            border: 1px solid rgba(0, 0, 0, 0.25);
+                            color: rgba(64,96,128,0.5);
+                            .ant-select-selection__clear{
+                                background: transparent;
+                            }
+                        }
+                        .ant-select-selection:hover{
+                            .ant-select-selection__clear{
+                                background: rgba(0,26,51,1);
+                            }
+                        }
+                    }
+                    .ant-input{
+                        width: 288px;
+                        background: rgba(0,26,51,1);
+                        border: 1px solid rgba(0, 0, 0, 0.25);
+                        color: rgba(64,96,128,0.5);
+                    }
+                }
+            }
+            .condition-button{
+                margin-top: 26px;
+                button{
+                    width: 135px;
+                    height: 34px;
+                    margin-left: 16px;
+                    background: linear-gradient(90deg, rgba(0, 64, 128, 0.5), rgba(0, 102, 153, 0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.15);
+                    margin-left: 16px;
+                    font-size: 14px;
+                    font-family: Microsoft YaHei;
+                    font-weight: 400;
+                    color: #ffffff;
+                    i{
+                        margin-right: 10px;
+                        float: none;
+                        vertical-align: middle;
+                    }
+                    span{
+                        vertical-align: middle;
+                    }
+                }
+                .search{
+                    background: linear-gradient(90deg, rgba(127, 0, 255, 0.5), rgba(0, 64, 128, 0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.25);
+                }
+            }
+
+        }
+        .filter-box{
+            height: 90px;
+            padding: 0;
+            background: RGBA(3, 35, 75, 1);
+            .filter-wrap{
+                background-image: url(/static/admin/filter-box-bg.png); 
+                background-position: bottom center; background-repeat: no-repeat; 
+                background-size: 100% auto; height: 100%; position: relative;
+                .filter-left{
+                    position: absolute;
+                    top: 50%;
+                    margin-top: -17px;
+                    margin-left: 33px;
+                    /deep/ button{
+                        i{
+                            margin-right: 10px;
+                            float: none;
+                            vertical-align: middle;
+                        }
+                        span{
+                            vertical-align: middle;
+                        }
+                    }
+                    .condition{
+                        width: 120px;
+                        height: 34px;
+                        background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                        border: 1px solid rgba(0, 0, 0, 0.15);
+                        font-size:14px;
+                        font-family:Microsoft YaHei;
+                        font-weight:400;
+                        color:rgba(255,255,255,1);
+
+                    }
+                }
+                .filter-right{
+                    position: absolute;
+                    top: 50%;
+                    margin-top: -17px;
+                    margin-right: 33px;
+                    right: 0;
+                    /deep/ button{
+                        width: 120px;
+                        height: 34px;
+                        background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                        border: 1px solid rgba(0, 0, 0, 0.15);
+                        margin-left: 16px;
+                        font-size:14px;
+                        font-family:Microsoft YaHei;
+                        font-weight:400;
+                        color:rgba(255,255,255,1);
+                        i{
+                            margin-right: 10px;
+                            float: none;
+                            vertical-align: middle;
+                        }
+                        span{
+                            vertical-align: middle;
+                        }
+                    }
+                    .download {
+                        background:linear-gradient(90deg,rgba(127,0,255,0.5),rgba(0,64,128,0.5));
+                        border:1px solid rgba(0, 0, 0, 0.25);
+                    }
+                }
+                /deep/ .filter-conter{
+                    text-align: center;
+                    height: 82px;
+                    .ant-calendar-picker{
+                        width: 121px !important;
+                        margin-top: 18px;
+                        .ant-calendar-picker-input{
+                            border: none;
+                            background: transparent;
+                            margin-left: 20px;
+                            color: rgba(127, 191, 255, 1) !important;
+                            font-size: 16px;
+                        }
+                        .ant-calendar-picker-icon{
+                            left: 10px;
+                            right: 0;
+                            color: rgba(127, 191, 255, 1) !important;
+                            margin-top: -6px;
+                        }
+                    }
+                }
+            }
+        }
+        .data-box{
+            background: RGBA(0, 26, 51, 1);
+            .data-row{
+                .data-col{
+                    background: rgba(0,38,77,1);
+                    .data-tit{
+                        border-bottom: 1px solid rgba(0,51,102,1);
+                        h5{
+                            color: rgba(204,230,255,1);
+                        }
+                        i{
+                            color: rgba(204,230,255,1);
+                        }
+                        .data-tools{
+                            float: right;
+                            p{
+                                color: rgba(64,96,128,1);
+                            }
+                            i{
+                                color: rgba(64,96,128,1);
+                            }
+                        }
+                    }
+                    .data-cont{
+                        .accident_line{
+                            width: 100%;
+                            height: 100%;
+                        }
+                        .tableChart{
+                            margin: 16px 32px 0 32px;
+                            background: rgb(0,38,77);
+                            padding:20px;
+                            overflow-x: auto;
+                            table{
+                                width:100%;
+                                border: 1px solid #004385;
+                                tr{
+                                    td{
+                                        padding:6px 12px;
+                                        text-align: center;
+                                        color: #0af;
+                                        border-bottom: 1px solid #004385;
+                                        border-right: 1px solid #004385;
+                                        vertical-align: middle;
+                                        background: transparent;
+                                    }
+                                    th{
+                                        padding:4px 12px;
+                                        background: rgba(0,45,90,1);
+                                        text-align: center;
+                                        color: #0af;
+                                        border-bottom: 1px solid #004385;
+                                        border-right: 1px solid #004385;
+                                        min-width: 87px;
+                                        vertical-align: middle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+html.dark.mode-bigscreen{
+    .bigData-examples {
+        height: 100%;
+        padding: 0px 0px 12px 0px;
+        overflow: hidden;
+        // padding: 100px 25px 0 27px;
+        position: relative;
+        ::-webkit-scrollbar {
+        width: 10px; /*对垂直流动条有效*/
+        height: 10px; /*对水平流动条有效*/
+        }
+
+        /*定义滚动条的轨道颜色、内阴影及圆角*/
+        ::-webkit-scrollbar-track{
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background: #001a33;
+        border-radius: 3px;
+        }
+
+
+        /*定义滑块颜色、内阴影及圆角*/
+        ::-webkit-scrollbar-thumb{
+        border-radius: 7px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background: #085ba7;
+        }
+
+        /*定义两端按钮的样式*/
+        ::-webkit-scrollbar-button {
+        background: #001a33;
+        }
+
+        /*定义右下角汇合处的样式*/
+        ::-webkit-scrollbar-corner {
+        background: #001a33;
+        }
+        /deep/ .condition-panel{
+            position: absolute;
+            z-index: 1;
+            left: 32px;
+            top: 167px;
+            width: 320px;
+            height: 700px;
+            background: rgba(0,20,38,1);
+            border: 1px solid rgba(0, 0, 0, 1);
+            box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.15);
+            .ant-row{
+                margin-left: 16px;
+                margin-top: 24px;
+                .ant-col-24{
+                    span{
+                        font-size: 14px;
+                        font-family: Microsoft YaHei;
+                        font-weight: 400;
+                        color: rgba(64,96,128,1);
+                        
+                    }
+                    .title{
+                        line-height: 36px;
+                    }
+                    .ant-select{
+                        width: 288px;
+                        .ant-select-selection{
+                            background: rgba(0,26,51,1);
+                            border: 1px solid rgba(0, 0, 0, 0.25);
+                            color: rgba(64,96,128,0.5);
+                            .ant-select-selection__clear{
+                                background: transparent;
+                            }
+                        }
+                        .ant-select-selection:hover{
+                            .ant-select-selection__clear{
+                                background: rgba(0,26,51,1);
+                            }
+                        }
+                    }
+                    .ant-input{
+                        width: 288px;
+                        background: rgba(0,26,51,1);
+                        border: 1px solid rgba(0, 0, 0, 0.25);
+                        color: rgba(64,96,128,0.5);
+                    }
+                }
+            }
+            .condition-button{
+                margin-top: 26px;
+                button{
+                    width: 135px;
+                    height: 34px;
+                    margin-left: 16px;
+                    background: linear-gradient(90deg, rgba(0, 64, 128, 0.5), rgba(0, 102, 153, 0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.15);
+                    margin-left: 16px;
+                    font-size: 14px;
+                    font-family: Microsoft YaHei;
+                    font-weight: 400;
+                    color: #ffffff;
+                    i{
+                        margin-right: 10px;
+                        float: none;
+                        vertical-align: middle;
+                    }
+                    span{
+                        vertical-align: middle;
+                    }
+                }
+                .search{
+                    background: linear-gradient(90deg, rgba(127, 0, 255, 0.5), rgba(0, 64, 128, 0.5));
+                    border: 1px solid rgba(0, 0, 0, 0.25);
+                }
+            }
+
+        }
+        .filter-box{
+            top: 0;
+            width: 100%;
+            height: 188px;
+            padding-top: 98px;
+            background: RGBA(3, 35, 75, 1);
+            .filter-wrap{
+                background-image: url(/static/admin/filter-box-bg.png); 
+                background-position: bottom center; background-repeat: no-repeat; 
+                background-size: 100% auto; height: 100%; position: relative;
+                .filter-left{
+                    position: absolute;
+                    top: 50%;
+                    margin-top: -17px;
+                    margin-left: 33px;
+                    /deep/ button{
+                        i{
+                            margin-right: 10px;
+                            float: none;
+                            vertical-align: middle;
+                        }
+                        span{
+                            vertical-align: middle;
+                        }
+                    }
+                    .condition{
+                        width: 120px;
+                        height: 34px;
+                        background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                        border: 1px solid rgba(0, 0, 0, 0.15);
+                        font-size:14px;
+                        font-family:Microsoft YaHei;
+                        font-weight:400;
+                        color:rgba(255,255,255,1);
+
+                    }
+                }
+                .filter-right{
+                    position: absolute;
+                    top: 50%;
+                    margin-top: -17px;
+                    margin-right: 33px;
+                    right: 0;
+                    /deep/ button{
+                        width: 120px;
+                        height: 34px;
+                        background: linear-gradient(90deg,rgba(0,64,128,0.5),rgba(0,102,153,0.5));
+                        border: 1px solid rgba(0, 0, 0, 0.15);
+                        margin-left: 16px;
+                        font-size:14px;
+                        font-family:Microsoft YaHei;
+                        font-weight:400;
+                        color:rgba(255,255,255,1);
+                        i{
+                            margin-right: 10px;
+                            float: none;
+                            vertical-align: middle;
+                        }
+                        span{
+                            vertical-align: middle;
+                        }
+                    }
+                    .download {
+                        background:linear-gradient(90deg,rgba(127,0,255,0.5),rgba(0,64,128,0.5));
+                        border:1px solid rgba(0, 0, 0, 0.25);
+                    }
+                }
+                /deep/ .filter-conter{
+                    text-align: center;
+                    height: 82px;
+                    .ant-calendar-picker{
+                        width: 121px !important;
+                        margin-top: 18px;
+                        .ant-calendar-picker-input{
+                            border: none;
+                            background: transparent;
+                            margin-left: 20px;
+                            color: rgba(127, 191, 255, 1) !important;
+                            font-size: 16px;
+                        }
+                        .ant-calendar-picker-icon{
+                            left: 10px;
+                            right: 0;
+                            color: rgba(127, 191, 255, 1) !important;
+                            margin-top: -6px;
+                        }
+                    }
+                }
+            }
+        }
+        .data-box{
+            position: absolute;
+            top: 204px;
+            left: 0;
+            right: 0;
+            bottom: 43px;
+            background: RGBA(0, 26, 51, 1);
+            overflow: auto;
+            .data-row{
+                .data-col{
+                    background: rgba(0,38,77,1);
+                    .data-tit{
+                        height: 40px;
+                        margin: 0 16px;
+                        border-bottom: 1px solid rgba(0,51,102,1);
+                        h5{
+                            display: inline-block;
+                            font-size: 16px;
+                            font-family: Microsoft YaHei;
+                            font-weight: 400;
+                            color: rgba(204,230,255,1);
+                            line-height: 40px;
+                            vertical-align: middle;
+                        }
+                        i{
+                            margin-right: 8px;
+                            color: rgba(204,230,255,1);
+                            font-size: 16px;
+                        }
+                        .data-tools{
+                            float: right;
+                            p{
+                                font-size: 14px;
+                                font-family: Microsoft YaHei;
+                                font-weight: 400;
+                                color: rgba(64,96,128,1);
+                                line-height: 40px;
+                                display: inline-block;
+                                vertical-align: middle;
+                                margin-bottom: 0;
+                            }
+                            i{
+                                color: rgba(64,96,128,1);
+                                font-size: 14px;
+                                vertical-align: middle;
+                                margin-right: 8px;
+                            }
+                        }
+                    }
+                    .data-cont{
+                        .accident_line{
+                            width: 100%;
+                            height: 100%;
+                        }
+                        .tableChart{
+                            margin: 16px 32px 0 32px;
+                            background: rgb(0,38,77);
+                            padding:20px;
+                            overflow-x: auto;
+                            table{
+                                width:100%;
+                                border: 1px solid #004385;
+                                tr{
+                                    td{
+                                        padding:6px 12px;
+                                        text-align: center;
+                                        color: #0af;
+                                        border-bottom: 1px solid #004385;
+                                        border-right: 1px solid #004385;
+                                        vertical-align: middle;
+                                    }
+                                    th{
+                                        padding:4px 12px;
+                                        background: rgba(0,45,90,1);
+                                        text-align: center;
+                                        color: #0af;
+                                        border-bottom: 1px solid #004385;
+                                        border-right: 1px solid #004385;
+                                        min-width: 87px;
+                                        vertical-align: middle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
